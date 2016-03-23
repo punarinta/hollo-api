@@ -10,3 +10,4 @@ Route::add('tag', '/api/tag', \Auth::USER, '\App\Controller\Tag');
 Route::add('guest', '/api/guest', \Auth::GUEST, '\App\Controller\Guest');
 Route::add('user', '/api/user', \Auth::USER, '\App\Controller\User');
 Route::add('search', '/api/search', \Auth::USER, '\App\Controller\Search');
+Route::add('test', '/api/test', \Auth::GUEST, '\App\Controller\Test');
