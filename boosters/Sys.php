@@ -42,12 +42,7 @@ class Sys
 
         @session_start();
 
-        if (($uri = rtrim($_SERVER['REQUEST_URI'], '\\')) === '/')
-        {
-            header('Location: http' . (@$_SERVER['SERVER_PORT'] != 443 ? '' : 's') . '://' . \Sys::cfg('mailless.api_domain') . '/docs/index.html');
-            return 0;
-        }
-
+        $uri = rtrim($_SERVER['REQUEST_URI'], '\\');
         $uri = explode('?', $uri);
         $uri = $uri[0];
 
