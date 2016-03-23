@@ -1,0 +1,40 @@
+<?php
+
+Route::add('auth', '/api/auth', \Auth::GUEST, '\App\Controller\Auth');
+Route::add('website', '/api/website', \Auth::GUEST, '\App\Controller\Website');
+Route::add('access', '/api/access', \Auth::READER, '\App\Controller\Access');
+Route::add('dashboard', '/api/dashboard', \Auth::READER, '\App\Controller\Dashboard');
+Route::add('notifications', '/api/notifications', \Auth::READER, '\App\Controller\Notifications');
+Route::add('settings', '/api/settings', \Auth::READER, '\App\Controller\Settings');
+Route::add('statistics', '/api/statistics', \Auth::ACCOUNTANT, '\App\Controller\Statistics');      // m.b. teacher
+Route::add('content', '/api/content', \Auth::READER, '\App\Controller\Content');
+Route::add('course', '/api/course', \Auth::READER, '\App\Controller\Course');
+Route::add('course-package', '/api/course-package', \Auth::READER, '\App\Controller\CoursePackage');
+Route::add('page', '/api/page', \Auth::READER, '\App\Controller\Page');
+Route::add('page-row', '/api/page-row', \Auth::READER, '\App\Controller\PageRow');
+Route::add('page-module', '/api/page-module', \Auth::READER, '\App\Controller\PageModule');
+Route::add('section', '/api/section', \Auth::READER, '\App\Controller\Section');
+Route::add('upload-plain', '/api/upload/plain', \Auth::READER, '\App\Controller\Upload', 'plain');
+Route::add('upload-encoded', '/api/upload/encoded', \Auth::READER, '\App\Controller\Upload', 'encoded');
+Route::add('file', '/api/file', \Auth::READER, '\App\Controller\File');
+Route::add('task', '/api/task', \Auth::READER, '\App\Controller\Task');
+Route::add('tag', '/api/tag', \Auth::TEACHER, '\App\Controller\Tag');
+Route::add('trigger', '/api/trigger', \Auth::EDITOR, '\App\Controller\Trigger');
+Route::add('task-result', '/api/task-result', \Auth::READER, '\App\Controller\TaskResult');
+Route::add('post', '/api/post', \Auth::READER, '\App\Controller\Post');
+Route::add('guest', '/api/guest', \Auth::GUEST, '\App\Controller\Guest');
+Route::add('store', '/api/store', \Auth::GUEST, '\App\Controller\Store');
+Route::add('invitation', '/api/invitation', \Auth::OWNER, '\App\Controller\Invitation');
+Route::add('invite', '/api/invite', \Auth::TEACHER, '\App\Controller\Invite');
+Route::add('mr-wolf', '/api/mr.wolf-{path}', \Auth::ASSISTANT, '\App\Controller\MrWolf\Winston');
+Route::add('user', '/api/user', \Auth::TEACHER, '\App\Controller\User');
+Route::add('circle', '/api/circle', \Auth::TEACHER, '\App\Controller\Circle');
+Route::add('search', '/api/search', \Auth::READER, '\App\Controller\Search');
+Route::add('discount', '/api/discount', \Auth::READER, '\App\Controller\Discount');
+Route::add('payment', '/api/payment', \Auth::READER, '\App\Controller\Payment');
+Route::add('payment-incoming', '/api/payment/incoming', \Auth::ACCOUNTANT, '\App\Controller\PaymentIncoming');
+Route::add('zapier-subscribe', '/api/vendor/zapier', \Auth::GUEST, '\App\Controller\Vendor\Zapier');
+Route::add('zapier-unsubscribe', '/api/vendor/zapier/unsubscribe', \Auth::GUEST, '\App\Controller\Vendor\Zapier', 'unsubscribe');
+Route::add('stripe', '/api/vendor/stripe', \Auth::OWNER, '\App\Controller\Vendor\Stripe');
+Route::add('hipchat', '/api/vendor/hipchat', \Auth::GUEST, '\App\Controller\Vendor\Hipchat', 'inbound');
+Route::add('mandrill', '/api/vendor/mandrill', \Auth::TEACHER, '\App\Controller\Vendor\Mandrill');
