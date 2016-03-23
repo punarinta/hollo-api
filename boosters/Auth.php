@@ -3,16 +3,9 @@
 class Auth
 {
     const GUEST         = 0;                        // not logged in
-    const READER        = 0b0000000000000001;       // good old reader
-    const TEACHER       = 0b0000000000000010;       // can work with tasks and invite readers
-    const ACCOUNTANT    = 0b0000000000000100;       // financial guy
-    const EDITOR        = 0b0000000000001000;       // can build courses
-    const OWNER         = 0b0001000000000000;       // owns Teh Bznss
-    const TESTER        = 0b0010000000000000;       // has access to test features
-    const ASSISTANT     = 0b0100000000000000;       // usual admin
-    const DARK_ADMIN    = 0b1000000000000000;       // the great lord
-
-    const NOT_READER    = 0b0001000000001110;
+    const USER          = 0b0000000000000001;       // usual user
+    const ASSISTANT     = 0b0100000000000000;       // admin
+    const DARK_ADMIN    = 0b1000000000000000;       // me
 
     /**
      * Checks if user is logged in
