@@ -71,19 +71,11 @@ unset ($autoClasses0, $autoClasses4);
 
 // 4. Compiled routes
 
-// Built 23.03.16 @ 13:50:03 +0100
+// Built 23.03.16 @ 15:31:18 +0100
 
 $GLOBALS['-R'] = [
-'guest' => ['/api/guest', \Auth::GUEST, '\App\Controller\Guest', 'index'],
-'user' => ['/api/user', \Auth::USER, '\App\Controller\User', 'index'],
-'search' => ['/api/search', \Auth::USER, '\App\Controller\Search', 'index'],
-'test' => ['/api/test', \Auth::GUEST, '\App\Controller\Test', 'index'],
-'tag' => ['/api/tag', \Auth::USER, '\App\Controller\Tag', 'index'],
-'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],
-'notifications' => ['/api/notifications', \Auth::USER, '\App\Controller\Notifications', 'index'],
-'settings' => ['/api/settings', \Auth::USER, '\App\Controller\Settings', 'index'],
-'upload-plain' => ['/api/upload/plain', \Auth::USER, '\App\Controller\Upload', 'plain'],
-'upload-encoded' => ['/api/upload/encoded', \Auth::USER, '\App\Controller\Upload', 'encoded'],
+'message' => ['/api/message', \Auth::GUEST, '\App\Controller\Message', 'index'],
+'contact' => ['/api/contact', \Auth::GUEST, '\App\Controller\Contact', 'index'],
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
 ];
 
