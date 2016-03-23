@@ -13,4 +13,9 @@ class Message extends Generic
 
         return \Sys::svc('Context')->listContactMessages($email);
     }
+
+    static public function reply()
+    {
+        return true;
+    }
 }

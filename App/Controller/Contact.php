@@ -4,8 +4,11 @@ namespace App\Controller;
 
 class Contact extends Generic
 {
-    static public function findAll()
+    static public function find()
     {
+        // TODO: support filtering byt email and subject
+        // TODO: sort by last activity (desc ts)
+
         $items = [];
 
         foreach (\Sys::svc('Context')->listContacts() as $row)
