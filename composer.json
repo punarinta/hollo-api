@@ -1,0 +1,27 @@
+{
+    "name": "mailless",
+    "description": "Mailless",
+    "license": "Private",
+    "keywords":
+    [
+        "mailless"
+    ],
+    "homepage": "http://mailless.io/",
+    "repositories":
+    [
+        {
+            "type": "vcs",
+            "url": "https://github.com/chrisboulton/php-resque"
+        }
+    ],
+    "require":
+    {
+        "php": ">=5.3.3",
+        "tpyo/amazon-s3-php-class": "0.5.*",
+        "chrisboulton/php-resque": "dev-master",
+        "predis/predis": "1.0.*",
+        "mandrill/mandrill": "1.0.54",
+        "google/apiclient": "1.1.*@dev",
+        "facebook/php-sdk-v4" : "~5.0"
+    }
+}
