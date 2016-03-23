@@ -30,6 +30,10 @@ return array
         'this_server'       => 'app.mailless.dev',
         'file_secret_key'   => 'MaillessFTW',
     ),
+    'contextio' => array(
+        'key'       => '',
+        'secret'    => '',
+    ),
     'resque' => array(
         'queue'  => 'queue',
         'queue-fast'  => 'queue-fast',
