@@ -42,4 +42,24 @@ class Context
 
         return $items;
     }
+
+    public function listContactFiles($email)
+    {
+        $items = [];
+
+        foreach ($this->conn->listContactFiles($this->accountId, ['email' => $email])->getData() as $row)
+        {
+            $items[] = array
+            (
+                'messageId'     => $row['message_id'],
+                'fileId'        => $row['file_id'],
+                'name'          => $row['file_name_structure'][0][0],
+                'ext'           => $row['file_name_structure'][1][0],
+                'size'          => $row['size'],
+                'type'          => $row['type'],
+            );
+        }
+
+        return $items;
+    }
 }
