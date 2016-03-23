@@ -4,7 +4,7 @@ class Auth
 {
     const GUEST         = 0;                        // not logged in
     const USER          = 0b0000000000000001;       // usual user
-    const ASSISTANT     = 0b0100000000000000;       // admin
+    const ADMIN         = 0b0100000000000000;       // admin
     const DARK_ADMIN    = 0b1000000000000000;       // me
 
     /**
