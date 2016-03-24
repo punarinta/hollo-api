@@ -4,6 +4,25 @@ namespace App\Service;
 
 class User extends Generic
 {
+    protected $cache = [];
+
+    /**
+     * Overwritten as User uses custom ID field name
+     *
+     * @param $id
+     * @param null $obsolete    - kept for compatibility with parent method
+     * @return mixed
+     */
+    public function findById($id, $obsolete = null)
+    {
+        if (!isset ($this->cache[$id]))
+        {
+            $this->cache[$id] = \DB::row('SELECT * FROM user WHERE id = ? LIMIT 1', [$id]);
+        }
+
+        return $this->cache[$id];
+    }
+
     /**
      * Gets a User by its email
      *
@@ -25,7 +44,10 @@ class User extends Generic
     {
         $user = parent::create($data);
 
-        // TODO: create profile
+        \Sys::svc('Profile')->create(array
+        (
+            'user_id'   => $user->id,
+        ));
 
         return $user;
     }
