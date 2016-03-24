@@ -34,10 +34,19 @@ class User extends Generic
      * Adds an account to a user
      *
      * @param $email
+     * @return mixed
+     * @throws \Exception
      */
     public function addAccount($email)
     {
-        // TODO: find out what is returned
-        $this->conn->addAccount(['email' => $email]);
+        // TODO: add more params for an account
+        $res = $this->conn->addAccount(['email' => $email])->getData();
+
+        if (!@$res['success'])
+        {
+            throw new \Exception('Cannot add account');
+        }
+
+        return $res['id'];
     }
 }
