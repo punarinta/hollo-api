@@ -117,7 +117,7 @@ class Auth extends Generic
                     'email'     => $json['email'],
                     'created'   => \Time::now(),
                     'provider'  => 'google',
-                    'roles'     => \Auth::READER,
+                    'roles'     => \Auth::USER,
                 ));
             }
             else
@@ -231,89 +231,9 @@ class Auth extends Generic
         return self::status();
     }
 
-    /**
-     * Generates a new API keys pair
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    static public function requestNewApiKey()
-    {
-        if (!\Auth::check())
-        {
-            throw new \Exception(\Lang::translate('Access denied.'), 403);
-        }
-
-        $keys = \Sys::svc('ApiKey')->generate(\Auth::user()->id);
-
-        return array
-        (
-            'privateKey' => $keys[0],
-            'publicKey'  => $keys[1],
-        );
-    }
-
-    /**
-     * Requests a password restoration code
-     *
-     * @doc-var    (string) callbackUrl!    - A callback URL for the code.
-     * @doc-var    (string) email!          - An email to send link to.
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    static function requestNewPassword()
-    {
-        if (!\Input::data('callbackUrl'))
-        {
-            throw new \Exception('Callback URL not provided.');
-        }
-
-        if (!\Input::data('email'))
-        {
-            throw new \Exception(\Lang::translate('No email provided.'));
-        }
-
-        \Sys::svc('Auth')->requestNewPassword(\Input::data('email'), \Input::data('callbackUrl'));
-
-        return true;
-    }
-
-    /**
-     * Allows you to set a new password using a password restoration code
-     *
-     * @doc-var    (string) key!            - A key from user's email. Just take it from browser URL.
-     * @doc-var    (string) password!       - New password.
-     * @doc-var    (string) passwordVerify! - Password confirmation.
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    static function restorePassword()
-    {
-        if (!\Input::data('key'))
-        {
-            throw new \Exception(\Lang::translate('Password restoration key is not provided.'));
-        }
-
-        if (!\Input::data('password'))
-        {
-            throw new \Exception(\Lang::translate('No password provided.'));
-        }
-
-        if (!\Input::data('passwordVerify') || \Input::data('password') !== \Input::data('passwordVerify'))
-        {
-            throw new \Exception(\Lang::translate('Password confirmation is wrong.'));
-        }
-
-        \Sys::svc('Auth')->restorePassword(\Input::data('key'), \Input::data('password'), \Input::data('passwordVerify'));
-
-        return true;
-    }
-
     static function incarnate()
     {
-        if (!\Auth::amI(\Auth::ASSISTANT))
+        if (!\Auth::amI(\Auth::ADMIN))
         {
             throw new \Exception(\Lang::translate('Access denied.'), 403);
         }

@@ -114,7 +114,7 @@ class Auth
             'password'      => $password,
             'display_name'  => ($firstName || $lastName) ? trim($firstName . ' ' . $lastName) : $email,
             'language'      => $lang,
-            'roles'         => \Auth::READER,
+            'roles'         => \Auth::USER,
             'created'       => \Time::now(),
             'created_by'    => \Auth::check() ? \Auth::user()->id : 0,       // to allow user fetch through API
             'modified'      => \Time::now(),
@@ -235,52 +235,5 @@ class Auth
     public function canWakeUp()
     {
         return isset ($_SESSION['-AUTH']['real-user']);
-    }
-
-    /**
-     * Generates a password restore link and sends it to the user
-     *
-     * @param $email
-     * @param $callbackUrl
-     * @throws \Exception
-     */
-    public function requestNewPassword($email, $callbackUrl)
-    {
-        if (!$user = \Sys::svc('User')->findByEmail($email))
-        {
-            throw new \Exception(\Lang::translate('User does not exist.'));
-        }
-
-        $id = $user->id;
-        $ts = \Time::now();
-        $requestKey = strtoupper(substr(sha1($id . '####' . $ts), 0, 15));
-
-        $stmt = \DB::prepare('INSERT INTO user_password_reset VALUES (?,?,?)', [$requestKey, $id, $ts]);
-        $stmt->execute();
-
-        // notify user
-        \Sys::svc('Resque')->addJob('PasswordRestore', array
-        (
-            'email'  => $email,
-            'link'   => $callbackUrl . $requestKey,
-        ));
-    }
-
-    /**
-     * Resets a password for a key-validated user
-     *
-     * @param $key
-     * @param $pass
-     * @param $passVerify
-     * @throws \Exception
-     */
-    public function restorePassword($key, $pass, $passVerify)
-    {
-        $data = \DB::row('SELECT * FROM user_password_reset WHERE request_key = ?', [$key]);
-
-        $this->changePassword($data->user_id, $pass, $passVerify);
-
-        // remove used key
-        \DB::row('DELETE FROM user_password_reset WHERE request_key = ? AND user_id = ? LIMIT 1', [$key, $data->user_id]);
     }
 }
