@@ -72,30 +72,10 @@ class Auth
         $texts = [];
 
         if ($roles & self::DARK_ADMIN)  $texts[] = 'dark-admin';
-        if ($roles & self::ASSISTANT)   $texts[] = 'assistant';
-        if ($roles & self::TESTER)      $texts[] = 'tester';
-        if ($roles & self::OWNER)       $texts[] = 'owner';
-        if ($roles & self::EDITOR)      $texts[] = 'editor';
-        if ($roles & self::ACCOUNTANT)  $texts[] = 'accountant';
-        if ($roles & self::TEACHER)     $texts[] = 'teacher';
-        if ($roles & self::READER)      $texts[] = 'reader';
+        if ($roles & self::ADMIN)       $texts[] = 'admin';
+        if ($roles & self::USER)        $texts[] = 'user';
+        if ($roles & self::GUEST)       $texts[] = 'guest';
 
         return $texts;
-    }
-
-    //
-    // TODO: remove this function after a while
-    //
-    static function c2Role()
-    {
-        if (!isset ($_SESSION['-AUTH']['user'])) return 'guest';
-
-        $roles = $_SESSION['-AUTH']['user']->roles;
-
-        if ($roles & self::ASSISTANT) return 'assistant';
-        if ($roles & self::EDITOR) return 'builder';
-        if ($roles & self::READER) return 'reader';
-
-        return 'user';
     }
 }
