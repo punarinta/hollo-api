@@ -11,6 +11,6 @@ class File extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        return \Sys::svc('Context')->listContactFiles($email);
+        return \Sys::svc('File')->findByContact($email);
     }
 }

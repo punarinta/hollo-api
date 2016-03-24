@@ -11,7 +11,7 @@ class Contact extends Generic
 
         $items = [];
 
-        foreach (\Sys::svc('Context')->listContacts() as $row)
+        foreach (\Sys::svc('Contact')->findForMe() as $row)
         {
             $items[] = array
             (

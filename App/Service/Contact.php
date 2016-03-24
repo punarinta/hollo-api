@@ -5,11 +5,11 @@ namespace App\Service;
 class Contact extends Generic
 {
     /**
-     * Returns contacts associated with the account
+     * Returns contacts associated with the current user account
      *
      * @return mixed
      */
-    public function findByAccount()
+    public function findForMe()
     {
         $items = [];
 

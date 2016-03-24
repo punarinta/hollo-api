@@ -11,7 +11,7 @@ class Message extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        return \Sys::svc('Context')->listContactMessages($email);
+        return \Sys::svc('Message')->findByContact($email);
     }
 
     static public function reply()
