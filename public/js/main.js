@@ -39,17 +39,17 @@ var ML =
 
       ML.login(user, pass, function ()
       {
-        $('#page-login, #page-contacts').toggle();
+        ML.showContacts();
       });
     });
 
     // check the status
     ML.api('auth', 'status', {}, function (data)
     {
-      if (data.sessionId)
+      if (data.user)
       {
         ML.sessionId = data.sessionId;
-        $('#page-login, #page-contacts').toggle();
+        ML.showContacts();
       }
     });
   },
@@ -73,7 +73,10 @@ var ML =
 
   showContacts: function ()
   {
-    ML.api('contact', 'findForMe', {},
+    $('.page').hide();
+    $('#page-contacts').show();
+
+    ML.api('contact', 'find', {},
     function (data)
     {
       console.log(data)
