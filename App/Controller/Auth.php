@@ -157,15 +157,13 @@ class Auth extends Generic
             (
                 'id'            => \Auth::user()->id,
                 'username'      => @\Auth::user()->username,
-                'displayName'   => \Auth::user()->display_name,
-                'avatarUrl'     => \Sys::svc('User')->avatar(\Auth::user()),
-                'locale'        => \Auth::user()->language,
+            //    'displayName'   => \Auth::user()->display_name,
+            //    'avatarUrl'     => \Sys::svc('User')->avatar(\Auth::user()),
+            //    'locale'        => \Auth::user()->language,
                 'email'         => \Auth::user()->email,
             ) : null,
-            'README'    => 'We recommend to use Coursio 3 "roles" instead of Coursio 2 "role".',
             'roles'     => \Auth::textRoles(isset ($_SESSION['-AUTH']['user']) ? $_SESSION['-AUTH']['user']->roles : 0),
             'sessionId' => session_id(),
-        //    'pill'      => \Sys::svc('Auth')->canWakeUp() ? 'red' : 'blue',
         );
     }
 

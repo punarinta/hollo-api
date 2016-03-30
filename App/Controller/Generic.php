@@ -29,10 +29,10 @@ class Generic
         }
 
         // set up proper localization
-        if (\Auth::check())
+    /*    if (\Auth::check())
         {
             \Lang::setLocale(\Auth::user()->language);
-        }
+        }*/
 
         // setup pagination
         \DB::$pageStart  = \Input::json('pageStart');

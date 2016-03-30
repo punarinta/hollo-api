@@ -29,4 +29,16 @@ class File extends Generic
 
         return $items;
     }
+
+    /**
+     * Returns the contents of a file via processor
+     *
+     * @param $procFileId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getProcessorContent($procFileId)
+    {
+        return file_get_contents($this->conn->getFileContent(\Auth::user()->account_id, ['file_id' => $procFileId])->getData());
+    }
 }

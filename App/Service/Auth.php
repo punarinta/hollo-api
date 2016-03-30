@@ -81,12 +81,6 @@ class Auth
             throw new \Exception('Incorrect username or password.');
         }
 
-        // set 'last_login'
-        $user->last_login = \Time::now();
-
-        // update the user
-        \Sys::svc('User')->update($user);
-
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['profile'] = \Sys::svc('Profile')->findByUserId($user->id);
     }
