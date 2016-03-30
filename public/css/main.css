@@ -1,2 +1,10 @@
+body {font-family: "DejaVu Sans"}
+
 .page {display: none}
+
 #page-login {display: block}
+#page-contacts ul {list-style-type: none}
+#page-contacts ul li {padding: 2px 0; cursor: pointer}
+#page-contacts ul li:nth-child(2n) {background-color: #f0f0f0}
+#page-contacts ul li:hover {background-color: #c3d9ff}
+#page-contacts ul li div:last-child {font-size: 75%}

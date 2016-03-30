@@ -79,7 +79,14 @@ var ML =
     ML.api('contact', 'find', {},
     function (data)
     {
-      console.log(data)
+      var html = '';
+
+      for (var i in data)
+      {
+        html += '<li><div>' + data[i].name + '</div><div>' + data[i].email + '</div></li>';
+      }
+
+      $('#page-contacts ul').html(html);
     });
   }
 };

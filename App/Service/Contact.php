@@ -13,7 +13,7 @@ class Contact extends Generic
     {
         $items = [];
 
-        foreach ($this->conn->listContacts(\Auth::user()->account_id, ['limit' => 50])->getData() as $row)
+        foreach ($this->conn->listContacts(\Auth::user()->account_id, ['limit' => 20, 'sort_by' => 'email', 'sort_order' => 'asc'])->getData() as $row)
         {
             $items[] = $row;
         }
