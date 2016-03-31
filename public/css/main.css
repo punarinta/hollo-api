@@ -1,4 +1,5 @@
-body {font-family: "DejaVu Sans";padding:0;margin:0; background-color: #eaeaea;}
+body {font-family: "DejaVu Sans";padding:0;margin:0; background-color: #eaeaea}
+body::-webkit-scrollbar {display: none}
 
 .page {display: none; padding:5px}
 
@@ -10,7 +11,7 @@ body {font-family: "DejaVu Sans";padding:0;margin:0; background-color: #eaeaea;}
 #page-contacts ul li:hover {background-color: #c3d9ff}
 #page-contacts ul li div:last-child {font-size: 75%}
 
-#page-chat ul {list-style-type: none; padding-left:0;}
+#page-chat ul {list-style-type: none; padding-left:0}
 #page-chat hr {border: 1px solid #ccc; border-top-width: 0}
 #page-chat ul li {overflow: auto}
 #page-chat ul li > div {overflow: auto; margin: 4px 2px; background-color: #fff; padding: 5px 8px; border-radius: 3px}
@@ -19,3 +20,6 @@ body {font-family: "DejaVu Sans";padding:0;margin:0; background-color: #eaeaea;}
 #page-chat ul li.mine > div {float: left}
 #page-chat ul li .tag {color: #9013fe; cursor: pointer}
 #page-chat .interlocutor {font-weight: bold}
+
+#composer {position: fixed; left:0; bottom: 0; width: 100%; height: 20vh}
+#composer-pop {height: 20vh}
