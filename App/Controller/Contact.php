@@ -15,11 +15,16 @@ class Contact extends Generic
         {
             $items[] = array
             (
-                'name'  => isset ($row['name']) ? $row['name'] : $row['email'],
+                'name' => isset ($row['name']) ? $row['name'] : $row['email'],
                 'email' => $row['email'],
             );
         }
 
         return $items;
+    }
+
+    static public function sync()
+    {
+        \Sys::svc('Contact')->sync();
     }
 }

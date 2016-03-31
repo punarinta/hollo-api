@@ -20,4 +20,9 @@ class Contact extends Generic
 
         return $items[1];
     }
+    
+    public function sync()
+    {
+        $this->conn->getSync(\Auth::user()->account_id);
+    }
 }
