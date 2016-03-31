@@ -8,26 +8,39 @@ class Message extends Generic
      * Returns messages associated with a contact
      *
      * @param $email
+     * @param null $subject
      * @return array
      */
-    public function findByContact($email)
+    public function findByContact($email, $subject = null)
     {
         $items = [];
 
-        foreach ($this->conn->listMessages(\Auth::user()->account_id, ['include_body' => 1, 'email' => $email, 'sort_order' => 'asc'])->getData() as $row)
+        $params =
+        [
+            'email'         => $email,
+            'sort_order'    => 'asc',
+            'include_body'  => 1,
+        ];
+
+        if ($subject)
+        {
+            $params['subject'] = "/(.*)$subject/";
+        }
+
+        foreach ($this->conn->listMessages(\Auth::user()->account_id, $params)->getData() as $row)
         {
             $items[] = array
             (
                 'ts'        => $row['date'],
-                'body'      => $row['body'][0],
-                'subject'   => $this->stripRes($row['subject']),
+                'body'      => $this->clearBody($row['body'][0]),
+                'subject'   => $this->clearSubject($row['subject']),
             );
         }
 
         return $items;
     }
 
-    protected function stripRes($subject)
+    protected function clearSubject($subject)
     {
         $items = ['Re:', 'Fwd:'];
 
@@ -41,5 +54,12 @@ class Message extends Generic
         }
 
         return trim($subject);
+    }
+
+    protected function clearBody($body)
+    {
+        $body = preg_replace('#(^\w.+:\n)?(^>.*(\n|$))+#mi', '', $body);
+
+        return $body;
     }
 }
