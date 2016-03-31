@@ -29,10 +29,12 @@ class Message extends Generic
 
         foreach ($this->conn->listMessages(\Auth::user()->account_id, $params)->getData() as $row)
         {
+            $row['body'][0]['content'] = $this->clearContent($row['body'][0]['content']);
+
             $items[] = array
             (
                 'ts'        => $row['date'],
-                'body'      => $this->clearBody($row['body'][0]),
+                'body'      => $row['body'][0],
                 'subject'   => $this->clearSubject($row['subject']),
             );
         }
@@ -56,10 +58,14 @@ class Message extends Generic
         return trim($subject);
     }
 
-    protected function clearBody($body)
+    protected function clearContent($content)
     {
-        $body = preg_replace('#(^\w.+:\n)?(^>.*(\n|$))+#mi', '', $body);
+        // remove quotes
+        $content = preg_replace('#(^\w.+:\n)?(^>.*(\n|$))+#mi', '', $content);
 
-        return $body;
+        // remove quote reference
+        $content = preg_replace('/\nOn(.*?)wrote:(.*?)$/si', '', $content);
+
+        return trim($content);
     }
 }
