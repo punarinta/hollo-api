@@ -5,7 +5,7 @@ namespace App\Service;
 class Message extends Generic
 {
     /**
-     * Returns messages associated with a contact
+     * Returns messages associated with a contact. May filter by subject.
      *
      * @param $email
      * @param null $subject
@@ -45,13 +45,13 @@ class Message extends Generic
 
     protected function clearSubject($subject)
     {
-        $items = ['Re:', 'Fwd:'];
+        $items = ['Re:', 'Fwd:', 'Fw:'];
 
         foreach ($items as $item)
         {
             if (strpos($subject, $item, 0) === 0)
             {
-                $subject = str_replace($item, '', $subject);
+                $subject = str_ireplace($item, '', $subject);
                 break;
             }
         }
