@@ -29,13 +29,14 @@ class Message extends Generic
 
         foreach ($this->conn->listMessages(\Auth::user()->account_id, $params)->getData() as $row)
         {
-            $row['body'][0]['content'] = $this->clearContent($row['body'][0]['content']);
+            $row['body'][0]['content'] = $this->clearContent($row['body'][0]['content'], $email);
 
             $items[] = array
             (
                 'ts'        => $row['date'],
                 'body'      => $row['body'][0],
                 'subject'   => $this->clearSubject($row['subject']),
+                'from'      => $row['addresses']['from']['email'],
             );
         }
 
@@ -58,13 +59,32 @@ class Message extends Generic
         return trim($subject);
     }
 
-    protected function clearContent($content)
+    protected function clearContent($content, $email)
     {
-        // remove quotes
-        $content = preg_replace('#(^\w.+:\n)?(^>.*(\n|$))+#mi', '', $content);
+        // remove email
+        $email = str_replace('.', '\.', $email);
+        if (preg_match("/^.*(<$email\s*>).*$/s", $content, $matches))
+        {
+            $content = str_replace($matches[1], '', $content);
+        }
 
-        // remove quote reference
-        $content = preg_replace('/\nOn(.*?)wrote:(.*?)$/si', '', $content);
+        // Remove quoted lines (lines that begin with '>').
+        $content = preg_replace("/(^\w.+:\n)?(^>.*(\n|$))+/mi", '', $content);
+
+        $quoteHeadersRegex = array
+        (
+            '/^(On\s.+?wrote:).*$/ms',
+            '/^(Den\s.+?skrev:).*$/ms',
+        );
+
+        foreach ($quoteHeadersRegex as $regex)
+        {
+            $content = preg_replace($regex, '', $content);
+        }
+
+        // Remove lines like '----- Original Message -----' (some other clients).
+        // Also remove lines like '--- On ... wrote:' (some other clients).
+        $content = preg_replace("/^---.*$/mi", '', $content);
 
         return trim($content);
     }
