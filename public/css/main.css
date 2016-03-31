@@ -10,6 +10,9 @@ body {font-family: "DejaVu Sans"}
 #page-contacts ul li div:last-child {font-size: 75%}
 
 #page-chat ul {list-style-type: none}
-#page-chat ul li > div {overflow: auto}
-#page-chat ul li:nth-child(2n) div > div {float: right}
-#page-chat ul li:nth-child(2n+1) div > div {float: left}
+#page-chat ul li {overflow: auto}
+#page-chat ul li > div {overflow: auto; margin: 3px; background-color: #f0f0f8; padding: 5px 8px}
+#page-chat ul li .msg {display: inline-block}
+#page-chat ul li:nth-child(2n) > div {float: right}
+#page-chat ul li:nth-child(2n+1) > div {float: left}
+#page-chat ul li .tag {color: blueviolet; cursor: pointer}

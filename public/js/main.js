@@ -123,7 +123,7 @@ var ML =
         body = body.replace(/(?:\r\n|\r|\n)/g, '<br />');
         body = body.replace(exp,"<a href='$1'>$1</a>");
 
-        html += '<li><div><div>' + body + '</div></div></li>';
+        html += '<li><div><div class="tag">' + data[i].subject + '</div><hr><div class="msg">' + body + '</div></div></li>';
       }
 
       $('#page-chat ul').html(html);
