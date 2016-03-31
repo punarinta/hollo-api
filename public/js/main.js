@@ -30,6 +30,10 @@ var ML =
     {
       ML.api('contact', 'sync');
     });
+    $('#btn-contacts').on('click', function()
+    {
+      ML.showContacts();
+    });
 
     $('#page-login .login').on('click', function()
     {
@@ -84,6 +88,7 @@ var ML =
   showContacts: function ()
   {
     $('.page').hide();
+    $('#page-contacts ul').html('<ul><li>Loading...</li></ul>');
     $('#page-contacts').show();
 
     ML.api('contact', 'find', null, function (data)
@@ -108,22 +113,25 @@ var ML =
   showChat: function(email)
   {
     $('.page').hide();
+    $('#page-chat .interlocutor').html(email);
+    $('#page-chat ul').html('<ul><li>Loading...</li></ul>');
     $('#page-chat').show();
-    
+
     ML.api('message', 'findByEmail', {email: email}, function (data)
     {
       var html = '';
 
       for (var i in data)
       {
-        var body = data[i].body.content;
+        var body = data[i].body.content,
+            whose = data[i].from == email ? 'yours' : 'mine';
 
         // preprocess body
         var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i;
         body = body.replace(/(?:\r\n|\r|\n)/g, '<br />');
         body = body.replace(exp,"<a href='$1'>$1</a>");
 
-        html += '<li><div><div class="tag">' + data[i].subject + '</div><hr><div class="msg">' + body + '</div></div></li>';
+        html += '<li class="' + whose + '"><div><div class="tag">' + data[i].subject + '</div><hr><div class="msg">' + body + '</div></div></li>';
       }
 
       $('#page-chat ul').html(html);
