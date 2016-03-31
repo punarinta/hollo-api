@@ -133,7 +133,7 @@ var ML =
 
       for (var i in data)
       {
-        var body = data[i].body.content,
+        var filesHtml = '', body = data[i].body.content,
             whose = data[i].from == email ? 'yours' : 'mine';
 
         // preprocess body
@@ -141,7 +141,18 @@ var ML =
         body = body.replace(/(?:\r\n|\r|\n)/g, '<br />');
         body = body.replace(exp,"<a href='$1'>$1</a>");
 
-        html += '<li class="' + whose + '"><div><div class="tag">' + data[i].subject + '</div><hr><div class="msg">' + body + '</div></div></li>';
+        if (data[i].files)
+        {
+          filesHtml += '<hr>';
+          for (var fi in data[i].files)
+          {
+            var file = data[i].files[fi];
+            filesHtml += '<a target="_blank" class="file" href="/api/file?method=fetch&extId=' + file.extId + '&type='
+                      + file.type + '">' + file.name + '</a><br>';
+          }
+        }
+
+        html += '<li class="' + whose + '"><div><div class="tag">' + data[i].subject + '</div><hr><div class="msg">' + body + '</div><div>' + filesHtml + '</div></div></li>';
       }
 
       $('#page-chat ul').html(html);

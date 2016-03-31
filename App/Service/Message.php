@@ -29,7 +29,23 @@ class Message extends Generic
 
         foreach ($this->conn->listMessages(\Auth::user()->account_id, $params)->getData() as $row)
         {
+            $files = null;
             $row['body'][0]['content'] = $this->clearContent($row['body'][0]['content'], $email);
+
+            if (isset ($row['files']))
+            {
+                $files = [];
+                foreach ($row['files'] as $file)
+                {
+                    $files[] = array
+                    (
+                        'name'  => $file['file_name'],
+                        'type'  => $file['type'],
+                        'size'  => $file['size'],
+                        'extId' => $file['file_id'],
+                    );
+                }
+            }
 
             $items[] = array
             (
@@ -37,6 +53,7 @@ class Message extends Generic
                 'body'      => $row['body'][0],
                 'subject'   => $this->clearSubject($row['subject']),
                 'from'      => $row['addresses']['from']['email'],
+                'files'     => $files,
             );
         }
 

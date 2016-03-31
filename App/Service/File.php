@@ -39,6 +39,6 @@ class File extends Generic
      */
     public function getProcessorContent($procFileId)
     {
-        return file_get_contents($this->conn->getFileContent(\Auth::user()->account_id, ['file_id' => $procFileId])->getData());
+        return $this->conn->getFileContent(\Auth::user()->account_id, ['file_id' => $procFileId]);
     }
 }
