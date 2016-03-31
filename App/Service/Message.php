@@ -24,7 +24,7 @@ class Message extends Generic
 
         if ($subject)
         {
-            $params['subject'] = "/(.*)$subject/";
+            $params['subject'] = "/(.*:\s)$subject/";
         }
 
         foreach ($this->conn->listMessages(\Auth::user()->account_id, $params)->getData() as $row)
