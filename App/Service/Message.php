@@ -14,7 +14,7 @@ class Message extends Generic
     {
         $items = [];
 
-        foreach ($this->conn->listMessages(\Auth::user()->account_id, ['include_body' => 1, 'email' => $email])->getData() as $row)
+        foreach ($this->conn->listMessages(\Auth::user()->account_id, ['include_body' => 1, 'email' => $email, 'sort_order' => 'asc'])->getData() as $row)
         {
             $items[] = array
             (
