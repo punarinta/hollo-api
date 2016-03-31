@@ -1,19 +1,21 @@
-body {font-family: "DejaVu Sans"}
+body {font-family: "DejaVu Sans";padding:0;margin:0; background-color: #eaeaea;}
 
-.page {display: none}
+.page {display: none; padding:5px}
 
 #page-login {display: block}
 #page-contacts ul {list-style-type: none}
-#page-contacts ul li {padding: 2px 0; cursor: pointer}
-#page-contacts ul li:nth-child(2n) {background-color: #f0f0f0}
+#page-contacts ul li {padding: 5px 8px; cursor: pointer}
+#page-contacts ul li:nth-child(2n) {background-color: #f4f4f4}
+#page-contacts ul li:nth-child(2n+1) {background-color: #fff}
 #page-contacts ul li:hover {background-color: #c3d9ff}
 #page-contacts ul li div:last-child {font-size: 75%}
 
 #page-chat ul {list-style-type: none; padding-left:0;}
+#page-chat hr {border: 1px solid #ccc; border-top-width: 0}
 #page-chat ul li {overflow: auto}
-#page-chat ul li > div {overflow: auto; margin: 4px 2px; background-color: #f0f0f8; padding: 5px 8px}
+#page-chat ul li > div {overflow: auto; margin: 4px 2px; background-color: #fff; padding: 5px 8px; border-radius: 3px}
 #page-chat ul li .msg {display: inline-block}
 #page-chat ul li.yours > div {float: right}
 #page-chat ul li.mine > div {float: left}
-#page-chat ul li .tag {color: blueviolet; cursor: pointer}
+#page-chat ul li .tag {color: #9013fe; cursor: pointer}
 #page-chat .interlocutor {font-weight: bold}
