@@ -22,11 +22,15 @@ var ML =
 
   init: function ()
   {
-    $('#page-login .logout').on('click', function()
+    $('#btn-logout').on('click', function()
     {
-      ML.api('auth', 'logout');
+      ML.api('auth', 'logout', null, function () { ML.showLogin(); });
     });
-    
+    $('#btn-sync').on('click', function()
+    {
+      ML.api('contact', 'sync');
+    });
+
     $('#page-login .login').on('click', function()
     {
       var user = $('#page-login .username').val(),
@@ -70,23 +74,59 @@ var ML =
       }
     });
   },
+  
+  showLogin: function ()
+  {
+    $('.page').hide();
+    $('#page-login').show();
+  },
 
   showContacts: function ()
   {
     $('.page').hide();
     $('#page-contacts').show();
 
-    ML.api('contact', 'find', {},
-    function (data)
+    ML.api('contact', 'find', null, function (data)
     {
       var html = '';
 
       for (var i in data)
       {
-        html += '<li><div>' + data[i].name + '</div><div>' + data[i].email + '</div></li>';
+        html += '<li data-email="' + data[i].email + '"><div>' + data[i].name + '</div><div>' + data[i].email + '</div></li>';
       }
 
       $('#page-contacts ul').html(html);
+
+      $('#page-contacts ul li').on('click', function (e)
+      {
+        var email = $(e.target).closest('li').data('email');
+        ML.showChat(email);
+      });
+    });
+  },
+  
+  showChat: function(email)
+  {
+    $('.page').hide();
+    $('#page-chat').show();
+    
+    ML.api('message', 'findByEmail', {email: email}, function (data)
+    {
+      var html = '';
+
+      for (var i in data)
+      {
+        var body = data[i].body.content;
+
+        // preprocess body
+        var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i;
+        body = body.replace(/(?:\r\n|\r|\n)/g, '<br />');
+        body = body.replace(exp,"<a href='$1'>$1</a>");
+
+        html += '<li><div><div>' + body + '</div></div></li>';
+      }
+
+      $('#page-chat ul').html(html);
     });
   }
 };

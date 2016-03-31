@@ -8,3 +8,8 @@ body {font-family: "DejaVu Sans"}
 #page-contacts ul li:nth-child(2n) {background-color: #f0f0f0}
 #page-contacts ul li:hover {background-color: #c3d9ff}
 #page-contacts ul li div:last-child {font-size: 75%}
+
+#page-chat ul {list-style-type: none}
+#page-chat ul li > div {overflow: auto}
+#page-chat ul li:nth-child(2n) div > div {float: right}
+#page-chat ul li:nth-child(2n+1) div > div {float: left}
