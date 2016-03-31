@@ -35,7 +35,7 @@ var ML =
       ML.showContacts();
     });
 
-    $('#page-login .login').on('click', function()
+    var loginProc = function()
     {
       var user = $('#page-login .username').val(),
           pass = $('#page-login .password').val();
@@ -49,6 +49,16 @@ var ML =
       {
         ML.showContacts();
       });
+    };
+
+    $('#page-login .login').on('click', loginProc);
+    $('#page-login .username').on('keydown', function (e)
+    {
+      if (e.keyCode == 13) $('#page-login .password').focus();
+    });
+    $('#page-login .password').on('keydown', function (e)
+    {
+      if (e.keyCode == 13) loginProc();
     });
 
     // check the status
