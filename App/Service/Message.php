@@ -18,11 +18,28 @@ class Message extends Generic
         {
             $items[] = array
             (
-                'ts'    => $row['date'],
-                'body'  => $row['body'][0],
+                'ts'        => $row['date'],
+                'body'      => $row['body'][0],
+                'subject'   => $this->stripRes($row['subject']),
             );
         }
 
         return $items;
+    }
+
+    protected function stripRes($subject)
+    {
+        $items = ['Re:', 'Fwd:'];
+
+        foreach ($items as $item)
+        {
+            if (strpos($subject, $item, 0) === 0)
+            {
+                $subject = str_replace($item, '', $subject);
+                break;
+            }
+        }
+
+        return trim($subject);
     }
 }
