@@ -2,7 +2,7 @@
 
 return array
 (
-    'release' => false,
+    'release' => 'replaceString',
     'dir' => array
     (
         'app'   => '.',
