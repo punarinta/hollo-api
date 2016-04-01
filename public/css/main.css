@@ -12,9 +12,9 @@ body::-webkit-scrollbar {display: none}
 #page-contacts ul li div:last-child {font-size: 75%}
 
 #page-chat ul {list-style-type: none; padding-left:0}
-#page-chat hr {border: 1px solid #ccc; border-top-width: 0}
+#page-chat hr {border: 1px dashed #bbb; border-top-width: 0}
 #page-chat ul li {overflow: auto}
-#page-chat ul li > div {overflow: auto; margin: 4px 2px; background-color: #fff; padding: 5px 8px; border-radius: 3px}
+#page-chat ul li > div {overflow: auto; margin: 5px 3px; background-color: #fff; padding: 8px 10px; border-radius: 3px}
 #page-chat ul li .msg {display: inline-block}
 #page-chat ul li.yours > div {float: right}
 #page-chat ul li.mine > div {float: left}

@@ -152,7 +152,7 @@ var ML =
           }
         }
 
-        html += '<li class="' + whose + '"><div><div class="tag">' + data[i].subject + '</div><hr><div class="msg">' + body + '</div><div>' + filesHtml + '</div></div></li>';
+        html += '<li class="' + whose + '"><div><div class="tag">' + data[i].subject + '</div><br><div class="msg">' + body + '</div><div>' + filesHtml + '</div></div></li>';
       }
 
       $('#page-chat ul').html(html);
