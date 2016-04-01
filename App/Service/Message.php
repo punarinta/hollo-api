@@ -103,6 +103,9 @@ class Message extends Generic
         // Also remove lines like '--- On ... wrote:' (some other clients).
         $content = preg_replace("/^---.*$/mi", '', $content);
 
+        // remove zero-width space
+        $content = str_replace("\xE2\x80\x8B", '', $content);
+
         return trim($content);
     }
 }
