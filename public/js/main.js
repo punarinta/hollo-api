@@ -46,6 +46,18 @@ var ML =
         else lis[i].style.display = 'none';
       }
     };
+    document.querySelector('#page-chat .filter').onkeyup = function()
+    {
+      var filter = this.value.toUpperCase(),
+          lis = document.querySelectorAll('#page-chat li');
+
+      for (var i = 0; i < lis.length; i++)
+      {
+        var name = lis[i].getElementsByClassName('tag')[0].innerHTML;
+        if (name.toUpperCase().indexOf(filter) != -1) lis[i].style.display = 'list-item';
+        else lis[i].style.display = 'none';
+      }
+    };
 
     var loginProc = function()
     {
