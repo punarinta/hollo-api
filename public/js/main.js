@@ -77,9 +77,8 @@ var ML =
 
       if ($(this).hasClass('new'))
       {
-        var tag = prompt('New tag:', 'hollotag');
-        var clone = $('#composer .tag').last().clone();
-        console.log(clone[0].innerText)
+        var tag = prompt('New tag:', 'hollotag'),
+            clone = $('#composer .tag').last().clone();
         clone[0].innerText = '#' + tag;
         $('#composer .tags').append(clone);
       }
@@ -206,6 +205,12 @@ var ML =
       }
 
       $('#page-chat ul').html(html);
+
+      $('#page-chat li .tag').on('click', function ()
+      {
+        var filter = $(this).text();
+        $('#page-chat .filter').val(filter).trigger('keyup');
+      });
     });
   }
 };
