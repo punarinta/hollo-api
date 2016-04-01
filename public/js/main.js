@@ -59,6 +59,31 @@ var ML =
       }
     };
 
+    $('#composer textarea').on('focus click', function ()
+    {
+      $('#composer .tags').show();
+    }).on('keydown', function (e)
+    {
+      if (e.keyCode == 27)
+      {
+        $('#composer .tags').hide();
+      }
+    });
+    $('#composer .tag').on('click', function ()
+    {
+      $('#composer .tag').removeClass('sel');
+      $(this).addClass('sel');
+
+      if ($(this).hasClass('new'))
+      {
+        var tag = prompt('New tag:', 'hollotag');
+        var clone = $('#composer .tag').last().clone();
+        console.log(clone[0].innerText)
+        clone[0].innerText = '#' + tag;
+        $('#composer .tags').append(clone);
+      }
+    });
+
     var loginProc = function()
     {
       var user = $('#page-login .username').val(),
