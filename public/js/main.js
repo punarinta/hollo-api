@@ -61,6 +61,7 @@ var ML =
 
     $('#composer textarea').on('focus click', function ()
     {
+      if (!$('#composer .tags').is(':visible')) $('#composer .tag').removeClass('sel');
       $('#composer .tags').show();
     }).on('keydown', function (e)
     {
