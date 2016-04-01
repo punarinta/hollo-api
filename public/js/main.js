@@ -34,7 +34,7 @@ var ML =
     {
       ML.showContacts();
     });
-    document.querySelector('#page-contacts .filter').onkeyup = function(e)
+    document.querySelector('#page-contacts .filter').onkeyup = function()
     {
       var filter = this.value.toUpperCase(),
           lis = document.querySelectorAll('#page-contacts li');
@@ -42,7 +42,7 @@ var ML =
       for (var i = 0; i < lis.length; i++)
       {
         var name = lis[i].getElementsByClassName('name')[0].innerHTML;
-        if (name.toUpperCase().indexOf(filter) == 0) lis[i].style.display = 'list-item';
+        if (name.toUpperCase().indexOf(filter) != -1) lis[i].style.display = 'list-item';
         else lis[i].style.display = 'none';
       }
     };
