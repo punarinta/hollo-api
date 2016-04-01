@@ -14,7 +14,7 @@ var ML =
       contentType: 'application/json; charset=utf-8',
       success: function (json)
       {
-        console.log('Call to ' + endpoint + '/' + method, json);
+      //  console.log('Call to ' + endpoint + '/' + method, json);
         callback(json.data)
       }
     });
@@ -34,6 +34,18 @@ var ML =
     {
       ML.showContacts();
     });
+    document.querySelector('#page-contacts .filter').onkeyup = function(e)
+    {
+      var filter = this.value.toUpperCase(),
+          lis = document.querySelectorAll('#page-contacts li');
+
+      for (var i = 0; i < lis.length; i++)
+      {
+        var name = lis[i].getElementsByClassName('name')[0].innerHTML;
+        if (name.toUpperCase().indexOf(filter) == 0) lis[i].style.display = 'list-item';
+        else lis[i].style.display = 'none';
+      }
+    };
 
     var loginProc = function()
     {
@@ -107,7 +119,7 @@ var ML =
 
       for (var i in data)
       {
-        html += '<li data-email="' + data[i].email + '"><div>' + data[i].name + '</div><div>' + data[i].email + '</div></li>';
+        html += '<li data-email="' + data[i].email + '"><div class="name">' + data[i].name + '</div><div>' + data[i].email + '</div></li>';
       }
 
       $('#page-contacts ul').html(html);
