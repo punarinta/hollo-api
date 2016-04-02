@@ -24,7 +24,7 @@ var ML =
   {
     $('#btn-logout').on('click', function()
     {
-      ML.api('auth', 'logout', null, function () { ML.showLogin(); });
+      ML.api('auth', 'logout', null, function () { hasher.setHash('login'); });
     });
     $('#btn-sync').on('click', function()
     {
@@ -32,7 +32,7 @@ var ML =
     });
     $('#btn-contacts').on('click', function()
     {
-      ML.showContacts();
+      hasher.setHash('contacts');
     });
     document.querySelector('#page-contacts .filter').onkeyup = function()
     {
@@ -96,7 +96,7 @@ var ML =
 
       ML.login(user, pass, function ()
       {
-        ML.showContacts();
+        hasher.setHash('contacts');
       });
     };
 
@@ -116,9 +116,25 @@ var ML =
       if (data.user)
       {
         ML.sessionId = data.sessionId;
-        ML.showContacts();
+        if (hasher.getHash() == '') hasher.setHash('contacts');
       }
     });
+
+    crossroads.addRoute('contacts', ML.showContacts);
+    crossroads.addRoute('login', ML.showLogin);
+    crossroads.addRoute('chat/{email}', function (email)
+    {
+      ML.showChat(email);
+    });
+    //crossroads.routed.add(console.log, console);
+
+    function parseHash(newHash, oldHash)
+    {
+      crossroads.parse(newHash);
+    }
+    hasher.initialized.add(parseHash);
+    hasher.changed.add(parseHash);
+    hasher.init();
   },
 
   login: function (username, password, callback)
@@ -164,7 +180,7 @@ var ML =
       $('#page-contacts ul li').on('click', function (e)
       {
         var email = $(e.target).closest('li').data('email');
-        ML.showChat(email);
+        hasher.setHash('chat/' + email);
       });
     });
   },
