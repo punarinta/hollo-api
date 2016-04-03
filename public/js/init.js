@@ -54,24 +54,28 @@
       $('#composer .tags').hide();
     }
   });
-  $('#composer .tag').on('click', function ()
-  {
-    $('#composer .tag').removeClass('sel');
-    $(this).addClass('sel');
 
-    if ($(this).hasClass('new'))
+  Array.prototype.forEach.call(document.querySelectorAll('#composer .tag'), function(el)
+  {
+    el.onclick = function ()
     {
-      var tag = prompt('New tag:', 'hollotag'),
+      $('#composer .tag').removeClass('sel');
+      $(this).addClass('sel');
+
+      if ($(this).hasClass('new'))
+      {
+        var tag = prompt('New tag:', 'hollotag'),
           clone = $('#composer .tag').last().clone();
-      clone[0].innerText = '#' + tag;
-      $('#composer .tags').append(clone);
-    }
+        clone[0].innerText = '#' + tag;
+        $('#composer .tags').append(clone);
+      }
+    };
   });
 
   var loginProc = function ()
   {
-    var user = $('#page-login .username').val(),
-        pass = $('#page-login .password').val();
+    var user = document.querySelector('#page-login .username').value,
+        pass = document.querySelector('#page-login .password').value;
 
     if (!user.length || !pass.length)
     {
@@ -90,15 +94,15 @@
     });
   };
 
-  $('#page-login .login').on('click', loginProc);
-  $('#page-login .username').on('keydown', function (e)
+  document.querySelector('#page-login .login').onclick = loginProc;
+  document.querySelector('#page-login .username').onkeydown = function (e)
   {
-    if (e.keyCode == 13) $('#page-login .password').focus();
-  });
-  $('#page-login .password').on('keydown', function (e)
+    if (e.keyCode == 13) document.querySelector('#page-login .password').focus();
+  };
+  document.querySelector('#page-login .password').onkeydown = function (e)
   {
     if (e.keyCode == 13) loginProc();
-  });
+  };
 
   // check the status
   ML.api('auth', 'status', {}, function (data)
