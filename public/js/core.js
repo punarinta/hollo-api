@@ -49,6 +49,7 @@ var ML =
 
   // functions
   login: null,
+  register: null,
   showLogin: null,
   showContacts: null,
   showChat: null

@@ -1,3 +1,52 @@
+ML.login = function ()
+{
+  var user = document.querySelector('#page-login .username').value,
+      pass = document.querySelector('#page-login .password').value;
+
+  if (!user.length || !pass.length)
+  {
+    alert('Both username and password are required');
+  }
+
+  ML.api('auth', 'login',
+  {
+    'identity': user,
+    'credential': pass
+  },
+  function (data)
+  {
+    ML.user.sessionId = data.sessionId;
+    hasher.setHash('contacts');
+  });
+};
+
+ML.register = function ()
+{
+  var firstName = document.querySelector('#page-login .reg-first-name').value,
+      lastName = document.querySelector('#page-login .reg-last-name').value,
+      email = document.querySelector('#page-login .reg-email').value,
+      pass = document.querySelector('#page-login .reg-password').value,
+      server = document.querySelector('#page-login .reg-server').value;
+
+  if (!email.length)
+  {
+    alert('Email is required');
+  }
+
+  ML.api('auth', 'register',
+  {
+    'firstName': firstName,
+    'lastName': lastName,
+    'email': email,
+    'password': pass,
+    'server': server
+  },
+  function (data)
+  {
+    console.log(data);
+  });
+};
+
 ML.showLogin = function ()
 {
   $('.page').hide();

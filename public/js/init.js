@@ -63,36 +63,15 @@
     };
   });
 
-  var loginProc = function ()
-  {
-    var user = document.querySelector('#page-login .username').value,
-        pass = document.querySelector('#page-login .password').value;
-
-    if (!user.length || !pass.length)
-    {
-      alert('Both username and password are required');
-    }
-
-    ML.api('auth', 'login',
-    {
-      'identity': user,
-      'credential': pass
-    },
-    function (data)
-    {
-      ML.user.sessionId = data.sessionId;
-      hasher.setHash('contacts');
-    });
-  };
-
-  document.querySelector('#page-login .login').onclick = loginProc;
+  document.querySelector('#page-login .register').onclick = ML.register;
+  document.querySelector('#page-login .login').onclick = ML.login;
   document.querySelector('#page-login .username').onkeydown = function (e)
   {
     if (e.keyCode == 13) document.querySelector('#page-login .password').focus();
   };
   document.querySelector('#page-login .password').onkeydown = function (e)
   {
-    if (e.keyCode == 13) loginProc();
+    if (e.keyCode == 13) ML.login();
   };
 
   // check the status
