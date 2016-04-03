@@ -71,7 +71,7 @@ unset ($autoClasses0, $autoClasses4);
 
 // 4. Compiled routes
 
-// Built 24.03.16 @ 09:57:58 +0100
+// Built 03.04.16 @ 12:58:57 +0200
 
 $GLOBALS['-R'] = [
 'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],
@@ -97,7 +97,7 @@ catch (\Exception $e)
     $errMsg    = $e->getMessage();
     $errorCode = $e->getCode() ?: 500;
 
-    if ($errorCode == 500 && \Sys::cfg('release') != false)
+/*    if ($errorCode == 500 && \Sys::cfg('release') != false)
     {
         // report to Santa about someone's bad behaviour
         \Sys::svc('Resque')->addJob('ReportError',
@@ -108,7 +108,7 @@ catch (\Exception $e)
             'input'     => $GLOBALS['-P-JSON'],
             'user'      => \Auth::user(),
         ]);
-    }
+    }*/
 
     http_response_code($errorCode);
 }

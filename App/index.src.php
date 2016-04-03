@@ -89,7 +89,7 @@ catch (\Exception $e)
     $errMsg    = $e->getMessage();
     $errorCode = $e->getCode() ?: 500;
 
-    if ($errorCode == 500 && \Sys::cfg('release') != false)
+/*    if ($errorCode == 500 && \Sys::cfg('release') != false)
     {
         // report to Santa about someone's bad behaviour
         \Sys::svc('Resque')->addJob('ReportError',
@@ -100,7 +100,7 @@ catch (\Exception $e)
             'input'     => $GLOBALS['-P-JSON'],
             'user'      => \Auth::user(),
         ]);
-    }
+    }*/
 
     http_response_code($errorCode);
 }
