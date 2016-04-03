@@ -7,37 +7,28 @@
       hasher.setHash('login');
     });
   };
-  document.getElementById('btn-sync').onclick = function ()
-  {
-    ML.api('contact', 'sync');
-  };
-  document.getElementById('btn-contacts').onclick = function ()
-  {
-    hasher.setHash('contacts');
-  };
+  document.getElementById('btn-sync').onclick = function () { ML.api('contact', 'sync'); };
+  document.getElementById('btn-contacts').onclick = function () { hasher.setHash('contacts'); };
 
   document.querySelector('#page-contacts .filter').onkeyup = function ()
   {
-    var filter = this.value.toUpperCase(),
-        lis = document.querySelectorAll('#page-contacts li');
-
-    for (var i = 0; i < lis.length; i++)
+    var filter = this.value.toUpperCase();
+    Array.prototype.forEach.call(document.querySelectorAll('#page-contacts li'), function(el)
     {
-      var name = lis[i].getElementsByClassName('name')[0].innerHTML;
-      if (name.toUpperCase().indexOf(filter) != -1) lis[i].style.display = 'list-item';
-      else lis[i].style.display = 'none';
-    }
+      var name = el.getElementsByClassName('name')[0].innerHTML;
+      if (name.toUpperCase().indexOf(filter) != -1) el.style.display = 'list-item';
+      else el.style.display = 'none';
+    });
   };
   document.querySelector('#page-chat .filter').onkeyup = function ()
   {
-    var filter = this.value.toUpperCase(),
-      lis = document.querySelectorAll('#page-chat li');
-
-    for (var i = 0; i < lis.length; i++) {
-      var name = lis[i].getElementsByClassName('tag')[0].innerHTML;
-      if (name.toUpperCase().indexOf(filter) != -1) lis[i].style.display = 'list-item';
-      else lis[i].style.display = 'none';
-    }
+    var filter = this.value.toUpperCase();
+    Array.prototype.forEach.call(document.querySelectorAll('#page-chat li'), function(el)
+    {
+      var name = el.getElementsByClassName('tag')[0].innerHTML;
+      if (name.toUpperCase().indexOf(filter) != -1) el.style.display = 'list-item';
+      else el.style.display = 'none';
+    });
   };
 
   $('#composer textarea').on('focus click', function ()
