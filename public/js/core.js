@@ -19,8 +19,21 @@ var ML =
     {
       if (this.status >= 200 && this.status < 400)
       {
-        var json = JSON.parse(this.response.toString());
-        callback(json.data);
+        try
+        {
+          var r = this.response.toString();
+          if (/^[\],:{}\s]*$/.test(r.replace(/\\["\\\/bfnrtu]/g, '@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').replace(/(?:^|:|,)(?:\s*\[)+/g, '')))
+          {
+            var json = JSON.parse(r);
+            callback(json.data);
+          }
+          else
+          {
+            console.log('Malformed server response:', r);
+            alert(r);
+          }
+        }
+        catch (e) { }
       }
       else
       {

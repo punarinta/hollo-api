@@ -1,20 +1,3 @@
-ML.login = function (username, password, callback)
-{
-  ML.api('auth', 'login',
-    {
-      'identity': username,
-      'credential': password
-    },
-    function (data)
-    {
-      ML.user.sessionId = data.sessionId;
-      if (typeof callback === 'function')
-      {
-        callback();
-      }
-    });
-};
-
 ML.showLogin = function ()
 {
   $('.page').hide();

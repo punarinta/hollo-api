@@ -71,15 +71,21 @@
   var loginProc = function ()
   {
     var user = $('#page-login .username').val(),
-      pass = $('#page-login .password').val();
+        pass = $('#page-login .password').val();
 
     if (!user.length || !pass.length)
     {
       alert('Both username and password are required');
     }
 
-    ML.login(user, pass, function ()
+    ML.api('auth', 'login',
     {
+      'identity': user,
+      'credential': pass
+    },
+    function (data)
+    {
+      ML.user.sessionId = data.sessionId;
       hasher.setHash('contacts');
     });
   };
