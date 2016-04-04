@@ -165,13 +165,13 @@ class Auth
      * @param $email
      * @param $password
      * @param $server
-     * @param null $username
      * @param int $port
+     * @param null $username
      * @param int $ssl
      * @return bool
      * @throws \Exception
      */
-    public function attachEmail($email, $password, $server, $username = null, $port = 993, $ssl = 1)
+    public function attachEmail($email, $password, $server, $port = 993, $username = null, $ssl = 1)
     {
         if (!\Auth::check())
         {
