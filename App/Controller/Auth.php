@@ -192,7 +192,7 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('Cannot register. Probably this email address is already taken.'));
         }
 
-        \Sys::svc('Auth')->register($email, \Input::data('email'), \Input::data('server'), \Input::data('firstName'), \Input::data('lastName'), 'en_US', true);
+        \Sys::svc('Auth')->register($email, \Input::data('password'), \Input::data('server'), \Input::data('firstName'), \Input::data('lastName'), 'en_US', true);
 
         return self::status();
     }

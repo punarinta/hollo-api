@@ -14,7 +14,7 @@ class File extends Generic
     {
         $items = [];
 
-        foreach ($this->conn->listContactFiles(\Auth::user()->account_id, ['email' => $email])->getData() as $row)
+        foreach ($this->conn->listContactFiles(\Auth::user()->context_id, ['email' => $email])->getData() as $row)
         {
             $items[] = array
             (
@@ -39,6 +39,6 @@ class File extends Generic
      */
     public function getProcessorContent($procFileId)
     {
-        return $this->conn->getFileContent(\Auth::user()->account_id, ['file_id' => $procFileId]);
+        return $this->conn->getFileContent(\Auth::user()->context_id, ['file_id' => $procFileId]);
     }
 }

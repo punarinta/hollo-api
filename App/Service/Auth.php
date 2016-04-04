@@ -3,9 +3,18 @@
 namespace App\Service;
 
 use App\Model\Bcrypt;
+use App\Model\ContextIO\ContextIO;
 
 class Auth
 {
+    protected $secure = true;
+
+    public function __construct()
+    {
+        $cfg = \Sys::cfg('contextio');
+        $this->conn = new ContextIO($cfg['key'], $cfg['secret']);
+    }
+
     /**
      * Returns a current logged-in user
      *
@@ -89,16 +98,40 @@ class Auth
      * Registers a new user
      *
      * @param $email
-     * @param $password
+     * @param string $password
+     * @param string $server
      * @param string $firstName
      * @param string $lastName
      * @param string $lang
-     * @param bool|false $login
+     * @param bool $login
      * @return mixed
      * @throws \Exception
      */
-    public function register($email, $password, $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
+    public function register($email, $password ='', $server ='', $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
     {
+        // if you're not logged in, use 'addAccount', otherwise 'addSource'
+
+        $res = $this->conn->addAccount(array
+        (
+            'first_name'    => $firstName,
+            'last_name'     => $lastName,
+            'email'         => $email,
+            'server'        => $server,
+            'username'      => $email,
+            'use_ssl'       => 1,
+            'password'      => $password,
+            'port'          => 993,
+            'type'          => 'IMAP',
+        ));
+
+        if (!$res)
+        {
+            throw new \Exception('Failed to add an a account');
+        }
+
+        $res = $res->getData();
+        $accountId = $res['id'];
+
         $crypt = new Bcrypt;
         $password = $crypt->create($password);
 
@@ -106,13 +139,10 @@ class Auth
         (
             'email'         => $email,
             'password'      => $password,
-            'display_name'  => ($firstName || $lastName) ? trim($firstName . ' ' . $lastName) : $email,
-            'language'      => $lang,
+            'context_id'    => $accountId,
             'roles'         => \Auth::USER,
+            'locale'        => $lang,
             'created'       => \Time::now(),
-            'created_by'    => \Auth::check() ? \Auth::user()->id : 0,       // to allow user fetch through API
-            'modified'      => \Time::now(),
-            'modified_by'   => 0,
         ));
 
         if (!$user->id)
@@ -123,17 +153,15 @@ class Auth
         // profile and role are created automatically, just fill in some stuff
         $profile = \Sys::svc('Profile')->findByUserId($user->id, true);
 
-        $profile->firstname = $firstName;
+    /*    $profile->firstname = $firstName;
         $profile->lastname  = $lastName;
-        \Sys::svc('Profile')->update($profile);
+        \Sys::svc('Profile')->update($profile);*/
 
         if ($login)
         {
             $_SESSION['-AUTH']['user'] = $user;
-            $_SESSION['-AUTH']['profile'] = \Sys::svc('Profile')->findByUserId($user->id);
+            $_SESSION['-AUTH']['profile'] = $profile;
         }
-
-        \Sys::svc('Resque')->addJob('UserAdd', array('user_id' => $user->id));
 
         return $user;
     }
