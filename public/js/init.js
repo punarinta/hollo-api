@@ -9,6 +9,7 @@
   };
   document.getElementById('btn-sync').onclick = function () { ML.api('contact', 'sync'); };
   document.getElementById('btn-contacts').onclick = function () { hasher.setHash('contacts'); };
+  document.querySelector('#page-attach .attach').onclick = ML.attach;
 
   document.querySelector('#page-contacts .filter').onkeyup = function ()
   {
@@ -90,7 +91,6 @@
 
   hasher.initialized.add(parseHash);
   hasher.changed.add(parseHash);
-  hasher.init();
 
   var contextIo = ML.getQueryVar('contextio_token');
   if (contextIo)
@@ -116,5 +116,7 @@
     {
       hasher.setHash('auth/login');
     }
+
+    hasher.init();
   });
 })();

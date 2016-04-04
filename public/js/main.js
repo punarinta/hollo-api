@@ -46,6 +46,20 @@ ML.register = function ()
   });
 };
 
+ML.attach = function ()
+{
+  var email = document.querySelector('#page-attach .email').value;
+
+  ML.api('auth', 'discoverEmail',
+  {
+    'email': email
+  },
+  function (data)
+  {
+    console.log(data)
+  });
+};
+
 ML.showLogin = function ()
 {
   $('.page').hide();

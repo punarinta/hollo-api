@@ -80,7 +80,7 @@ class ContextIO
 			$params = array('email' => $params);
 		}
 		else {
-			$params = $this->_filterParams($params, array('email'), array('email'));
+			$params = $this->_filterParams($params, array('email','source_type'), array('email'));
 			if ($params === false) {
 				throw new \InvalidArgumentException("params array contains invalid parameters or misses required parameters");
 			}
