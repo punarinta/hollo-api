@@ -16,7 +16,7 @@ ML.login = function ()
   function (data)
   {
     ML.user.sessionId = data.sessionId;
-    ML.user.email = data.email;
+    ML.user.email = data.user.email;
 
     if (data.user.contextId) hasher.setHash('contacts');
     else hasher.setHash('auth/attach');
@@ -41,7 +41,7 @@ ML.register = function ()
   function (data)
   {
     ML.user.sessionId = data.sessionId;
-    ML.user.email = data.email;
+    ML.user.email = data.user.email;
     hasher.setHash('auth/attach');
   });
 };

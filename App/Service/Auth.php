@@ -134,15 +134,17 @@ class Auth
      * @param $email
      * @param string $password
      * @param null $server
-     * @param string $firstName
-     * @param string $lastName
-     * @param string $lang
-     * @param bool $login
+     * @param null $port
      * @return mixed
      * @throws \Exception
      */
-    public function attachAccount($email, $password = '', $server = null, $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
+    public function attachAccount($email, $password = null, $server = null, $port = null)
     {
+        if (!\Auth::check())
+        {
+            throw new \Exception('Login, plox', 401);
+        }
+
         $discovered = $this->conn->discovery(array
         (
             'source_type'   => 'IMAP',
@@ -150,71 +152,55 @@ class Auth
         ));
 
         $ssl = 1;
-        $port = 993;
         $username = $email;
 
         if ($discovered)
         {
             $discovered = $discovered->getData();
-            $port = $discovered['imap']['port'];
+            $port = $port ?: $discovered['imap']['port'];
             $ssl = $discovered['imap']['use_ssl'];
             $username = $discovered['imap']['username'];
             $server = $server ?: $discovered['imap']['server'];
         }
 
-        $res = $this->conn->addAccount(array
-        (
-            'first_name'    => $firstName,
-            'last_name'     => $lastName,
-            'email'         => $email,
-            'server'        => $server,
-            'username'      => $username,
-            'use_ssl'       => $ssl,
-            'password'      => $password,
-            'port'          => $port,
-            'type'          => 'IMAP',
-        ));
-
-        if (!$res)
+        if (\Auth::user()->context_id)
         {
-            throw new \Exception('Failed to add an a account');
+            $this->conn->addSource(\Auth::user()->context_id, array
+            (
+                'email'         => $email,
+                'server'        => $server,
+                'username'      => $username,
+                'use_ssl'       => $ssl,
+                'password'      => $password,
+                'port'          => $port,
+                'type'          => 'IMAP',
+            ));
+        }
+        else
+        {
+            $res = $this->conn->addAccount(array
+            (
+                'email'         => $email,
+                'server'        => $server,
+                'username'      => $username,
+                'use_ssl'       => $ssl,
+                'password'      => $password,
+                'port'          => $port,
+                'type'          => 'IMAP',
+            ));
+
+            if (!$res)
+            {
+                throw new \Exception('Failed to add an a account');
+            }
+
+            $res = $res->getData();
+            $user = \Auth::user();
+            $user->context_id = $res['id'];
+            \Sys::svc('User')->update($user);
         }
 
-        $res = $res->getData();
-        $accountId = $res['id'];
-
-        $crypt = new Bcrypt;
-        $password = $crypt->create($password);
-
-        $user = \Sys::svc('User')->create(array
-        (
-            'email'         => $email,
-            'password'      => $password,
-            'context_id'    => $accountId,
-            'roles'         => \Auth::USER,
-            'locale'        => $lang,
-            'created'       => \Time::now(),
-        ));
-
-        if (!$user->id)
-        {
-            throw new \Exception('Cannot add user');
-        }
-
-        // profile and role are created automatically, just fill in some stuff
-        $profile = \Sys::svc('Profile')->findByUserId($user->id, true);
-
-        /*    $profile->firstname = $firstName;
-            $profile->lastname  = $lastName;
-            \Sys::svc('Profile')->update($profile);*/
-
-        if ($login)
-        {
-            $_SESSION['-AUTH']['user'] = $user;
-            $_SESSION['-AUTH']['profile'] = $profile;
-        }
-
-        return $user;
+        return true;
     }
 
     /**

@@ -47,42 +47,6 @@ class Auth extends Generic
     }
 
     /**
-     * Logs you in via HMAC authentication. Use either HTTP headers or method variables.
-     *
-     * @doc-var    (string) apikey      - Public key.
-     * @doc-var    (string) time        - Time stamp.
-     * @doc-var    (string) random      - Random value used in the key.
-     * @doc-var    (string) hmac        - HMAC signature.
-     * @doc-var    (int) lifetime       - Session lifetime, in minutes. Maximum — 1440.
-     *
-     * @return array
-     */
-    static function loginHmac()
-    {
-        if ($apikey = \Input::data('apikey'))
-        {
-            // overwrite HTTP headers
-            $_SERVER['HTTP_X_COURSIO_APIKEY']   = \Input::data('apikey');
-            $_SERVER['HTTP_X_COURSIO_TIME']     = \Input::data('time');
-            $_SERVER['HTTP_X_COURSIO_RANDOM']   = \Input::data('random');
-            $_SERVER['HTTP_X_COURSIO_HMAC']     = \Input::data('hmac');
-        }
-
-        // this ID will always be correct, otherwise an exception is thrown
-        $userId = \Sys::svc('ApiKey')->hmacCheck();
-
-        // incarnate forever
-        \Sys::svc('Auth')->incarnate($userId, true, true);
-
-        if ($lifetime = \Input::data('lifetime'))
-        {
-            session_cache_expire(min($lifetime, 180));
-        }
-
-        return self::status();
-    }
-
-    /**
      * Logs you in using Google Authentication
      *
      * @doc-var    (string) idToken!    - A token from JS login widget.
