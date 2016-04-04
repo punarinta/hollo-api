@@ -187,10 +187,42 @@ class Auth extends Generic
 
         return self::status();
     }
-    
-    static function attachAccount()
+
+    /**
+     * Discovers IMAP settings for a specified email
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    static function discoverEmail()
     {
-        // TODO
+        if (!$email = \Input::data('email'))
+        {
+            throw new \Exception(\Lang::translate('No email provided.'));
+        }
+
+        return \Sys::svc('Auth')->discoverEmail($email);
+    }
+
+    /**
+     * Attaches email and creates an account if necessary
+     * 
+     * @doc-var    (string) email!          - Email.
+     * @doc-var    (string) password        - Password.
+     * @doc-var    (string) server          - Server.
+     * @doc-var    (string) port            - Port.
+     * 
+     * @return mixed
+     * @throws \Exception
+     */
+    static function attachEmail()
+    {
+        if (!$email = \Input::data('email'))
+        {
+            throw new \Exception(\Lang::translate('No email provided.'));
+        }
+        
+        return \Sys::svc('Auth')->attachEmail($email, \Input::data('password'), \Input::data('server'), \Input::data('port'));
     }
 
     static function incarnate()

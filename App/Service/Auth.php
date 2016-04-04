@@ -131,37 +131,54 @@ class Auth
     }
 
     /**
+     * Discovers IMAP settings for a specified email
+     *
      * @param $email
-     * @param string $password
-     * @param null $server
-     * @param null $port
-     * @return mixed
+     * @return array|bool
+     */
+    public function discoverEmail($email)
+    {
+        $r = $this->conn->discovery(array
+        (
+            'source_type'   => 'IMAP',
+            'email'         => $email,
+        ));
+
+        if ($r = $r->getData())
+        {
+            $r = $r['imap'];
+
+            return array
+            (
+                'ssl'       => $r['use_ssl'],
+                'port'      => $r['port'],
+                'oauth'     => $r['oauth'],
+                'server'    => $r['server'],
+                'username'  => $r['username'],
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $email
+     * @param $password
+     * @param $server
+     * @param null $username
+     * @param int $port
+     * @param int $ssl
+     * @return bool
      * @throws \Exception
      */
-    public function attachAccount($email, $password = null, $server = null, $port = null)
+    public function attachEmail($email, $password, $server, $username = null, $port = 993, $ssl = 1)
     {
         if (!\Auth::check())
         {
             throw new \Exception('Login, plox', 401);
         }
 
-        $discovered = $this->conn->discovery(array
-        (
-            'source_type'   => 'IMAP',
-            'email'         => 'email',
-        ));
-
-        $ssl = 1;
-        $username = $email;
-
-        if ($discovered)
-        {
-            $discovered = $discovered->getData();
-            $port = $port ?: $discovered['imap']['port'];
-            $ssl = $discovered['imap']['use_ssl'];
-            $username = $discovered['imap']['username'];
-            $server = $server ?: $discovered['imap']['server'];
-        }
+        if (!$username) $username = $email;
 
         if (\Auth::user()->context_id)
         {
