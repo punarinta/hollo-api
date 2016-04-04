@@ -104,12 +104,17 @@
   {
     if (data.user)
     {
-      ML.user.sessionId = data.sessionId;
+      ML.sessionId = data.sessionId;
+      ML.user = data.user;
       if (hasher.getHash() == '')
       {
         if (data.user.contextId) hasher.setHash('contacts');
         else hasher.setHash('auth/attach');
       }
+    }
+    else
+    {
+      hasher.setHash('auth/login');
     }
   });
 })();

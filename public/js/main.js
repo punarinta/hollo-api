@@ -15,8 +15,8 @@ ML.login = function ()
   },
   function (data)
   {
-    ML.user.sessionId = data.sessionId;
-    ML.user.email = data.user.email;
+    ML.sessionId = data.sessionId;
+    ML.user = data.user;
 
     if (data.user.contextId) hasher.setHash('contacts');
     else hasher.setHash('auth/attach');
@@ -40,8 +40,8 @@ ML.register = function ()
   },
   function (data)
   {
-    ML.user.sessionId = data.sessionId;
-    ML.user.email = data.user.email;
+    ML.sessionId = data.sessionId;
+    ML.user = data.user;
     hasher.setHash('auth/attach');
   });
 };

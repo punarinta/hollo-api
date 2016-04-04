@@ -1,9 +1,9 @@
 var ML =
 {
+  sessionId: null,
   user:
   {
     id: null,
-    sessionId: null,
     email: null
   },
 
