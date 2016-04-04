@@ -4,7 +4,7 @@
   {
     ML.api('auth', 'logout', null, function ()
     {
-      hasher.setHash('login');
+      hasher.setHash('auth/login');
     });
   };
   document.getElementById('btn-sync').onclick = function () { ML.api('contact', 'sync'); };
@@ -74,20 +74,10 @@
     if (e.keyCode == 13) ML.login();
   };
 
-  // check the status
-  ML.api('auth', 'status', {}, function (data)
-  {
-    if (data.user)
-    {
-      ML.user.sessionId = data.sessionId;
-      if (hasher.getHash() == '') hasher.setHash('contacts');
-    }
-  });
-
   // setup path dispatcher
-
+  crossroads.addRoute('auth/login', ML.showLogin);
+  crossroads.addRoute('auth/attach', ML.showAttach);
   crossroads.addRoute('contacts', ML.showContacts);
-  crossroads.addRoute('login', ML.showLogin);
   crossroads.addRoute('chat/{email}', function (email)
   {
     ML.showChat(email);
@@ -101,4 +91,25 @@
   hasher.initialized.add(parseHash);
   hasher.changed.add(parseHash);
   hasher.init();
+
+  var contextIo = ML.getQueryVar('contextio_token');
+  if (contextIo)
+  {
+    console.log('contextIO', contextIo);
+    return;
+  }
+
+  // check the status
+  ML.api('auth', 'status', {}, function (data)
+  {
+    if (data.user)
+    {
+      ML.user.sessionId = data.sessionId;
+      if (hasher.getHash() == '')
+      {
+        if (data.user.contextId) hasher.setHash('contacts');
+        else hasher.setHash('auth/attach');
+      }
+    }
+  });
 })();

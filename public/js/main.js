@@ -16,17 +16,17 @@ ML.login = function ()
   function (data)
   {
     ML.user.sessionId = data.sessionId;
-    hasher.setHash('contacts');
+    ML.user.email = data.email;
+
+    if (data.user.contextId) hasher.setHash('contacts');
+    else hasher.setHash('auth/attach');
   });
 };
 
 ML.register = function ()
 {
-  var firstName = document.querySelector('#page-login .reg-first-name').value,
-      lastName = document.querySelector('#page-login .reg-last-name').value,
-      email = document.querySelector('#page-login .reg-email').value,
-      pass = document.querySelector('#page-login .reg-password').value,
-      server = document.querySelector('#page-login .reg-server').value;
+  var email = document.querySelector('#page-login .reg-email').value,
+      password = document.querySelector('#page-login .reg-password').value;
 
   if (!email.length)
   {
@@ -35,15 +35,14 @@ ML.register = function ()
 
   ML.api('auth', 'register',
   {
-    'firstName': firstName,
-    'lastName': lastName,
-    'email': email,
-    'password': pass,
-    'server': server
+    'password': password,
+    'email': email
   },
   function (data)
   {
-    console.log(data);
+    ML.user.sessionId = data.sessionId;
+    ML.user.email = data.email;
+    hasher.setHash('auth/attach');
   });
 };
 
@@ -51,6 +50,13 @@ ML.showLogin = function ()
 {
   $('.page').hide();
   $('#page-login').show();
+};
+
+ML.showAttach = function ()
+{
+  $('.page, #page-attach .extra-options').hide();
+  $('#page-attach .email').val(ML.user.email);
+  $('#page-attach').show();
 };
 
 ML.showContacts = function ()

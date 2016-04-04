@@ -3,7 +3,8 @@ var ML =
   user:
   {
     id: null,
-    sessionId: null
+    sessionId: null,
+    email: null
   },
 
   api: function (endpoint, method, data, callback)

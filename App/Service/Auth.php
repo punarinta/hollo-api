@@ -104,6 +104,8 @@ class Auth
     {
         $url = 'https://' . \Sys::cfg('mailless.app_domain');
 
+        // if you're not logged in, use 'addAccount', otherwise 'addSource'
+
         $response = $this->conn->addConnectToken(null,
         [
             'callback_url'  => 'https://api.hollo.dev/test-me/index.html',  // $url
@@ -129,11 +131,9 @@ class Auth
     }
 
     /**
-     * Registers a new user
-     *
      * @param $email
      * @param string $password
-     * @param string $server
+     * @param null $server
      * @param string $firstName
      * @param string $lastName
      * @param string $lang
@@ -141,7 +141,7 @@ class Auth
      * @return mixed
      * @throws \Exception
      */
-    public function register($email, $password = '', $server = null, $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
+    public function attachAccount($email, $password = '', $server = null, $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
     {
         $discovered = $this->conn->discovery(array
         (
@@ -161,8 +161,6 @@ class Auth
             $username = $discovered['imap']['username'];
             $server = $server ?: $discovered['imap']['server'];
         }
-
-        // if you're not logged in, use 'addAccount', otherwise 'addSource'
 
         $res = $this->conn->addAccount(array
         (
@@ -206,9 +204,57 @@ class Auth
         // profile and role are created automatically, just fill in some stuff
         $profile = \Sys::svc('Profile')->findByUserId($user->id, true);
 
-    /*    $profile->firstname = $firstName;
-        $profile->lastname  = $lastName;
-        \Sys::svc('Profile')->update($profile);*/
+        /*    $profile->firstname = $firstName;
+            $profile->lastname  = $lastName;
+            \Sys::svc('Profile')->update($profile);*/
+
+        if ($login)
+        {
+            $_SESSION['-AUTH']['user'] = $user;
+            $_SESSION['-AUTH']['profile'] = $profile;
+        }
+
+        return $user;
+    }
+
+    /**
+     * Registers a new user
+     *
+     * @param $email
+     * @param string $password
+     * @param string $firstName
+     * @param string $lastName
+     * @param string $lang
+     * @param bool $login
+     * @return mixed
+     * @throws \Exception
+     */
+    public function register($email, $password, $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
+    {
+        $crypt = new Bcrypt;
+        $password = $crypt->create($password);
+
+        $user = \Sys::svc('User')->create(array
+        (
+            'email'         => $email,
+            'password'      => $password,
+            'context_id'    => null,
+            'roles'         => \Auth::USER,
+            'locale'        => $lang,
+            'created'       => time(),
+        ));
+
+        if (!$user->id)
+        {
+            throw new \Exception('Cannot add user');
+        }
+
+        // profile and role are created automatically, just fill in some stuff
+        $profile = \Sys::svc('Profile')->findByUserId($user->id, true);
+
+        $profile->first_name = $firstName;
+        $profile->last_name  = $lastName;
+        \Sys::svc('Profile')->update($profile);
 
         if ($login)
         {

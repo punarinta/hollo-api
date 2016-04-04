@@ -155,12 +155,10 @@ class Auth extends Generic
         (
             'user'      => \Auth::check() ? array
             (
-                'id'            => \Auth::user()->id,
-                'username'      => @\Auth::user()->username,
-            //    'displayName'   => \Auth::user()->display_name,
-            //    'avatarUrl'     => \Sys::svc('User')->avatar(\Auth::user()),
-            //    'locale'        => \Auth::user()->language,
-                'email'         => \Auth::user()->email,
+                'id'        => \Auth::user()->id,
+                'contextId' => \Auth::user()->context_id,
+                'locale'    => \Auth::user()->locale,
+                'email'     => \Auth::user()->email,
             ) : null,
             'roles'     => \Auth::textRoles(isset ($_SESSION['-AUTH']['user']) ? $_SESSION['-AUTH']['user']->roles : 0),
             'sessionId' => session_id(),
@@ -168,18 +166,16 @@ class Auth extends Generic
     }
 
     /**
-     * Registers you in the system
+     * Gets an access token
      *
      * @doc-var    (string) email!          - Your email.
-     * @doc-var    (string) password        - Your password.
-     * @doc-var    (string) server          - IMAP server.
      * @doc-var    (string) firstName       - First name.
      * @doc-var    (string) lastName        - Last name.
      *
      * @return bool
      * @throws \Exception
      */
-    static function register()
+    static function getOAuthToken()
     {
         if (!$email = trim(\Input::data('email')))
         {
@@ -192,9 +188,45 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('Cannot register. Probably this email address is already taken.'));
         }
 
-        \Sys::svc('Auth')->register($email, \Input::data('password'), \Input::data('server'), \Input::data('firstName'), \Input::data('lastName'), 'en_US', true);
+        return \Sys::svc('Auth')->getOAuthToken($email, \Input::data('firstName'), \Input::data('lastName'));
+    }
+
+    /**
+     * Register a user in the system.
+     *
+     * @doc-var    (string) email!          - Email.
+     * @doc-var    (string) password!       - Password.
+     * @doc-var    (string) firstName       - First name.
+     * @doc-var    (string) lastName        - Last name.
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    static function register()
+    {
+        if (!$email = trim(\Input::data('email')))
+        {
+            throw new \Exception(\Lang::translate('No email provided.'));
+        }
+        if (!$password = \Input::data('password'))
+        {
+            throw new \Exception(\Lang::translate('No password provided.'));
+        }
+
+        // check that the user does not exist
+        if (\Sys::svc('User')->findByEmail($email))
+        {
+            throw new \Exception(\Lang::translate('Cannot register. Probably this email address is already taken.'));
+        }
+
+        \Sys::svc('Auth')->register($email, $password, \Input::data('firstName'), \Input::data('lastName'), 'en_US', true);
 
         return self::status();
+    }
+    
+    static function attachAccount()
+    {
+        // TODO
     }
 
     static function incarnate()
