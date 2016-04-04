@@ -95,6 +95,40 @@ class Auth
     }
 
     /**
+     * @param $email
+     * @param string $firstName
+     * @param string $lastName
+     * @return null
+     */
+    public function getOAuthToken($email, $firstName = 'No first name', $lastName = 'No last name')
+    {
+        $url = 'https://' . \Sys::cfg('mailless.app_domain');
+
+        $response = $this->conn->addConnectToken(null,
+        [
+            'callback_url'  => 'https://api.hollo.dev/test-me/index.html',  // $url
+            'email'         => $email,
+            'first_name'    => $firstName,
+            'last_name'     => $lastName
+        ]);
+
+        return $response->getDataProperty('browser_redirect_url');
+    }
+
+    /**
+     * Returns context_id by token
+     *
+     * @param $token
+     */
+    public function processOAuthToken($token)
+    {
+        $getTokenResponse = $this->conn->getConnectToken($token);
+        $user = $getTokenResponse->getDataProperty('user');
+
+        return $user['id'];
+    }
+
+    /**
      * Registers a new user
      *
      * @param $email
@@ -107,8 +141,27 @@ class Auth
      * @return mixed
      * @throws \Exception
      */
-    public function register($email, $password ='', $server ='', $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
+    public function register($email, $password = '', $server = null, $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
     {
+        $discovered = $this->conn->discovery(array
+        (
+            'source_type'   => 'IMAP',
+            'email'         => 'email',
+        ));
+
+        $ssl = 1;
+        $port = 993;
+        $username = $email;
+
+        if ($discovered)
+        {
+            $discovered = $discovered->getData();
+            $port = $discovered['imap']['port'];
+            $ssl = $discovered['imap']['use_ssl'];
+            $username = $discovered['imap']['username'];
+            $server = $server ?: $discovered['imap']['server'];
+        }
+
         // if you're not logged in, use 'addAccount', otherwise 'addSource'
 
         $res = $this->conn->addAccount(array
@@ -117,10 +170,10 @@ class Auth
             'last_name'     => $lastName,
             'email'         => $email,
             'server'        => $server,
-            'username'      => $email,
-            'use_ssl'       => 1,
+            'username'      => $username,
+            'use_ssl'       => $ssl,
             'password'      => $password,
-            'port'          => 993,
+            'port'          => $port,
             'type'          => 'IMAP',
         ));
 
