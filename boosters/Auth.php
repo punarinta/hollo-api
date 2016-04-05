@@ -31,7 +31,7 @@ class Auth
     /**
      * Quick access to the current Profile entity
      *
-     * @return bool
+     * @return mixed
      */
     static function profile()
     {

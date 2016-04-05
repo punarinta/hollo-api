@@ -200,8 +200,15 @@ class Auth extends Generic
         {
             throw new \Exception(\Lang::translate('No email provided.'));
         }
+        
+        $discover = \Sys::svc('Auth')->discoverEmail($email);
+        
+        if ($discover['oauth'])
+        {
+            $discover['url'] = \Sys::svc('Auth')->getOAuthToken($email, \Auth::profile()->first_name, \Auth::profile()->last_name);
+        }
 
-        return \Sys::svc('Auth')->discoverEmail($email);
+        return $discover;
     }
 
     /**

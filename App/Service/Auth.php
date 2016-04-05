@@ -104,8 +104,6 @@ class Auth
     {
         $url = 'https://' . \Sys::cfg('mailless.app_domain');
 
-        // if you're not logged in, use 'addAccount', otherwise 'addSource'
-
         $response = $this->conn->addConnectToken(null,
         [
             'callback_url'  => 'https://api.hollo.dev/test-me/index.html',  // $url
