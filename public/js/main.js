@@ -56,7 +56,45 @@ ML.attach = function ()
   },
   function (data)
   {
-    console.log(data)
+    console.log(data);
+    if (data.oauth)
+    {
+      // OAuth procedure
+      window.location.href = data.url;
+    }
+    else
+    {
+      // prefill IMAP forms
+      $('#page-attach .extra-options').show();
+      $('#page-attach .server').val(data.server);
+      $('#page-attach .port').val(data.port);
+      $('#page-attach .username').val(data.username);
+      $('#page-attach .attach').hide();
+      $('#page-attach .confirm').show();
+      $('#page-attach .password').focus();
+    }
+  });
+};
+
+ML.confirmAttach = function ()
+{
+  var email = document.querySelector('#page-attach .email').value,
+      username = document.querySelector('#page-attach .username').value,
+      password = document.querySelector('#page-attach .password').value,
+      server = document.querySelector('#page-attach .server').value,
+      port = document.querySelector('#page-attach .port').value;
+
+  ML.api('auth', 'attachEmail',
+  {
+    'email': email,
+    'username': username,
+    'password': password,
+    'server': server,
+    'port': port
+  },
+  function ()
+  {
+    hasher.setHash('contacts');
   });
 };
 

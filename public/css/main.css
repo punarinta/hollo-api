@@ -4,6 +4,8 @@ body::-webkit-scrollbar {display: none}
 .page {display: none; padding:5px}
 
 #page-loader {display: block}
+#page-attach .confirm {display: none}
+
 #page-contacts ul {list-style-type: none}
 #page-contacts ul li {padding: 5px 8px; cursor: pointer}
 #page-contacts ul li:nth-child(2n) {background-color: #f4f4f4}

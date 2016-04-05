@@ -48,7 +48,7 @@ var ML =
     r.send(JSON.stringify({ 'method': method, 'data': data }));
   },
 
-  getQueryVar: function (v)
+  /*getQueryVar: function (v)
   {
     var query = window.location.search.substring(1),
         i, vars = query.split('&');
@@ -59,7 +59,7 @@ var ML =
       if (pair[0] == v) { return pair[1]; }
     }
     return null;
-  },
+  },*/
 
   // functions
   login: null,

@@ -10,6 +10,7 @@
   document.getElementById('btn-sync').onclick = function () { ML.api('contact', 'sync'); };
   document.getElementById('btn-contacts').onclick = function () { hasher.setHash('contacts'); };
   document.querySelector('#page-attach .attach').onclick = ML.attach;
+  document.querySelector('#page-attach .confirm').onclick = ML.confirmAttach;
 
   document.querySelector('#page-contacts .filter').onkeyup = function ()
   {
@@ -84,7 +85,7 @@
     ML.showChat(email);
   });
 
-  function parseHash(newHash, oldHash)
+  function parseHash(newHash/*, oldHash*/)
   {
     crossroads.parse(newHash);
   }
@@ -92,12 +93,12 @@
   hasher.initialized.add(parseHash);
   hasher.changed.add(parseHash);
 
-  var contextIo = ML.getQueryVar('contextio_token');
+  /*var contextIo = ML.getQueryVar('contextio_token');
   if (contextIo)
   {
     console.log('contextIO', contextIo);
     return;
-  }
+  }*/
 
   // check the status
   ML.api('auth', 'status', {}, function (data)
