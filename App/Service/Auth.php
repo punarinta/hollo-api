@@ -146,16 +146,23 @@ class Auth
 
         if ($r = $r->getData())
         {
-            $r = $r['imap'];
+            if ($r['found'])
+            {
+                $r = $r['imap'];
 
-            return array
-            (
-                'ssl'       => $r['use_ssl'],
-                'port'      => $r['port'],
-                'oauth'     => $r['oauth'],
-                'server'    => $r['server'],
-                'username'  => $r['username'],
-            );
+                return array
+                (
+                    'ssl'       => $r['use_ssl'],
+                    'port'      => $r['port'],
+                    'oauth'     => $r['oauth'],
+                    'server'    => $r['server'],
+                    'username'  => $r['username'],
+                );
+            }
+            else
+            {
+                return ['oauth' => false];
+            }
         }
 
         return false;
