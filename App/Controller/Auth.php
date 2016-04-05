@@ -156,6 +156,20 @@ class Auth extends Generic
     }
 
     /**
+     * @return mixed
+     * @throws \Exception
+     */
+    static function saveContextIdByToken()
+    {
+        if (!$token = \Input::data('token'))
+        {
+            throw new \Exception('No token provided.');
+        }
+        
+        return \Sys::svc('Auth')->saveContextIdByToken($token);
+    }
+
+    /**
      * Register a user in the system.
      *
      * @doc-var    (string) email!          - Email.

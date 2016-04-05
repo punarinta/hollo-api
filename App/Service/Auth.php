@@ -99,12 +99,18 @@ class Auth
      * @param string $firstName
      * @param string $lastName
      * @return null
+     * @throws \Exception
      */
     public function getOAuthToken($email, $firstName = 'No first name', $lastName = 'No last name')
     {
+        if (!\Auth::check())
+        {
+            throw new \Exception('Login, plox', 401);
+        }
+
         $url = 'https://' . \Sys::cfg('mailless.app_domain');
 
-        $response = $this->conn->addConnectToken(null,
+        $response = $this->conn->addConnectToken(\Auth::user()->context_id,
         [
             'callback_url'  => 'https://api.hollo.dev/test-me/index.html',  // $url
             'email'         => $email,
@@ -116,16 +122,34 @@ class Auth
     }
 
     /**
-     * Returns context_id by token
-     *
      * @param $token
+     * @return bool
+     * @throws \Exception
      */
-    public function processOAuthToken($token)
+    public function saveContextIdByToken($token)
     {
-        $getTokenResponse = $this->conn->getConnectToken($token);
-        $user = $getTokenResponse->getDataProperty('user');
+        if (!\Auth::check())
+        {
+            throw new \Exception('Login, plox', 401);
+        }
 
-        return $user['id'];
+        if (!$res = $this->conn->getConnectToken(\Auth::user()->context_id, ['token' => $token]))
+        {
+            throw new \Exception('getConnectToken() error: false response');
+        }
+
+        $user = \Auth::user();
+        $res = $res->getData();
+
+        if (isset ($res['account']) && !$user->context_id)
+        {
+            $user->context_id = $res['account']['id'];
+            \Sys::svc('User')->update($user);
+            self::sync();
+        }
+        else throw new \Exception('getConnectToken() error: no account');
+
+        return true;
     }
 
     /**

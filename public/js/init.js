@@ -93,12 +93,11 @@
   hasher.initialized.add(parseHash);
   hasher.changed.add(parseHash);
 
-  /*var contextIo = ML.getQueryVar('contextio_token');
-  if (contextIo)
+  var contextIoToken = ML.getQueryVar('contextio_token');
+  if (contextIoToken)
   {
-    console.log('contextIO', contextIo);
-    return;
-  }*/
+    ML.api('auth', 'saveContextIdByToken', {token: contextIoToken});
+  }
 
   // check the status
   ML.api('auth', 'status', {}, function (data)
