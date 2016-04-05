@@ -218,7 +218,8 @@ class Auth extends Generic
      * @doc-var    (string) password        - Password.
      * @doc-var    (string) server          - Server.
      * @doc-var    (string) port            - Port.
-     * 
+     * @doc-var    (string) username        - Username.
+     *
      * @return mixed
      * @throws \Exception
      */
@@ -229,7 +230,7 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No email provided.'));
         }
         
-        return \Sys::svc('Auth')->attachEmail($email, \Input::data('password'), \Input::data('server'), \Input::data('port'));
+        return \Sys::svc('Auth')->attachEmail($email, \Input::data('password'), \Input::data('server'), \Input::data('port'), \Input::data('username'));
     }
 
     static function incarnate()
