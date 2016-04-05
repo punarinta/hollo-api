@@ -54,7 +54,7 @@ class Auth
     {
         // some checks
         if (!isset ($_SESSION['-AUTH']['user'])) return false;
-        if (!$userId = $_SESSION['-AUTH']['user']['id']) return false;
+        if (!$userId = $_SESSION['-AUTH']['user']->id) return false;
 
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -220,6 +220,7 @@ class Auth
             $user = \Auth::user();
             $user->context_id = $res['id'];
             \Sys::svc('User')->update($user);
+            self::sync();
         }
 
         return true;
