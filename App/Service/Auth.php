@@ -108,11 +108,9 @@ class Auth
             throw new \Exception('Login, plox', 401);
         }
 
-        $url = 'https://' . \Sys::cfg('mailless.app_domain');
-
         $response = $this->conn->addConnectToken(\Auth::user()->context_id,
         [
-            'callback_url'  => 'https://api.hollo.dev/test-me/index.html',  // $url
+            'callback_url'  => 'https://' . \Sys::cfg('mailless.app_domain'),
             'email'         => $email,
             'first_name'    => $firstName,
             'last_name'     => $lastName
