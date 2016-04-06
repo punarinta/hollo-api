@@ -131,6 +131,12 @@ class Auth
             throw new \Exception('Login, plox', 401);
         }
 
+        // uncomment to allow only 1 email
+        // if (\Auth::user()->context_id)
+        // {
+        //    throw new \Exception('Email already attached');
+        // }
+
         if (!$res = $this->conn->getConnectToken(\Auth::user()->context_id, ['token' => $token]))
         {
             throw new \Exception('getConnectToken() error: false response');
@@ -209,6 +215,9 @@ class Auth
 
         if (\Auth::user()->context_id)
         {
+            // uncomment to allow only 1 email
+            // throw new \Exception('Email already attached');
+
             $this->conn->addSource(\Auth::user()->context_id, array
             (
                 'email'         => $email,
