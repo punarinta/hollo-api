@@ -159,7 +159,6 @@ class Auth
 
         $crypt = new Bcrypt;
         $user->password = $crypt->create($password);
-        $user->modified = \Time::now();
         \Sys::svc('User')->update($user);
     }
 

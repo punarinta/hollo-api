@@ -14,28 +14,6 @@ class Input
     }
 
     /**
-     * POST wrapper
-     *
-     * @param $k
-     * @return mixed
-     */
-    static function post($k)
-    {
-        return isset ($_POST[$k]) ? $_POST[$k] : null;
-    }
-
-    /**
-     * Gets the value of a route element.
-     *
-     * @param $k
-     * @return int
-     */
-    static function route($k)
-    {
-        return $GLOBALS['-R-VAR'][$k];
-    }
-
-    /**
      * Gets a JSON variable from a posted HTTP data.
      *
      * @param $k

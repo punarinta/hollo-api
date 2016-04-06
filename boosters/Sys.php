@@ -13,14 +13,6 @@ class Sys
     {
         $GLOBALS['-CFG'] = $config;
 
-        /*foreach (\Sys::cfg('session.allowed_origins') as $origin)
-        {
-            if (isset ($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] == $origin)
-            {
-                header('Access-Control-Allow-Origin: ' . $origin);
-            }
-        }*/
-
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token');
 
