@@ -34,42 +34,14 @@ class Sys
 
         @session_start();
 
-        $uri = rtrim($_SERVER['REQUEST_URI'], '\\');
-        $uri = explode('?', $uri);
-        $uri = $uri[0];
+        $uri = explode('?', rtrim($_SERVER['REQUEST_URI'], '\\'));
 
         // go through set up routes
         foreach ($GLOBALS['-R'] as $v)
         {
             // quick match
-            if ($v[0] === $uri)
+            if ($v[0] === $uri[0])
             {
-                if (!\Auth::amI($v[1]))
-                {
-                    throw new \Exception('Access to the endpoint is not allowed for your role.', 401);
-                }
-
-                return forward_static_call([$v[2], $v[3]]);
-            }
-
-            // parametrized match
-            $regex = preg_replace_callback('#(\{[A-Za-z0-9_]+\})#', function($d)
-            {
-                // extract names of the route variables
-                $GLOBALS['-R-VAR'][str_replace(['{','}'], ['',''], $d[0])] = null;
-                return '(.*)';
-            }, $v[0]);
-
-            if (strpos($regex, '(') === false) continue;
-
-            if (preg_match('#' . $regex . '#', $uri, $d))
-            {
-                while (($vv = next($d)) !== false)
-                {
-                    $GLOBALS['-R-VAR'][key($GLOBALS['-R-VAR'])] = $vv;
-                    next($GLOBALS['-R-VAR']);
-                }
-
                 if (!\Auth::amI($v[1]))
                 {
                     throw new \Exception('Access to the endpoint is not allowed for your role.', 401);
