@@ -165,6 +165,9 @@ class Auth extends Generic
     /**
      * Smartly choose between login and register
      *
+     * @doc-var    (string) identity!       - User email.
+     * @doc-var    (string) credential!     - User password.
+     *
      * @return array
      * @throws \Exception
      */
