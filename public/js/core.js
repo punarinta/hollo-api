@@ -56,15 +56,7 @@ var ML =
       if (pair[0] == v) { return pair[1]; }
     }
     return null;
-  },
-
-  // functions
-  login: null,
-  register: null,
-  attach: null,
-  showLogin: null,
-  showContacts: null,
-  showChat: null
+  }
 };
 
 
