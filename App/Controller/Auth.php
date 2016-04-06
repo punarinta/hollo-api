@@ -72,6 +72,7 @@ class Auth extends Generic
         else
         {
             // register
+            // TODO: $locale = \Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE']);
             \Sys::svc('Auth')->register($email, $password, '', '', 'en_US', true);
         }
 
