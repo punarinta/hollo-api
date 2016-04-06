@@ -18,27 +18,24 @@ var ML =
     }
     r.onload = function()
     {
-      if (this.status >= 200 && this.status < 400)
+      var r = this.response.toString();
+      if (/^[\],:{}\s]*$/.test(r.replace(/\\["\\\/bfnrtu]/g, '@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').replace(/(?:^|:|,)(?:\s*\[)+/g, '')))
       {
-        try
+        var json = JSON.parse(r);
+        if (this.status >= 200 && this.status < 400)
         {
-          var r = this.response.toString();
-          if (/^[\],:{}\s]*$/.test(r.replace(/\\["\\\/bfnrtu]/g, '@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').replace(/(?:^|:|,)(?:\s*\[)+/g, '')))
-          {
-            var json = JSON.parse(r);
-            callback(json.data);
-          }
-          else
-          {
-            console.log('Malformed server response:', r);
-            alert(r);
-          }
+          callback(json.data);
         }
-        catch (e) { }
+        else
+        {
+          console.log('Status: ', this.status);
+          alert(json.errMsg);
+        }
       }
       else
       {
-        console.log('Status: ', this.status);
+        console.log('Malformed server response:', r);
+        alert(r);
       }
     };
     r.onerror = function()
