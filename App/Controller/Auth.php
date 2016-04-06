@@ -28,7 +28,7 @@ class Auth extends Generic
 
         if (!\Input::data('identity'))
         {
-            throw new \Exception(\Lang::translate('No username was provided.'));
+            throw new \Exception(\Lang::translate('No email was provided.'));
         }
 
         if (!\Input::data('credential'))
@@ -158,6 +158,43 @@ class Auth extends Generic
         }
 
         \Sys::svc('Auth')->register($email, $password, \Input::data('firstName'), \Input::data('lastName'), 'en_US', true);
+
+        return self::status();
+    }
+
+    /**
+     * Smartly choose between login and register
+     *
+     * @return array
+     * @throws \Exception
+     */
+    static function logister()
+    {
+        if (\Auth::check())
+        {
+            return self::status();
+        }
+
+        if (!$email = trim(\Input::data('identity')))
+        {
+            throw new \Exception(\Lang::translate('No email was provided.'));
+        }
+
+        if (!$password = trim(\Input::data('credential')))
+        {
+            throw new \Exception(\Lang::translate('No password was provided.'));
+        }
+
+        if (\Sys::svc('User')->findByEmail($email))
+        {
+            // login
+            \Sys::svc('Auth')->login($email, $password);
+        }
+        else
+        {
+            // register
+            \Sys::svc('Auth')->register($email, $password, \Input::data('firstName'), \Input::data('lastName'), 'en_US', true);
+        }
 
         return self::status();
     }
