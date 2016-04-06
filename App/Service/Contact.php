@@ -20,9 +20,28 @@ class Contact extends Generic
 
         return $items[1];
     }
-    
+
+    /**
+     * Calls data sync
+     */
     public function sync()
     {
-        $this->conn->getSync(\Auth::user()->account_id);
+        $this->conn->getSync(\Auth::user()->context_id);
+    }
+
+    /**
+     * @return bool|int
+     */
+    public function isListEmpty()
+    {
+        $res = $this->conn->listContacts(\Auth::user()->context_id, ['limit' => 1]);
+
+        if (!$res)
+        {
+            // error
+            return -1;
+        }
+
+        return count($res->getData()) == 0;
     }
 }
