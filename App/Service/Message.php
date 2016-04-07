@@ -24,6 +24,22 @@ class Message extends Generic
     {
         $items = [];
 
+        // TODO: support subject filtering
+
+        foreach (\DB::rows('SELECT * FROM message AS m LEFT JOIN contact AS c ON m.contact_id = c.id WHERE c.email = ?', [$email]) as $item)
+        {
+            $items[] = array
+            (
+                'ts'        => $item['date'],
+                'body'      => $item['body'],
+                'subject'   => $this->clearSubject($item['subject']),
+                'from'      => $item['sender'],
+                'files'     => [],
+            );
+        }
+
+        return $items;
+
         $params =
         [
             'email'         => $email,
@@ -73,11 +89,10 @@ class Message extends Generic
      * Performs message sync for a specified email
      *
      * @param $contact
-     * @param $lastSyncTs
      * @return int|null
      * @throws \Exception
      */
-    public function sync($contact, $lastSyncTs)
+    public function sync($contact)
     {
         $count = 0;
         $limit = 100;
@@ -87,8 +102,8 @@ class Message extends Generic
         [
             'include_body'  => 1,
             'limit'         => $limit,
-            'date_after'    => $lastSyncTs,
             'email'         => $contact->email,
+            'date_after'    => \Auth::user()->last_sync_ts,
         ];
 
         // paginate requests
@@ -111,7 +126,9 @@ class Message extends Generic
                     \Sys::svc('Message')->create(array
                     (
                         'ts'            => $row['date'],
-                        'body'          => $row['body'][0]['content'],   // should be kept as is, without filtering
+                        'body'          => $row['body'][0]['content'],          // should be kept as is
+                        'sender'        => $row['addresses']['from']['email'],
+                        'subject'       => $row['subject'],                     // should be kept as is
                         'ext_id'        => $extId,
                         'contact_id'    => $contact->id,
                     ));
@@ -135,6 +152,8 @@ class Message extends Generic
 
         return $count;
     }
+
+    // === internal functions ===
 
     protected function clearSubject($subject)
     {
