@@ -129,7 +129,7 @@ class Contact extends Generic
 
                 if ($verbose)
                 {
-                    echo "Syncing email '$email'... ";
+                    echo "Syncing '$email'... ";
                 }
 
                 if ($contact = \Sys::svc('Contact')->findByEmailAndUserId($email, $user->id))
@@ -162,7 +162,7 @@ class Contact extends Generic
 
                 if ($verbose)
                 {
-                    echo "$syncCount new messages.\n";
+                    echo "$syncCount new.\n";
                 }
             }
 
