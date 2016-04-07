@@ -5,6 +5,15 @@ namespace App\Service;
 class Message extends Generic
 {
     /**
+     * @param $extId
+     * @return null|\StdClass
+     */
+    public function findByExtId($extId)
+    {
+        return \DB::row('SELECT * FROM message WHERE ext_id = ? LIMIT 1', [$extId]);
+    }
+
+    /**
      * Returns messages associated with a contact. May filter by subject.
      *
      * @param $email
@@ -58,6 +67,73 @@ class Message extends Generic
         }
 
         return $items;
+    }
+
+    /**
+     * Performs message sync for a specified email
+     *
+     * @param $contact
+     * @param $lastSyncTs
+     * @return int|null
+     * @throws \Exception
+     */
+    public function sync($contact, $lastSyncTs)
+    {
+        $count = 0;
+        $limit = 100;
+        $offset = 0;
+
+        $params =
+        [
+            'include_body'  => 1,
+            'limit'         => $limit,
+            'date_after'    => $lastSyncTs,
+            'email'         => $contact->email,
+        ];
+
+        // paginate requests
+        while (1)
+        {
+            $params['offset'] = $offset;
+            
+            $rows = $this->conn->listMessages(\Auth::user()->ext_id, $params)->getData();
+
+            foreach ($rows as $row)
+            {
+                // check if message is present and sync if necessary
+
+                // get message ext_id
+                $extId = explode('/', $row['resource_url']);
+                $extId = end($extId);
+
+                if (!$message = \Sys::svc('Message')->findByExtId($extId))
+                {
+                    \Sys::svc('Message')->create(array
+                    (
+                        'ts'            => $row['date'],
+                        'body'          => $row['body'][0]['content'],   // should be kept as is, without filtering
+                        'ext_id'        => $extId,
+                        'contact_id'    => $contact->id,
+                    ));
+                }
+                else
+                {
+                    // strange but possible
+                    --$count;
+                }
+            }
+
+            $count += count($rows);
+            
+            if (count($rows) < $limit)
+            {
+                break;
+            }
+
+            $offset += $limit;
+        }
+
+        return $count;
     }
 
     protected function clearSubject($subject)

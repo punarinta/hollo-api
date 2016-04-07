@@ -41,13 +41,13 @@ class Contact extends Generic
      * Checks if it's necessary to sync a contact and performs this sync
      *
      * @param $email
-     * @return array
+     * @return int
      * @throws \Exception
      */
     public function sync($email)
     {
         $syncCount = 0;
-    //    $lastSyncTs = \Auth::user()->last_sync_ts;
+        $lastSyncTs = \Auth::user()->last_sync_ts;
 
         // get remote contact by email
         if (!$data = $this->conn->getContact(\Auth::user()->ext_id, ['email' => $email]))
@@ -82,13 +82,10 @@ class Contact extends Generic
 
         if ($syncCount)
         {
-            \Sys::svc('Message')->sync($email, $syncCount);
+            return \Sys::svc('Message')->sync($contact, $lastSyncTs);
         }
 
-        return array
-        (
-            'count' => 0,
-        );
+        return $syncCount;
     }
 
     /**
