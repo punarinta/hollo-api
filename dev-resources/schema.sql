@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `password` varchar(128) NOT NULL,
   `roles` int(10) unsigned NOT NULL DEFAULT '0',
   `ext_id` char(24) DEFAULT NULL,
-  `last_sync_ts` int(10) unsigned NOT NULL DEFAULT '0',
+  `last_sync_ts` int(10) unsigned NOT NULL DEFAULT '1',
   `locale` varchar(10) NOT NULL DEFAULT 'en_US',
   `created` bigint(20) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

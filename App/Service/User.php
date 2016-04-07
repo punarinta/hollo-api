@@ -10,12 +10,12 @@ class User extends Generic
      * Overwritten as User uses custom ID field name
      *
      * @param $id
-     * @param null $obsolete    - kept for compatibility with parent method
+     * @param bool $reRead
      * @return mixed
      */
-    public function findById($id, $obsolete = null)
+    public function findById($id, $reRead = false)
     {
-        if (!isset ($this->cache[$id]))
+        if (!isset ($this->cache[$id]) || $reRead)
         {
             $this->cache[$id] = \DB::row('SELECT * FROM user WHERE id = ? LIMIT 1', [$id]);
         }

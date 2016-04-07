@@ -8,11 +8,12 @@ class Contact extends Generic
      * Returns a contact by its email
      *
      * @param $email
+     * @param $userId
      * @return null|\StdClass
      */
-    public function findByEmail($email)
+    public function findByEmailAndUserId($email, $userId)
     {
-        return \DB::row('SELECT * FROM contact WHERE email=? AND user_id=? LIMIT 1', [$email, \Auth::user()->id]);
+        return \DB::row('SELECT * FROM contact WHERE email=? AND user_id=? LIMIT 1', [$email, $userId]);
     }
 
     /**
@@ -90,19 +91,24 @@ class Contact extends Generic
     /**
      * Checks if it's necessary to sync any contact and performs that sync
      *
+     * @param null $userId
      * @return array
      */
-    public function syncAll()
+    public function syncAll($userId = null)
     {
         $countMsg = 0;
         $countContacts = 0;
         $limit = 250;
         $offset = 0;
-        $lastSyncTs = \Auth::user()->last_sync_ts;
+
+        $userId = $userId ?: \Auth::user()->id;
+
+        $user = \Sys::svc('User')->findById($userId, true);
+        $lastSyncTs = $user->last_sync_ts;
 
         while (1)
         {
-            $data = $this->conn->listContacts(\Auth::user()->ext_id, ['active_after' => $lastSyncTs]);
+            $data = $this->conn->listContacts($user->ext_id, ['active_after' => $lastSyncTs]);
             $data = $data->getData();
             $rows = isset ($data['matches']) ? $data['matches'] : [];
 
@@ -111,7 +117,7 @@ class Contact extends Generic
                 $syncCount = 0;
                 $email = $row['email'];
 
-                if ($contact = \Sys::svc('Contact')->findByEmail($email))
+                if ($contact = \Sys::svc('Contact')->findByEmailAndUserId($email, $user->id))
                 {
                     // contact exists -> check 'count'
                     if ($row['count'] != $contact->count)
@@ -123,9 +129,9 @@ class Contact extends Generic
                 else
                 {
                     // contact doesn't exist -> insert
-                    \Sys::svc('Contact')->create(array
+                    $contact = \Sys::svc('Contact')->create(array
                     (
-                        'user_id'   => \Auth::user()->id,
+                        'user_id'   => $user->id,
                         'email'     => $email,
                         'name'      => $row['name'],
                         'count'     => $row['count'],
@@ -136,7 +142,7 @@ class Contact extends Generic
 
                 if ($syncCount)
                 {
-                    $countMsg += \Sys::svc('Message')->sync($contact);
+                    $countMsg += \Sys::svc('Message')->sync($user, $contact);
                 }
             }
 
@@ -149,6 +155,10 @@ class Contact extends Generic
 
             $offset += $limit;
         }
+
+        // update last sync time
+        $user->last_sync_ts = time();
+        \Sys::svc('User')->update($user);
 
         return array
         (

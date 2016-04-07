@@ -88,11 +88,11 @@ class Message extends Generic
     /**
      * Performs message sync for a specified email
      *
+     * @param $user
      * @param $contact
-     * @return int|null
-     * @throws \Exception
+     * @return int
      */
-    public function sync($contact)
+    public function sync($user, $contact)
     {
         $count = 0;
         $limit = 100;
@@ -103,15 +103,15 @@ class Message extends Generic
             'include_body'  => 1,
             'limit'         => $limit,
             'email'         => $contact->email,
-            'date_after'    => \Auth::user()->last_sync_ts,
+            'date_after'    => $user->last_sync_ts,
         ];
 
         // paginate requests
         while (1)
         {
             $params['offset'] = $offset;
-            
-            $rows = $this->conn->listMessages(\Auth::user()->ext_id, $params)->getData();
+
+            $rows = $this->conn->listMessages($user->ext_id, $params)->getData();
 
             foreach ($rows as $row)
             {
