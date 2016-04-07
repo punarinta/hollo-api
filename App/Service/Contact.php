@@ -13,7 +13,7 @@ class Contact extends Generic
     {
         $items = [];
 
-        if (!$data = $this->conn->listContacts(\Auth::user()->context_id, ['limit' => 20, 'sort_by' => 'email', 'sort_order' => 'asc']))
+        if (!$data = $this->conn->listContacts(\Auth::user()->ext_id, ['limit' => 20, 'sort_by' => 'email', 'sort_order' => 'asc']))
         {
             return [];
         }
@@ -31,7 +31,7 @@ class Contact extends Generic
      */
     public function sync()
     {
-        $this->conn->getSync(\Auth::user()->context_id);
+        $this->conn->getSync(\Auth::user()->ext_id);
     }
 
     /**
@@ -39,7 +39,7 @@ class Contact extends Generic
      */
     public function isListEmpty()
     {
-        $res = $this->conn->listContacts(\Auth::user()->context_id, ['limit' => 1]);
+        $res = $this->conn->listContacts(\Auth::user()->ext_id, ['limit' => 1]);
 
         if (!$res)
         {

@@ -21,7 +21,7 @@ class Email
      */
     public function getOAuthToken($email, $firstName = 'No first name', $lastName = 'No last name')
     {
-        $response = $this->conn->addConnectToken(\Auth::user()->context_id,
+        $response = $this->conn->addConnectToken(\Auth::user()->ext_id,
         [
             'callback_url'  => 'https://' . \Sys::cfg('mailless.app_domain'),
             'email'         => $email,
@@ -40,12 +40,12 @@ class Email
     public function saveContextIdByToken($token)
     {
         // uncomment to allow only 1 email
-        // if (\Auth::user()->context_id)
+        // if (\Auth::user()->ext_id)
         // {
         //    throw new \Exception('Email already attached');
         // }
 
-        if (!$res = $this->conn->getConnectToken(\Auth::user()->context_id, ['token' => $token]))
+        if (!$res = $this->conn->getConnectToken(\Auth::user()->ext_id, ['token' => $token]))
         {
             throw new \Exception('getConnectToken() error: false response');
         }
@@ -53,9 +53,9 @@ class Email
         $user = \Auth::user();
         $res = $res->getData();
 
-        if (isset ($res['account']) && !$user->context_id)
+        if (isset ($res['account']) && !$user->ext_id)
         {
-            $user->context_id = $res['account']['id'];
+            $user->ext_id = $res['account']['id'];
             \Sys::svc('User')->update($user);
             \Sys::svc('Auth')->sync();
         }
@@ -119,12 +119,12 @@ class Email
             $username = $email;
         }
 
-        if (\Auth::user()->context_id)
+        if (\Auth::user()->ext_id)
         {
             // uncomment to allow only 1 email
             // throw new \Exception('Email already attached');
 
-            $this->conn->addSource(\Auth::user()->context_id, array
+            $this->conn->addSource(\Auth::user()->ext_id, array
             (
                 'email'         => $email,
                 'server'        => $server,
@@ -155,7 +155,7 @@ class Email
 
             $res = $res->getData();
             $user = \Auth::user();
-            $user->context_id = $res['id'];
+            $user->ext_id = $res['id'];
             \Sys::svc('User')->update($user);
             \Sys::svc('Auth')->sync();
         }

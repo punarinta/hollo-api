@@ -29,7 +29,7 @@ class Auth extends Generic
             'user'      => \Auth::check() ? array
             (
                 'id'        => \Auth::user()->id,
-                'contextId' => \Auth::user()->context_id,
+                'contextId' => \Auth::user()->ext_id,
                 'locale'    => \Auth::user()->locale,
                 'email'     => \Auth::user()->email,
             ) : null,

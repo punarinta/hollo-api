@@ -27,7 +27,7 @@ class Message extends Generic
             $params['subject'] = "/(.*:\s)$subject/";
         }
 
-        foreach ($this->conn->listMessages(\Auth::user()->context_id, $params)->getData() as $row)
+        foreach ($this->conn->listMessages(\Auth::user()->ext_id, $params)->getData() as $row)
         {
             $files = null;
             $row['body'][0]['content'] = $this->clearContent($row['body'][0]['content'], $email);

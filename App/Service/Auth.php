@@ -108,7 +108,7 @@ class Auth
         (
             'email'         => $email,
             'password'      => $password,
-            'context_id'    => null,
+            'ext_id'        => null,
             'roles'         => \Auth::USER,
             'locale'        => $lang,
             'created'       => time(),
