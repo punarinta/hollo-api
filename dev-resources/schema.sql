@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Apr 07, 2016 at 08:53 AM
+-- Generation Time: Apr 07, 2016 at 01:18 PM
 -- Server version: 5.6.28-0ubuntu0.15.10.1
 -- PHP Version: 5.6.11-1ubuntu3.1
 
@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS `contact` (
   `id` bigint(20) unsigned NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
   `email` varchar(128) NOT NULL,
-  `name` varchar(128) DEFAULT NULL
+  `name` varchar(128) DEFAULT NULL,
+  `count` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -37,6 +38,9 @@ CREATE TABLE IF NOT EXISTS `message` (
   `id` bigint(20) unsigned NOT NULL,
   `ext_id` char(24) NOT NULL,
   `contact_id` bigint(20) NOT NULL,
+  `sender` varchar(128) NOT NULL,
+  `subject` varchar(256) DEFAULT NULL,
+  `body` mediumtext,
   `ts` bigint(20) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -65,6 +69,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `password` varchar(128) NOT NULL,
   `roles` int(10) unsigned NOT NULL DEFAULT '0',
   `ext_id` char(24) DEFAULT NULL,
+  `last_sync_ts` int(10) unsigned NOT NULL DEFAULT '0',
   `locale` varchar(10) NOT NULL DEFAULT 'en_US',
   `created` bigint(20) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
