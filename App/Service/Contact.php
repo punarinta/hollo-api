@@ -149,7 +149,7 @@ class Contact extends Generic
                         'user_id'   => $user->id,
                         'email'     => $email,
                         'name'      => $row['name'],
-                        'count'     => $row['count'],
+                        'count'     => 0,
                     ));
 
                     $syncCount = $row['count'];
@@ -158,6 +158,10 @@ class Contact extends Generic
                 if ($syncCount)
                 {
                     $countMsg += \Sys::svc('Message')->sync($user, $contact);
+
+                    // update count only after message sync is done
+                    $contact->count = $row['count'];
+                    \Sys::svc('Contact')->update($contact);
                 }
 
                 if ($verbose)
