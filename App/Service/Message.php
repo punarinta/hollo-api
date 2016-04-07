@@ -30,11 +30,11 @@ class Message extends Generic
         {
             $items[] = array
             (
-                'ts'        => $item['date'],
-                'body'      => $item['body'],
-                'subject'   => $this->clearSubject($item['subject']),
-                'from'      => $item['sender'],
-                'files'     => [],
+                'ts'        => $item->ts,
+                'body'      => $this->clearContent($item->body, $email),
+                'subject'   => $this->clearSubject($item->subject),
+                'from'      => $item->sender,
+                'files'     => null,
             );
         }
 
