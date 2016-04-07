@@ -47,7 +47,6 @@ class Contact extends Generic
     public function sync($email)
     {
         $syncCount = 0;
-        $lastSyncTs = \Auth::user()->last_sync_ts;
 
         // get remote contact by email
         if (!$data = $this->conn->getContact(\Auth::user()->ext_id, ['email' => $email]))
@@ -82,10 +81,80 @@ class Contact extends Generic
 
         if ($syncCount)
         {
-            return \Sys::svc('Message')->sync($contact, $lastSyncTs);
+            return \Sys::svc('Message')->sync($contact);
         }
 
         return $syncCount;
+    }
+
+    /**
+     * Checks if it's necessary to sync any contact and performs that sync
+     *
+     * @return array
+     */
+    public function syncAll()
+    {
+        $countMsg = 0;
+        $countContacts = 0;
+        $limit = 250;
+        $offset = 0;
+        $lastSyncTs = \Auth::user()->last_sync_ts;
+
+        while (1)
+        {
+            $data = $this->conn->listContacts(\Auth::user()->ext_id, ['active_after' => $lastSyncTs]);
+            $data = $data->getData();
+            $rows = isset ($data['matches']) ? $data['matches'] : [];
+
+            foreach ($rows as $row)
+            {
+                $syncCount = 0;
+                $email = $row['email'];
+
+                if ($contact = \Sys::svc('Contact')->findByEmail($email))
+                {
+                    // contact exists -> check 'count'
+                    if ($row['count'] != $contact->count)
+                    {
+                        // sync messages
+                        $syncCount = $row['count'] - $contact->count;
+                    }
+                }
+                else
+                {
+                    // contact doesn't exist -> insert
+                    \Sys::svc('Contact')->create(array
+                    (
+                        'user_id'   => \Auth::user()->id,
+                        'email'     => $email,
+                        'name'      => $row['name'],
+                        'count'     => $row['count'],
+                    ));
+
+                    $syncCount = $row['count'];
+                }
+
+                if ($syncCount)
+                {
+                    $countMsg += \Sys::svc('Message')->sync($contact);
+                }
+            }
+
+            $countContacts += count($rows);
+
+            if (count($rows) < $limit)
+            {
+                break;
+            }
+
+            $offset += $limit;
+        }
+
+        return array
+        (
+            'contacts' => $countContacts,
+            'messages' => $countMsg,
+        );
     }
 
     /**
