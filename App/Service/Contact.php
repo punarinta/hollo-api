@@ -25,7 +25,7 @@ class Contact extends Generic
     {
         $items = [];
 
-        if (!$data = $this->conn->listContacts(\Auth::user()->ext_id, ['limit' => 20, 'sort_by' => 'email', 'sort_order' => 'asc']))
+    /*    if (!$data = $this->conn->listContacts(\Auth::user()->ext_id, ['limit' => 20, 'sort_by' => 'email', 'sort_order' => 'asc']))
         {
             return [];
         }
@@ -33,9 +33,18 @@ class Contact extends Generic
         foreach ($data->getData() as $row)
         {
             $items[] = $row;
+        }*/
+
+        foreach (\DB::rows('SELECT * FROM contact WHERE user_id=? ORDER BY email', [\Auth::user()->id]) as $item)
+        {
+            $items[] = array
+            (
+                'name'      => $item->name,
+                'email'     => $item->email,
+            );
         }
 
-        return $items[1];
+        return $items;
     }
 
     /**
