@@ -101,9 +101,10 @@ class Contact extends Generic
      * Checks if it's necessary to sync any contact and performs that sync
      *
      * @param null $userId
+     * @param bool $verbose
      * @return array
      */
-    public function syncAll($userId = null)
+    public function syncAll($userId = null, $verbose = false)
     {
         $countMsg = 0;
         $countContacts = 0;
@@ -125,6 +126,11 @@ class Contact extends Generic
             {
                 $syncCount = 0;
                 $email = $row['email'];
+
+                if ($verbose)
+                {
+                    echo "Syncing email '$email'... ";
+                }
 
                 if ($contact = \Sys::svc('Contact')->findByEmailAndUserId($email, $user->id))
                 {
@@ -152,6 +158,11 @@ class Contact extends Generic
                 if ($syncCount)
                 {
                     $countMsg += \Sys::svc('Message')->sync($user, $contact);
+                }
+
+                if ($verbose)
+                {
+                    echo "$syncCount new messages.\n";
                 }
             }
 
