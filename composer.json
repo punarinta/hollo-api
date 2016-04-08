@@ -1,12 +1,12 @@
 {
-    "name": "mailless",
-    "description": "Mailless",
+    "name": "hollo",
+    "description": "Hollo",
     "license": "Private",
     "keywords":
     [
-        "mailless"
+        "hollo"
     ],
-    "homepage": "http://mailless.io/",
+    "homepage": "https://app.hollo.email/",
     "repositories":
     [
         {
@@ -16,11 +16,10 @@
     ],
     "require":
     {
-        "php": ">=5.3.3",
+        "php": ">=5.4.1",
         "tpyo/amazon-s3-php-class": "0.5.*",
         "chrisboulton/php-resque": "dev-master",
-        "predis/predis": "1.0.*",
-        "mandrill/mandrill": "1.0.54",
+        "mandrill/mandrill": "1.0.*",
         "google/apiclient": "1.1.*@dev",
         "facebook/php-sdk-v4" : "~5.0"
     }
