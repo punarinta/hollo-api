@@ -113,6 +113,7 @@ class Contact extends Generic
 
         $userId = $userId ?: \Auth::user()->id;
 
+        // even if it's you it's important to get an exact value of sync time
         $user = \Sys::svc('User')->findById($userId, true);
         $lastSyncTs = $user->last_sync_ts;
 
