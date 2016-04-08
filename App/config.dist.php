@@ -15,55 +15,52 @@ return array
         'pass'      => '',
         'database'  => '',
     ),
-    'session' => array(
-        'remember_me_seconds' => 2419200,
-        'use_cookies' => true,
-        'cookie_domain' => '.mailless.dev',
-        'allowed_origins' => array
-        (
-            'http://localhost:9000',
-        ),
+    'mailless' => array
+    (
+        'api_domain'        => 'api.hollo.dev',
+        'app_domain'        => 'app.hollo.dev',
+        'this_server'       => 'api.hollo.dev',
+        'file_secret_key'   => 'HolloFTW',
     ),
-    'mailless' => array(
-        'api_domain'        => 'app.mailless.dev',
-        'app_domain'        => 'app.mailless.dev',
-        'this_server'       => 'app.mailless.dev',
-        'file_secret_key'   => 'MaillessFTW',
-    ),
-    'contextio' => array(
+    'contextio' => array
+    (
         'key'       => '',
         'secret'    => '',
     ),
-    'resque' => array(
+    'resque' => array
+    (
         'queue'  => 'hollo',
         'db_log' => false,
     ),
-    'redis' => array(
-        'host'		=> 'c-3p1.s.mailless.io',
+    'redis' => array
+    (
+        'host'		=> 'c-3p1.s.coursio.com',   // use 'public' Redis server
         'port'		=> '6379',
         'pass'      => '',
         'cache_pfx' => 'live::',
     ),
-    'mandrill' => array(
+    'mandrill' => array
+    (
         'api_key'	=> '',
         'async'     => true,
     ),
-    'amazon' => array(
+    'amazon' => array
+    (
         'api_key'		=> '',
         'secret'		=> '',
         'region'		=> 'US',
-        'bucket'		=> 'mailless',
+        'bucket'		=> 'hollo',
     ),
     'zencoder' => array
     (
         'read_key'      => '',
         'full_key'		=> '',
-        'bucket'        => 'mailless',
+        'bucket'        => 'hollo',
     ),
-    'emails' => array(
-        'support'       => 'dev+support@mailless.com',
-        'noreply'       => 'dev+noreply@mailless.com',
-        'customer'      => 'dev+customer@mailless.com',
+    'emails' => array
+    (
+        'support'       => 'dev+support@hollo.email',
+        'noreply'       => 'dev+noreply@hollo.email',
     ),
     'social_auth' => array
     (
