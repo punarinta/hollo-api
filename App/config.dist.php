@@ -35,8 +35,7 @@ return array
         'secret'    => '',
     ),
     'resque' => array(
-        'queue'  => 'queue',
-        'queue-fast'  => 'queue-fast',
+        'queue'  => 'hollo',
         'db_log' => false,
     ),
     'redis' => array(

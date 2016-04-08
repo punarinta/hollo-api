@@ -18,7 +18,7 @@ $autoClasses0 =
 
     // 3rd parties
 //    'Predis'    => 'vendor/predis/predis/lib',
-//    'Resque'    => 'vendor/chrisboulton/php-resque/lib',
+    'Resque'    => 'vendor/chrisboulton/php-resque/lib',
 //    'Google'    => 'vendor/google/apiclient/src',
 ];
 
@@ -71,7 +71,7 @@ unset ($autoClasses0, $autoClasses4);
 
 // 4. Compiled routes
 
-// Built 06.04.16 @ 13:31:35 +0200
+// Built 08.04.16 @ 14:04:11 +0200
 
 $GLOBALS['-R'] = [
 'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],

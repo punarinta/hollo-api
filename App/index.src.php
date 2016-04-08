@@ -18,7 +18,7 @@ $autoClasses0 =
 
     // 3rd parties
 //    'Predis'    => 'vendor/predis/predis/lib',
-//    'Resque'    => 'vendor/chrisboulton/php-resque/lib',
+    'Resque'    => 'vendor/chrisboulton/php-resque/lib',
 //    'Google'    => 'vendor/google/apiclient/src',
 ];
 
