@@ -72,8 +72,19 @@ class Auth extends Generic
         else
         {
             // register
-            // TODO: $locale = \Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-            \Sys::svc('Auth')->register($email, $password, '', '', 'en_US', true);
+            $locale = \Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false)
+            {
+                throw new \Exception(\Lang::translate('Malformed email.'));
+            }
+
+            if (strlen($password) < 6)
+            {
+                throw new \Exception(\Lang::translate('Password must be minimum 6 symbols long.'));
+            }
+
+            \Sys::svc('Auth')->register($email, $password, '', '', $locale, true);
         }
 
         return self::status();
