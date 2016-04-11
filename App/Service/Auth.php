@@ -119,7 +119,7 @@ class Auth
             throw new \Exception('Cannot add user');
         }
 
-        // profile and role are created automatically, just fill in some stuff
+        // profile is created automatically, just fill in some stuff
         $profile = \Sys::svc('Profile')->findByUserId($user->id, true);
 
         $profile->first_name = $firstName;
