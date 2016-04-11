@@ -61,6 +61,8 @@ class Email
         }
         else throw new \Exception('getConnectToken() error: no account');
 
+        \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
+
         return true;
     }
 
@@ -158,6 +160,8 @@ class Email
             $user->ext_id = $res['id'];
             \Sys::svc('User')->update($user);
             \Sys::svc('Auth')->sync();
+
+            \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
         }
 
         return true;
