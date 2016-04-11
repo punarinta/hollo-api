@@ -29,6 +29,6 @@ class Admin
         $crypt = new Bcrypt;
         $hash = $crypt->create($password);
 
-        return "Hash: '$hash'\n\n";
+        return "Hash: '$hash'\n";
     }
 }
