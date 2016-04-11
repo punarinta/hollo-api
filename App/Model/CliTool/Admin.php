@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Model\CliTool;
+use App\Model\Bcrypt;
 
 /**
  * Class Admin
@@ -16,5 +17,18 @@ class Admin
         echo "Messages synced: {$r['messages']}\n";
 
         return "\n";
+    }
+    
+    public function hashpass($password = null)
+    {
+        if (!$password)
+        {
+            return "No password provided\n";
+        }
+
+        $crypt = new Bcrypt;
+        $hash = $crypt->create($password);
+
+        return "Hash: '$hash'\n\n";
     }
 }
