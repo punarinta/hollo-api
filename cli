@@ -24,13 +24,13 @@ $coursioLoaderPrefixesPsr0 = array
 
     // 3rd parties
 //    'Predis'        => 'vendor/predis/predis/lib',
-//    'Resque'        => 'vendor/chrisboulton/php-resque/lib',
+    'Resque'        => 'vendor/chrisboulton/php-resque/lib',
 //    'PHPExcel'      => 'vendor/os/php-excel/PHPExcel',
 );
 
 $coursioLoaderPrefixesPsr4 =
     [
-        'Stripe\\'      => 'vendor/stripe/stripe-php/lib/',
+//        'Stripe\\'      => 'vendor/stripe/stripe-php/lib/',
     ];
 
 spl_autoload_register(function($class) use ($coursioLoaderClassMap, $coursioLoaderPrefixesPsr0, $coursioLoaderPrefixesPsr4)
