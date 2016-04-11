@@ -19,7 +19,7 @@ class SyncContacts extends Generic
             return false;
         }
 
-        \Sys::svc('Contact')->syncAll($userId);
+        \Sys::svc('Contact')->syncAll($userId, true);
 
         return false;
     }
