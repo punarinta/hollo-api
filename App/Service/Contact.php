@@ -162,6 +162,7 @@ class Contact extends Generic
 
                     // update count only after message sync is done
                     $contact->count = $row['count'];
+                    $contact->last_ts = max($row['last_received'], $row['last_sent']);
                     \Sys::svc('Contact')->update($contact);
                 }
 
