@@ -84,6 +84,9 @@ def restart():
     sudo('service php5-fpm restart')
     sudo('service nginx restart')
 
+    # restart worker from a new location
+    sudo('supervisorctl reload')
+
 
 def cleanup():
     current = os.path.basename(current_env())
