@@ -13,15 +13,23 @@ class Mandrill
     }
 
     /**
-     * @param array $to
+     * Sends an email to one or more recipients
+     *
+     * @param $to
      * @param $body
      * @param string $subject
      * @return mixed
+     * @throws \Exception
      * @throws \Mandrill_Error
      * @throws \Mandrill_HttpError
      */
     public function send($to, $body, $subject = '')
     {
+        if (!$this->mandrill)
+        {
+            throw new \Exception('send(): no Mandrill connection');
+        }
+
         $setup = array
         (
             'acync'     => true,
