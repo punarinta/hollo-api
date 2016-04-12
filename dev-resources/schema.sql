@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Apr 07, 2016 at 01:18 PM
+-- Generation Time: Apr 12, 2016 at 06:52 AM
 -- Server version: 5.6.28-0ubuntu0.15.10.1
 -- PHP Version: 5.6.11-1ubuntu3.1
 
@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `roles` int(10) unsigned NOT NULL DEFAULT '0',
   `ext_id` char(24) DEFAULT NULL,
   `last_sync_ts` int(10) unsigned NOT NULL DEFAULT '1',
+  `is_syncing` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `locale` varchar(10) NOT NULL DEFAULT 'en_US',
   `created` bigint(20) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -94,7 +95,8 @@ ADD PRIMARY KEY (`id`);
 -- Indexes for table `profile`
 --
 ALTER TABLE `profile`
-ADD PRIMARY KEY (`id`);
+ADD PRIMARY KEY (`id`),
+ADD UNIQUE KEY `user_id` (`user_id`) USING BTREE;
 
 --
 -- Indexes for table `user`
