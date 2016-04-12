@@ -4,6 +4,10 @@ namespace App\Controller;
 
 class File extends Generic
 {
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     static public function findByEmail()
     {
         if (!$email = \Input::data('email'))
@@ -15,7 +19,23 @@ class File extends Generic
     }
 
     /**
+     * @return mixed
+     * @throws \Exception
+     */
+    static public function getFileUrl()
+    {
+        if (!$extId = \Input::data('extId'))
+        {
+            throw new \Exception('External ID not provided.');
+        }
+        
+        return \Sys::svc('File')->getProcessorLink($extId);
+    }
+
+    /**
      * Temporary function for demo
+     * 
+     * @throws \Exception
      */
     static public function fetch()
     {

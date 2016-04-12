@@ -43,4 +43,20 @@ class File extends Generic
     {
         return $this->conn->getFileContent(\Auth::user()->ext_id, ['file_id' => $procFileId]);
     }
+
+    /**
+     * Returns the link to a file via processor
+     *
+     * @param $procFileId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getProcessorLink($procFileId)
+    {
+        return $this->conn->getFileContent(\Auth::user()->ext_id,
+        [
+            'file_id' => $procFileId,
+            'as_link' => 1,
+        ]);
+    }
 }
