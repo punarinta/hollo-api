@@ -69,7 +69,7 @@ class Contact extends Generic
      * Update contact info
      *
      * @doc-var     (int) id!           - Contact ID.
-     * @doc-var     (string) name       - First name.
+     * @doc-var     (string) name       - Contact name.
      *
      * @throws \Exception
      */
