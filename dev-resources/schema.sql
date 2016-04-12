@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Apr 12, 2016 at 09:06 AM
+-- Generation Time: Apr 12, 2016 at 12:06 PM
 -- Server version: 5.6.28-0ubuntu0.15.10.1
 -- PHP Version: 5.6.11-1ubuntu3.1
 
@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `message` (
   `sender` varchar(128) NOT NULL,
   `subject` varchar(256) DEFAULT NULL,
   `body` mediumtext,
+  `files` mediumtext,
   `ts` bigint(20) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

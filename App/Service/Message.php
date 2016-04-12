@@ -34,51 +34,7 @@ class Message extends Generic
                 'body'      => $this->clearContent($item->body, $email),
                 'subject'   => $this->clearSubject($item->subject),
                 'from'      => $item->sender,
-                'files'     => null,
-            );
-        }
-
-        return $items;
-
-        $params =
-        [
-            'email'         => $email,
-            'sort_order'    => 'asc',
-            'include_body'  => 1,
-        ];
-
-        if ($subject)
-        {
-            $params['subject'] = "/(.*:\s)$subject/";
-        }
-
-        foreach ($this->conn->listMessages(\Auth::user()->ext_id, $params)->getData() as $row)
-        {
-            $files = null;
-            $row['body'][0]['content'] = $this->clearContent($row['body'][0]['content'], $email);
-
-            if (isset ($row['files']))
-            {
-                $files = [];
-                foreach ($row['files'] as $file)
-                {
-                    $files[] = array
-                    (
-                        'name'  => $file['file_name'],
-                        'type'  => $file['type'],
-                        'size'  => $file['size'],
-                        'extId' => $file['file_id'],
-                    );
-                }
-            }
-
-            $items[] = array
-            (
-                'ts'        => $row['date'],
-                'body'      => $row['body'][0],
-                'subject'   => $this->clearSubject($row['subject']),
-                'from'      => $row['addresses']['from']['email'],
-                'files'     => $files,
+                'files'     => json_decode($item->files, true),
             );
         }
 
@@ -123,6 +79,22 @@ class Message extends Generic
 
                 if (!$message = \Sys::svc('Message')->findByExtId($extId))
                 {
+                    $files = [];
+
+                    if (isset ($row['files']))
+                    {
+                        foreach ($row['files'] as $file)
+                        {
+                            $files[] = array
+                            (
+                                'name'  => $file['file_name'],
+                                'type'  => $file['type'],
+                                'size'  => $file['size'],
+                                'extId' => $file['file_id'],
+                            );
+                        }
+                    }
+
                     \Sys::svc('Message')->create(array
                     (
                         'ts'            => $row['date'],
@@ -131,6 +103,7 @@ class Message extends Generic
                         'subject'       => $row['subject'],                     // should be kept as is
                         'ext_id'        => $extId,
                         'contact_id'    => $contact->id,
+                        'files'         => empty($files) ? '' : json_encode($files),
                     ));
                 }
                 else
