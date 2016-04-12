@@ -68,9 +68,8 @@ class Contact extends Generic
     /**
      * Update contact info
      *
-     * @doc-var     (int) id!               - Contact ID.
-     * @doc-var     (string) firstName      - First name.
-     * @doc-var     (string) lastName       - Last name.
+     * @doc-var     (int) id!           - Contact ID.
+     * @doc-var     (string) name       - First name.
      *
      * @throws \Exception
      */
@@ -86,8 +85,7 @@ class Contact extends Generic
             throw new \Exception('Contact not found.');
         }
         
-        if (\Input::data('firstName') !== null) $contact->first_name = \Input::data('firstName');
-        if (\Input::data('lastName') !== null) $contact->last_name = \Input::data('lastName');
+        if (\Input::data('name') !== null) $contact->name = \Input::data('name');
 
         \Sys::svc('Contact')->update($contact);
     }
