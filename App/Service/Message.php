@@ -24,9 +24,18 @@ class Message extends Generic
     {
         $items = [];
 
-        // TODO: support subject filtering
+        $sql = 'SELECT * FROM message AS m LEFT JOIN contact AS c ON m.contact_id = c.id WHERE c.email = ?';
+        $params = [$email];
 
-        foreach (\DB::rows('SELECT * FROM message AS m LEFT JOIN contact AS c ON m.contact_id = c.id WHERE c.email = ? ORDER BY ts', [$email]) as $item)
+        if ($subject)
+        {
+            $sql .= ' AND m.subject LIKE ?';
+            $params[] = $subject;
+        }
+
+        $sql .= ' ORDER BY ts';
+
+        foreach (\DB::rows($sql, $params) as $item)
         {
             $items[] = array
             (
