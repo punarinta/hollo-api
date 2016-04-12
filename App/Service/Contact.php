@@ -19,32 +19,31 @@ class Contact extends Generic
     /**
      * Returns contacts associated with the current user account
      *
-     * @return mixed
+     * @param null $filterBy
+     * @param null $filter
+     * @return array
      */
-    public function findForMe()
+    public function findForMe($filterBy = null, $filter = null)
     {
-        $items = [];
-
-    /*    if (!$data = $this->conn->listContacts(\Auth::user()->ext_id, ['limit' => 20, 'sort_by' => 'email', 'sort_order' => 'asc']))
+        $sql = 'SELECT * FROM contact WHERE user_id=?';
+        $params = [\Auth::user()->id];
+        
+        if ($filterBy == 'name')
         {
-            return [];
+            $sql .= ' AND `name` LIKE ? ORDER BY last_ts DESC';
+            $params[] = $filter;
+        }
+        elseif ($filterBy == 'email')
+        {
+            $sql .= ' AND `email` LIKE ? ORDER BY last_ts DESC';
+            $params[] = $filter;
+        }
+        else
+        {
+            $sql .= ' ORDER BY email';
         }
 
-        foreach ($data->getData() as $row)
-        {
-            $items[] = $row;
-        }*/
-
-        foreach (\DB::rows('SELECT * FROM contact WHERE user_id=? ORDER BY email', [\Auth::user()->id]) as $item)
-        {
-            $items[] = array
-            (
-                'name'      => $item->name,
-                'email'     => $item->email,
-            );
-        }
-
-        return $items;
+        return \DB::rows($sql, $params);
     }
 
     /**
@@ -54,7 +53,7 @@ class Contact extends Generic
      * @return int
      * @throws \Exception
      */
-    public function sync($email)
+    /*public function sync($email)
     {
         $syncCount = 0;
 
@@ -95,7 +94,7 @@ class Contact extends Generic
         }
 
         return $syncCount;
-    }
+    }*/
 
     /**
      * Checks if it's necessary to sync any contact and performs that sync
