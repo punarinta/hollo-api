@@ -34,10 +34,6 @@ class SyncContacts extends Generic
 
         \Sys::svc('Contact')->syncAll($user->id, true);
 
-        // end sync transaction
-        $user->is_syncing = 0;
-        \Sys::svc('User')->update($user);
-
         return true;
     }
 }

@@ -116,6 +116,10 @@ class Contact extends Generic
         $user = \Sys::svc('User')->findById($userId, true);
         $lastSyncTs = $user->last_sync_ts;
 
+        // indicate started transaction
+        $user->is_syncing = 1;
+        \Sys::svc('User')->update($user);
+
         while (1)
         {
             $data = $this->conn->listContacts($user->ext_id, ['active_after' => $lastSyncTs]);
@@ -180,6 +184,9 @@ class Contact extends Generic
 
             $offset += $limit;
         }
+
+        // indicate completed transaction
+        $user->is_syncing = 0;
 
         // update last sync time
         $user->last_sync_ts = time();
