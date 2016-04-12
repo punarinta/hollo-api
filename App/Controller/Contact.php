@@ -22,10 +22,11 @@ class Contact extends Generic
 
         $items = [];
 
-        foreach (\Sys::svc('Contact')->findForMe(\Input::data('filterBy'), \Input::data('filter')) as $item)
+        foreach (\Sys::svc('Contact')->findAllByUserId(\Auth::user()->id, \Input::data('filterBy'), \Input::data('filter')) as $item)
         {
             $items[] = array
             (
+                'id'        => $item->id,
                 'name'      => $item->name,
                 'email'     => $item->email,
                 'count'     => $item->count,
@@ -64,8 +65,30 @@ class Contact extends Generic
         return $items;
     }
 
-    static public function sync()
+    /**
+     * Update contact info
+     *
+     * @doc-var     (int) id!               - Contact ID.
+     * @doc-var     (string) firstName      - First name.
+     * @doc-var     (string) lastName       - Last name.
+     *
+     * @throws \Exception
+     */
+    static public function update()
     {
-        \Sys::svc('Contact')->sync();
+        if (!$id = \Input::data('id'))
+        {
+            throw new \Exception('No ID provided.');
+        }
+
+        if (!$contact = \Sys::svc('Contact')->findByIdAndUserId($id, \Auth::user()->id))
+        {
+            throw new \Exception('Contact not found.');
+        }
+        
+        if (\Input::data('firstName') !== null) $contact->first_name = \Input::data('firstName');
+        if (\Input::data('lastName') !== null) $contact->last_name = \Input::data('lastName');
+
+        \Sys::svc('Contact')->update($contact);
     }
 }

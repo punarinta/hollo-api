@@ -17,16 +17,29 @@ class Contact extends Generic
     }
 
     /**
+     * Returns a contact by its email
+     *
+     * @param $id
+     * @param $userId
+     * @return null|\StdClass
+     */
+    public function findByIdAndUserId($id, $userId)
+    {
+        return \DB::row('SELECT * FROM contact WHERE id=? AND user_id=? LIMIT 1', [$id, $userId]);
+    }
+
+    /**
      * Returns contacts associated with the current user account
      *
+     * @param $userId
      * @param null $filterBy
      * @param null $filter
      * @return array
      */
-    public function findForMe($filterBy = null, $filter = null)
+    public function findAllByUserId($userId, $filterBy = null, $filter = null)
     {
         $sql = 'SELECT * FROM contact WHERE user_id=?';
-        $params = [\Auth::user()->id];
+        $params = [$userId];
         
         if ($filterBy == 'name')
         {
@@ -45,56 +58,6 @@ class Contact extends Generic
 
         return \DB::rows($sql, $params);
     }
-
-    /**
-     * Checks if it's necessary to sync a contact and performs this sync
-     *
-     * @param $email
-     * @return int
-     * @throws \Exception
-     */
-    /*public function sync($email)
-    {
-        $syncCount = 0;
-
-        // get remote contact by email
-        if (!$data = $this->conn->getContact(\Auth::user()->ext_id, ['email' => $email]))
-        {
-            throw new \Exception('Error fetching remote contact');
-        }
-
-        $data = $data->getData();
-
-        if ($contact = \Sys::svc('Contact')->findByEmail($email))
-        {
-            // contact exists -> check 'count'
-            if ($data['count'] != $contact->count)
-            {
-                // sync messages
-                $syncCount = $data['count'] - $contact->count;
-            }
-        }
-        else
-        {
-            // contact doesn't exist -> insert
-            \Sys::svc('Contact')->create(array
-            (
-                'user_id'   => \Auth::user()->id,
-                'email'     => $email,
-                'name'      => $data['name'],
-                'count'     => $data['count'],
-            ));
-
-            $syncCount = $data['count'];
-        }
-
-        if ($syncCount)
-        {
-            return \Sys::svc('Message')->sync($contact);
-        }
-
-        return $syncCount;
-    }*/
 
     /**
      * Checks if it's necessary to sync any contact and performs that sync
