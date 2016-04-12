@@ -14,6 +14,8 @@ class File extends Generic
     {
         $items = [];
 
+        // TODO: fetch from local DB
+
         foreach ($this->conn->listContactFiles(\Auth::user()->ext_id, ['email' => $email])->getData() as $row)
         {
             $items[] = array
