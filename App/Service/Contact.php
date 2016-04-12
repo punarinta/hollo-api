@@ -34,26 +34,45 @@ class Contact extends Generic
      * @param $userId
      * @param null $filterBy
      * @param null $filter
+     * @param null $sortBy
+     * @param null $sortMode
      * @return array
      */
-    public function findAllByUserId($userId, $filterBy = null, $filter = null)
+    public function findAllByUserId($userId, $filterBy = null, $filter = null, $sortBy = null, $sortMode = null)
     {
         $sql = 'SELECT * FROM contact WHERE user_id=?';
         $params = [$userId];
         
         if ($filterBy == 'name')
         {
-            $sql .= ' AND `name` LIKE ? ORDER BY last_ts DESC';
+            $sql .= ' AND `name` LIKE ?';
             $params[] = $filter;
         }
         elseif ($filterBy == 'email')
         {
-            $sql .= ' AND `email` LIKE ? ORDER BY last_ts DESC';
+            $sql .= ' AND email LIKE ?';
             $params[] = $filter;
         }
-        else
+
+        if ($sortBy)
         {
-            $sql .= ' ORDER BY email';
+            if ($sortBy == 'name')
+            {
+                $sql .= ' ORDER BY `name`';
+            }
+            elseif ($sortBy == 'email')
+            {
+                $sql .= ' ORDER BY email';
+            }
+            elseif ($sortBy == 'lastTs')
+            {
+                $sql .= ' ORDER BY last_ts';
+            }
+
+            if ($sortMode == 'desc')
+            {
+                $sql .= ' DESC';
+            }
         }
 
         return \DB::rows($sql, $params);

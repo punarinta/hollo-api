@@ -22,7 +22,7 @@ class Contact extends Generic
 
         $items = [];
 
-        foreach (\Sys::svc('Contact')->findAllByUserId(\Auth::user()->id, \Input::data('filterBy'), \Input::data('filter')) as $item)
+        foreach (\Sys::svc('Contact')->findAllByUserId(\Auth::user()->id, \Input::data('filterBy'), \Input::data('filter'), \Input::data('sortBy'), \Input::data('sortMode')) as $item)
         {
             $items[] = array
             (
@@ -32,34 +32,6 @@ class Contact extends Generic
                 'count'     => $item->count,
                 'lastTs'    => $item->last_ts,
             );
-        }
-
-        if ($sortBy = \Input::data('sortBy'))
-        {
-            $sortMode = \Input::data('sortMode') === 'desc' ? -1 : 1;
-
-            if ($sortBy == 'name')
-            {
-                usort($items, function ($a, $b) use ($sortMode)
-                {
-                    return $a['name'] > $b['name'] ? $sortMode : -$sortMode;
-                });
-            }
-            elseif ($sortBy == 'email')
-            {
-                // default sorting in SQL
-            }
-            elseif ($sortBy == 'lastTs')
-            {
-                usort($items, function ($a, $b) use ($sortMode)
-                {
-                    return $a['lastTs'] > $b['lastTs'] ? $sortMode : -$sortMode;
-                });
-            }
-            else
-            {
-                throw new \Exception('Sorting mode is not supported.');
-            }
         }
 
         return $items;
