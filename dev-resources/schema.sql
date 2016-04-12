@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Apr 12, 2016 at 06:52 AM
+-- Generation Time: Apr 12, 2016 at 09:06 AM
 -- Server version: 5.6.28-0ubuntu0.15.10.1
 -- PHP Version: 5.6.11-1ubuntu3.1
 
@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS `contact` (
   `user_id` bigint(20) unsigned NOT NULL,
   `email` varchar(128) NOT NULL,
   `name` varchar(128) DEFAULT NULL,
-  `count` int(10) unsigned NOT NULL DEFAULT '0'
+  `count` int(10) unsigned NOT NULL DEFAULT '0',
+  `last_ts` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
