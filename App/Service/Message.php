@@ -30,7 +30,7 @@ class Message extends Generic
         if ($subject)
         {
             $sql .= ' AND m.subject LIKE ?';
-            $params[] = $subject;
+            $params[] = '%' . $subject . '%';
         }
 
         $sql .= ' ORDER BY ts';
