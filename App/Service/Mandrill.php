@@ -8,8 +8,7 @@ class Mandrill
     
     public function __construct()
     {
-        $config = \Sys::cfg(null);
-        $this->mandrill = new \Mandrill($config['mandrill']['api_key']);
+        $this->mandrill = new \Mandrill(\Sys::cfg('mandrill.api_key'));
     }
 
     /**
