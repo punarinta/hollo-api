@@ -24,7 +24,7 @@ class Message extends Generic
     {
         $items = [];
 
-        $sql = 'SELECT * FROM message AS m LEFT JOIN contact AS c ON m.contact_id = c.id WHERE c.email = ?';
+        $sql = 'SELECT * FROM message AS m LEFT JOIN contact_message AS cm ON m.id=cm.message_id LEFT JOIN contact AS c ON c.id=cm.contact_id WHERE c.email = ?';
         $params = [$email];
 
         if ($subject)
@@ -40,7 +40,7 @@ class Message extends Generic
             $items[] = array
             (
                 'ts'        => $item->ts,
-                'body'      => $this->clearContent($item->body, $email),
+                'body'      => $item->body,
                 'subject'   => $this->clearSubject($item->subject),
                 'from'      => $item->sender,
                 'files'     => json_decode($item->files, true),
@@ -104,22 +104,29 @@ class Message extends Generic
                         }
                     }
 
-                    \Sys::svc('Message')->create(array
+                    if (!isset ($row['body'][0]))
+                    {
+                        // no body?
+                        continue;
+                    }
+
+                    $message = \Sys::svc('Message')->create(array
                     (
                         'ts'            => $row['date'],
-                        'body'          => $row['body'][0]['content'],          // should be kept as is
+                        'body'          => $this->clearContent($row['body'][0]['content'], $contact->email),
                         'sender'        => $row['addresses']['from']['email'],
-                        'subject'       => $row['subject'],                     // should be kept as is
+                        'subject'       => $row['subject'],
                         'ext_id'        => $extId,
-                        'contact_id'    => $contact->id,
                         'files'         => empty($files) ? '' : json_encode($files),
                     ));
                 }
-                else
+            /*    else
                 {
                     // strange but possible
                     --$count;
-                }
+                }*/
+
+                \DB::prepare('REPLACE INTO contact_message (contact_id, message_id) VALUES (?,?)', [$contact->id, $message->id])->execute();
             }
 
             $count += count($rows);

@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Apr 12, 2016 at 12:06 PM
+-- Generation Time: Apr 13, 2016 at 08:28 AM
 -- Server version: 5.6.28-0ubuntu0.15.10.1
 -- PHP Version: 5.6.11-1ubuntu3.1
 
@@ -32,13 +32,23 @@ CREATE TABLE IF NOT EXISTS `contact` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `contact_message`
+--
+
+CREATE TABLE IF NOT EXISTS `contact_message` (
+  `contact_id` bigint(20) unsigned NOT NULL,
+  `message_id` bigint(20) unsigned NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `message`
 --
 
 CREATE TABLE IF NOT EXISTS `message` (
   `id` bigint(20) unsigned NOT NULL,
   `ext_id` char(24) NOT NULL,
-  `contact_id` bigint(20) NOT NULL,
   `sender` varchar(128) NOT NULL,
   `subject` varchar(256) DEFAULT NULL,
   `body` mediumtext,
@@ -86,6 +96,12 @@ CREATE TABLE IF NOT EXISTS `user` (
 --
 ALTER TABLE `contact`
 ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `contact_message`
+--
+ALTER TABLE `contact_message`
+ADD UNIQUE KEY `link` (`contact_id`,`message_id`) USING BTREE;
 
 --
 -- Indexes for table `message`
