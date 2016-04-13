@@ -48,7 +48,7 @@ class Mandrill
         $this->mandrillParams['headers'] = array
         (
             'Reply-To'    => $user->email,
-            'Message-ID'  => \Text::GUID_v4() . '@hollo.email',
+            'Message-ID'  => \Text::GUID_v4() . '@' . \Sys::cfg('mailless.this_server'),
             'In-Reply-To' => $data['email_message_id'],
             'References'  => $refs,
         );
