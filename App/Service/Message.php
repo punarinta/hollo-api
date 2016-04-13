@@ -120,11 +120,6 @@ class Message extends Generic
                         'files'         => empty($files) ? '' : json_encode($files),
                     ));
                 }
-            /*    else
-                {
-                    // strange but possible
-                    --$count;
-                }*/
 
                 \DB::prepare('REPLACE INTO contact_message (contact_id, message_id) VALUES (?,?)', [$contact->id, $message->id])->execute();
             }
