@@ -20,13 +20,19 @@ class Mandrill
     /**
      * Configures threaded mail sending
      *
+     * @param $userId
      * @param $messageId
      * @return bool
      */
-    public function setupThread($messageId)
+    public function setupThread($userId, $messageId)
     {
+        if (!$user = \Sys::svc('User')->findById($userId))
+        {
+            return false;
+        }
+
         // get original message data
-        $data = $this->conn->getMessage(\Auth::user()->id, ['message_id' => $messageId, 'include_body' => 1]);
+        $data = $this->conn->getMessage($user->id, ['message_id' => $messageId, 'include_body' => 1]);
 
         if (!$data)
         {
@@ -41,6 +47,7 @@ class Mandrill
         $this->mandrillParams['subject'] = $data['subject'];
         $this->mandrillParams['headers'] = array
         (
+            'Reply-To'    => $user->email,
             'Message-ID'  => \Text::GUID_v4() . '@hollo.email',
             'In-Reply-To' => $data['email_message_id'],
             'References'  => $refs,
