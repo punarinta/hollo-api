@@ -54,7 +54,7 @@ class SparkPost
             (
                 'Message-ID'  => \Text::GUID_v4() . '@' . \Sys::cfg('mailless.this_server'),
                 'In-Reply-To' => $data['email_message_id'],
-                'References'  => $refs,
+                'References'  => ' ' . implode(' ', $refs),
             );
 
             $this->postParams['content']['from'] = $user->email;
@@ -78,19 +78,30 @@ class SparkPost
                 );
             }
 
-            if (isset ($data['addresses']['cc'])) foreach ($data['addresses']['cc'] as $from)
+            if (isset ($data['addresses']['cc']))
             {
-                $this->postParams['recipients'][] = array
-                (
-                    'address'  => array
+                $ccs = [];
+
+                foreach ($data['addresses']['cc'] as $from)
+                {
+                    $cc = '<' . $from['email'] . '>';
+                    if (isset($from['name'])) $cc = '"' . $from['name'] . '" ' . $cc;
+                    $ccs[] = $cc;
+
+                    $this->postParams['recipients'][] = array
                     (
-                        'email' => $from['email'],
-                    ),
-                    'substitution_data' => array
-                    (
-                        'name'  => $from['name'],
-                    ),
-                );
+                        'address'  => array
+                        (
+                            'email'     => $from['email'],
+                            'header_to' => $data['addresses']['from']['email'],
+                        ),
+                        'substitution_data' => array
+                        (
+                            'name'  => $from['name'],
+                        ),
+                    );
+                }
+                $this->postParams['content']['headers']['CC'] = implode(', ', $ccs);
             }
         }
 
