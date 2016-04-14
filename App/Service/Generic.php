@@ -104,16 +104,10 @@ class Generic
      * Finds the object by its ID
      *
      * @param $id
-     * @param bool|false $skipSecurity
      * @return null|\StdClass
      */
-    public function findById($id, $skipSecurity = false)
+    public function findById($id)
     {
-        if (!$skipSecurity && $this->secure)
-        {
-            return \DB::row('SELECT * FROM `' . $this->class_name . '` WHERE id=? AND created_by=? LIMIT 1', [$id, \Auth::user()->id]);
-        }
-
         return \DB::row('SELECT * FROM `' . $this->class_name . '` WHERE id=? LIMIT 1', [$id]);
     }
 

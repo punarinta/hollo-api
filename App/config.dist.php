@@ -39,10 +39,9 @@ return array
         'pass'      => '',
         'cache_pfx' => 'live::',
     ),
-    'mandrill' => array
+    'sparkpost' => array
     (
         'api_key'	=> '',
-        'async'     => true,
     ),
     'amazon' => array
     (

@@ -19,7 +19,6 @@
         "php": ">=5.4.1",
         "tpyo/amazon-s3-php-class": "0.5.*",
         "chrisboulton/php-resque": "dev-master",
-        "mandrill/mandrill": "1.0.*",
         "google/apiclient": "1.1.*@dev",
         "facebook/php-sdk-v4" : "~5.0"
     }
