@@ -21,9 +21,13 @@ class ContextIO
 
         if (!$messageExtId = \Input::json('message_data.message_id'))
         {
-            throw new \Exception('Message ext ID not found.');
+            // probably this was a call to 'failure_notif_url'
+            return false;
         }
-
         
+        // sync message
+        \Sys::svc('Message')->sync(\Input::json('account_id'), $messageExtId);
+
+        return true;
     }
 }
