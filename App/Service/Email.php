@@ -58,6 +58,13 @@ class Email
             $user->ext_id = $res['account']['id'];
             \Sys::svc('User')->update($user);
             \Sys::svc('Auth')->sync();
+
+            // add webhook
+            $this->conn->addWebhook($user->ext_id,
+            [
+                'callback_url'      => 'https://api.hollo.email/api/context-io',
+                'failure_notif_url' => 'https://api.hollo.email/api/context-io',
+            ]);
         }
         else throw new \Exception('getConnectToken() error: no account');
 
@@ -121,6 +128,8 @@ class Email
             $username = $email;
         }
 
+        $user = \Auth::user();
+
         if (\Auth::user()->ext_id)
         {
             // uncomment to allow only 1 email
@@ -156,13 +165,19 @@ class Email
             }
 
             $res = $res->getData();
-            $user = \Auth::user();
             $user->ext_id = $res['id'];
             \Sys::svc('User')->update($user);
             \Sys::svc('Auth')->sync();
 
-            \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
+            // add webhook
+            $this->conn->addWebhook($user->ext_id,
+            [
+                'callback_url'      => 'https://api.hollo.email/api/context-io',
+                'failure_notif_url' => 'https://api.hollo.email/api/context-io',
+            ]);
         }
+
+        \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
 
         return true;
     }

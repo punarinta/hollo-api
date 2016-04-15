@@ -5,7 +5,7 @@ namespace App\Service;
 class Contact extends Generic
 {
     /**
-     * Returns a contact by its email
+     * Returns a contact by its email and owner ID
      *
      * @param $email
      * @param $userId
@@ -17,7 +17,19 @@ class Contact extends Generic
     }
 
     /**
-     * Returns a contact by its email
+     * Returns a contact by its email and owner ExtID
+     *
+     * @param $email
+     * @param $account
+     * @return null|\StdClass
+     */
+    public function findByEmailAndAccountId($email, $account)
+    {
+        return \DB::row('SELECT * FROM contact AS c LEFT JOIN user AS u ON c.user_id=u.id WHERE c.email=? AND u.ext_id=?', [$email, $account]);
+    }
+
+    /**
+     * Returns a contact by t.b.d.
      *
      * @param $id
      * @param $userId
@@ -143,7 +155,7 @@ class Contact extends Generic
 
                 if ($syncCount)
                 {
-                    $countMsg += \Sys::svc('Message')->sync($user, $contact);
+                    $countMsg += \Sys::svc('Message')->syncAll($user, $contact);
 
                     // update count only after message sync is done
                     $contact->count = $row['count'];

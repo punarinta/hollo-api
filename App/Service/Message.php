@@ -57,7 +57,7 @@ class Message extends Generic
      * @param $contact
      * @return int
      */
-    public function sync($user, $contact)
+    public function syncAll($user, $contact)
     {
         $count = 0;
         $limit = 100;
@@ -68,7 +68,7 @@ class Message extends Generic
             'include_body'  => 1,
             'limit'         => $limit,
             'email'         => $contact->email,
-            'date_after'    => $user->last_sync_ts,
+            'date_after'    => $user->last_sync_ts ?: 1,
         ];
 
         // paginate requests
@@ -80,48 +80,7 @@ class Message extends Generic
 
             foreach ($rows as $row)
             {
-                // check if message is present and sync if necessary
-
-                // get message ext_id
-                $extId = explode('/', $row['resource_url']);
-                $extId = end($extId);
-
-                if (!$message = \Sys::svc('Message')->findByExtId($extId))
-                {
-                    $files = [];
-
-                    if (isset ($row['files']))
-                    {
-                        foreach ($row['files'] as $file)
-                        {
-                            $files[] = array
-                            (
-                                'name'  => $file['file_name'],
-                                'type'  => $file['type'],
-                                'size'  => $file['size'],
-                                'extId' => $file['file_id'],
-                            );
-                        }
-                    }
-
-                    if (!isset ($row['body'][0]))
-                    {
-                        // no body?
-                        continue;
-                    }
-
-                    $message = \Sys::svc('Message')->create(array
-                    (
-                        'ts'            => $row['date'],
-                        'body'          => $this->clearContent($row['body'][0]['content'], $contact->email),
-                        'sender'        => $row['addresses']['from']['email'],
-                        'subject'       => $row['subject'],
-                        'ext_id'        => $extId,
-                        'files'         => empty($files) ? '' : json_encode($files),
-                    ));
-                }
-
-                \DB::prepare('REPLACE INTO contact_message (contact_id, message_id) VALUES (?,?)', [$contact->id, $message->id])->execute();
+                $this->processMessageSync($row, $contact);
             }
 
             $count += count($rows);
@@ -137,7 +96,71 @@ class Message extends Generic
         return $count;
     }
 
+    public function sync($accountId, $messageId)
+    {
+        // temporary fall back to sync all
+        if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageId, 'include_body' => 1]))
+        {
+            return false;
+        }
+
+        $data = $data->getData();
+
+        if (!$contact = \Sys::svc('Contact')->findByEmailAndAccountId($data['addresses']['from']['email'], $accountId))
+        {
+            throw new \Exception('Contact does not exist.');
+        }
+
+        $this->processMessageSync($data, $contact);
+
+        return true;
+    }
+
     // === internal functions ===
+
+    protected function processMessageSync($messageData, $contact)
+    {
+        // check if message is present and sync if necessary
+
+        $extId = $messageData['message_id'];
+
+        if (!$message = \Sys::svc('Message')->findByExtId($extId))
+        {
+            $files = [];
+
+            if (isset ($messageData['files']))
+            {
+                foreach ($messageData['files'] as $file)
+                {
+                    $files[] = array
+                    (
+                        'name'  => $file['file_name'],
+                        'type'  => $file['type'],
+                        'size'  => $file['size'],
+                        'extId' => $file['file_id'],
+                    );
+                }
+            }
+
+            if (!isset ($messageData['body'][0]))
+            {
+                // no body?
+                return;
+            }
+
+            $message = \Sys::svc('Message')->create(array
+            (
+                'ts'            => $messageData['date'],
+                'body'          => $this->clearContent($messageData['body'][0]['content'], $contact->email),
+                'sender'        => $messageData['addresses']['from']['email'],
+                'subject'       => $messageData['subject'],
+                'ext_id'        => $extId,
+                'files'         => empty($files) ? '' : json_encode($files),
+            ));
+        }
+
+        \DB::prepare('REPLACE INTO contact_message (contact_id, message_id) VALUES (?,?)', [$contact->id, $message->id])->execute();
+    }
 
     protected function clearSubject($subject)
     {
