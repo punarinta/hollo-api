@@ -35,6 +35,17 @@ class User extends Generic
     }
 
     /**
+     * Gets a User by its external ID
+     *
+     * @param $extId
+     * @return array
+     */
+    public function findByExtId($extId)
+    {
+        return \DB::row('SELECT * FROM user WHERE ext_id = ? LIMIT 1', [$extId]);
+    }
+
+    /**
      * Overwritten to insert Profile
      *
      * @param $data

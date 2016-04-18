@@ -108,7 +108,19 @@ class Message extends Generic
 
         if (!$contact = \Sys::svc('Contact')->findByEmailAndAccountId($data['addresses']['from']['email'], $accountId))
         {
-            throw new \Exception('Contact does not exist.');
+            // no contact exist, create it
+            if (!$user = \Sys::svc('User')->findByExtId($accountId))
+            {
+                throw new \Exception('User does not exist.');
+            }
+
+            $contact = \Sys::svc('Contact')->create(array
+            (
+                'user_id'   => $user->id,
+                'email'     => $data['addresses']['from']['email'],
+                'name'      => $data['addresses']['from']['name'],
+                'count'     => 1,
+            ));
         }
 
         $this->processMessageSync($data, $contact);
