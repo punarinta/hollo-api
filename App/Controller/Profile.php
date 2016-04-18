@@ -5,6 +5,24 @@ namespace App\Controller;
 class Profile extends Generic
 {
     /**
+     * Returns information about your profile
+     *
+     * @return array
+     */
+    static public function read()
+    {
+        $profile = \Auth::profile();
+       
+        return array
+        (
+            'firstName' => $profile->first_name,
+            'lastName'  => $profile->last_name,
+            'signature' => null,
+            'emails'    => \Sys::svc('Profile')->getEmailsForUser(\Auth::user()),
+        );
+    }
+    
+    /**
      * Update your profile info
      *
      * @doc-var     (int) id!               - Contact ID.

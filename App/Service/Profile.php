@@ -16,6 +16,35 @@ class Profile extends Generic
     }
 
     /**
+     * Returns all user's emails
+     *
+     * @param $user
+     * @return array
+     */
+    public function getEmailsForUser($user)
+    {
+        $emails = [];
+
+        if (!is_object($user))
+        {
+            $user = \Sys::svc('User')->findById($user);
+        }
+
+        if ($user->ext_id)
+        {
+            if ($rows = $this->conn->listAccountEmailAddresses($user->ext_id))
+            {
+                foreach ($rows->getData() as $item)
+                {
+                    $emails[] = $item;
+                }
+            }
+        }
+
+        return $emails;
+    }
+
+    /**
      * Syncs remote account name with the local one
      *
      * @param $userId
