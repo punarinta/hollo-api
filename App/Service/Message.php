@@ -96,6 +96,14 @@ class Message extends Generic
         return $count;
     }
 
+    /**
+     * Sync a single message
+     *
+     * @param $accountId
+     * @param $messageId
+     * @return bool
+     * @throws \Exception
+     */
     public function sync($accountId, $messageId)
     {
         // temporary fall back to sync all
