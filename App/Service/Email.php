@@ -21,7 +21,7 @@ class Email
      */
     public function getOAuthToken($email, $firstName = 'No first name', $lastName = 'No last name')
     {
-        $response = $this->conn->addConnectToken(\Auth::user()->ext_id,
+        $response = $this->conn->addConnectToken(\Auth::user()->ext_id ?: null,
         [
             'callback_url'  => 'https://' . \Sys::cfg('mailless.app_domain'),
             'email'         => $email,
