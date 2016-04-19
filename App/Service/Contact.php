@@ -146,7 +146,7 @@ class Contact extends Generic
                     (
                         'user_id'   => $user->id,
                         'email'     => $email,
-                        'name'      => isset ($row['name']) ? $row['name'] : $email,
+                        'name'      => isset ($row['name']) ? $row['name'] : null,
                         'count'     => 0,
                     ));
 
