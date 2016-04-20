@@ -108,15 +108,23 @@ class Contact extends Generic
 
         // even if it's you it's important to get an exact value of sync time
         $user = \Sys::svc('User')->findById($userId, true);
-        $lastSyncTs = $user->last_sync_ts;
+        $lastSyncTs = $user->last_sync_ts ?: 1;
 
         // indicate started transaction
         $user->is_syncing = 1;
         \Sys::svc('User')->update($user);
 
+        $params =
+        [
+            'limit'         => $limit,
+            'active_after'  => $lastSyncTs,
+        ];
+
         while (1)
         {
-            $data = $this->conn->listContacts($user->ext_id, ['active_after' => $lastSyncTs]);
+            $params['offset'] = $offset;
+
+            $data = $this->conn->listContacts($user->ext_id, $params);
             $data = $data->getData();
             $rows = isset ($data['matches']) ? $data['matches'] : [];
 
