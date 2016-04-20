@@ -156,6 +156,11 @@ class Message extends Generic
             return false;
         }
 
+        if (!isset ($data['body'][$bodyId]['content']))
+        {
+            throw new \Exception('Body does not exist');
+        }
+
         $message->body = $this->clearContent($data['body'][$bodyId]['content'], $data['addresses']['from']['email']);
         \Sys::svc('Message')->update($message);
 
