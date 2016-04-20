@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Apr 13, 2016 at 08:28 AM
+-- Generation Time: Apr 20, 2016 at 07:55 AM
 -- Server version: 5.6.28-0ubuntu0.15.10.1
 -- PHP Version: 5.6.11-1ubuntu3.1
 
@@ -38,6 +38,19 @@ CREATE TABLE IF NOT EXISTS `contact` (
 CREATE TABLE IF NOT EXISTS `contact_message` (
   `contact_id` bigint(20) unsigned NOT NULL,
   `message_id` bigint(20) unsigned NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `mailbox`
+--
+
+CREATE TABLE IF NOT EXISTS `mailbox` (
+  `id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `email` varchar(128) NOT NULL,
+  `settings` varchar(1024) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -104,6 +117,12 @@ ALTER TABLE `contact_message`
 ADD UNIQUE KEY `link` (`contact_id`,`message_id`) USING BTREE;
 
 --
+-- Indexes for table `mailbox`
+--
+ALTER TABLE `mailbox`
+ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `message`
 --
 ALTER TABLE `message`
@@ -130,6 +149,11 @@ ADD PRIMARY KEY (`id`);
 -- AUTO_INCREMENT for table `contact`
 --
 ALTER TABLE `contact`
+MODIFY `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `mailbox`
+--
+ALTER TABLE `mailbox`
 MODIFY `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `message`
