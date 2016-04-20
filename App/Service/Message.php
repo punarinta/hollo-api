@@ -100,14 +100,14 @@ class Message extends Generic
      * Sync a single message
      *
      * @param $accountId
-     * @param $messageId
+     * @param $messageExtId
      * @return bool
      * @throws \Exception
      */
-    public function sync($accountId, $messageId)
+    public function sync($accountId, $messageExtId)
     {
         // temporary fall back to sync all
-        if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageId, 'include_body' => 1]))
+        if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageExtId, 'include_body' => 1]))
         {
             return false;
         }
@@ -132,6 +132,32 @@ class Message extends Generic
         }
 
         $this->processMessageSync($data, $contact);
+
+        return true;
+    }
+
+    /**
+     * Switches message body and updates it in the database
+     *
+     * @param $messageId
+     * @param $bodyId
+     * @return bool
+     * @throws \Exception
+     */
+    public function switchBody($messageId, $bodyId)
+    {
+        if (!$message = \Sys::svc('Message')->findById($messageId))
+        {
+            throw new \Exception('Message does not exist');
+        }
+
+        if (!$data = $this->conn->getMessage(\Auth::user()->id, ['message_id' => $message->ext_id, 'include_body' => 1]))
+        {
+            return false;
+        }
+
+        $message->body = $this->clearContent($data['body'][$bodyId]['content'], $data['addresses']['from']['email']);
+        \Sys::svc('Message')->update($message);
 
         return true;
     }
@@ -198,6 +224,11 @@ class Message extends Generic
         return trim($subject);
     }
 
+    /**
+     * @param $content
+     * @param $email        — sender
+     * @return mixed
+     */
     protected function clearContent($content, $email)
     {
         // remove email
