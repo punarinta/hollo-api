@@ -59,6 +59,8 @@ class Message extends Generic
      */
     public function syncAll($user, $contact)
     {
+        // TODO: limit the amount of synced messages to 10 per contact
+
         $count = 0;
         $limit = 100;
         $offset = 0;
