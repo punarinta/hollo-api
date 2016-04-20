@@ -66,7 +66,7 @@ class Mailbox extends Generic
         // create a mailbox
         $this->create(array
         (
-            'user_id'   => \Auth::user()->ext_id,
+            'user_id'   => \Auth::user()->id,
             'email'     => $res['email'],
             'settings'  => json_encode(array
             (
@@ -186,7 +186,7 @@ class Mailbox extends Generic
 
         $this->create(array
         (
-            'user_id'   => \Auth::user()->ext_id,
+            'user_id'   => \Auth::user()->id,
             'email'     => $email,
             'settings'  => json_encode(array
             (
