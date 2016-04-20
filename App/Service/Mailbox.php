@@ -2,15 +2,10 @@
 
 namespace App\Service;
 
-use App\Model\ContextIO\ContextIO;
-
-class Email
+class Mailbox extends Generic
 {
-    public function __construct()
-    {
-        $cfg = \Sys::cfg('contextio');
-        $this->conn = new ContextIO($cfg['key'], $cfg['secret']);
-    }
+    const TYPE_IMAP  = 1;
+    const TYPE_OAUTH = 2;
 
     /**
      * @param $email
@@ -67,6 +62,18 @@ class Email
             ]);
         }
         else throw new \Exception('getConnectToken() error: no account');
+
+        // create a mailbox
+        $this->create(array
+        (
+            'user_id'   => \Auth::user()->ext_id,
+            'email'     => $res['email'],
+            'settings'  => json_encode(array
+            (
+                'token'     => '?',
+                'type'      => self::TYPE_OAUTH,
+            )),
+        ));
 
         \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
 
@@ -176,6 +183,21 @@ class Email
                 'failure_notif_url' => 'https://api.hollo.email/api/context-io',
             ]);
         }
+
+        $this->create(array
+        (
+            'user_id'   => \Auth::user()->ext_id,
+            'email'     => $email,
+            'settings'  => json_encode(array
+            (
+                'server'        => $server,
+                'username'      => $username,
+                'use_ssl'       => $ssl,
+                'password'      => $password,
+                'port'          => $port,
+                'type'          => self::TYPE_IMAP,
+            )),
+        ));
 
         \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
 

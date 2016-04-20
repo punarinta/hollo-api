@@ -32,7 +32,7 @@ class Email extends Generic
             throw new \Exception(\Lang::translate('Cannot register. Probably this email address is already taken.'));
         }
 
-        return \Sys::svc('Email')->getOAuthToken($email, \Input::data('firstName'), \Input::data('lastName'));
+        return \Sys::svc('Mailbox')->getOAuthToken($email, \Input::data('firstName'), \Input::data('lastName'));
     }
 
     /**
@@ -46,7 +46,7 @@ class Email extends Generic
             throw new \Exception('No token provided.');
         }
 
-        return \Sys::svc('Email')->saveContextIdByToken($token);
+        return \Sys::svc('Mailbox')->saveContextIdByToken($token);
     }
 
     /**
@@ -62,11 +62,11 @@ class Email extends Generic
             throw new \Exception(\Lang::translate('No email provided.'));
         }
 
-        $discover = \Sys::svc('Email')->discoverEmail($email);
+        $discover = \Sys::svc('Mailbox')->discoverEmail($email);
 
         if ($discover['oauth'])
         {
-            $discover['url'] = \Sys::svc('Email')->getOAuthToken($email, \Auth::profile()->first_name, \Auth::profile()->last_name);
+            $discover['url'] = \Sys::svc('Mailbox')->getOAuthToken($email, \Auth::profile()->first_name, \Auth::profile()->last_name);
         }
 
         return $discover;
@@ -91,6 +91,6 @@ class Email extends Generic
             throw new \Exception(\Lang::translate('No email provided.'));
         }
 
-        return \Sys::svc('Email')->attachEmail($email, \Input::data('password'), \Input::data('server'), \Input::data('port'), \Input::data('username'));
+        return \Sys::svc('Mailbox')->attachEmail($email, \Input::data('password'), \Input::data('server'), \Input::data('port'), \Input::data('username'));
     }
 }
