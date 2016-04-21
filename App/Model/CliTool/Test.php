@@ -9,6 +9,13 @@ use App\Model\ContextIO\ContextIO;
  */
 class Test
 {
+    public function smtp()
+    {
+        \Sys::svc('Smtp')->setupThread(1, 1);
+        \Sys::svc('Smtp')->send([], 'hollo, world!');
+        return "\n";
+    }
+
     public function move()
     {
         $cfg = \Sys::cfg('contextio');
