@@ -8,6 +8,15 @@ class Mailbox extends Generic
     const TYPE_OAUTH = 2;
 
     /**
+     * @param $userId
+     * @return array
+     */
+    public function findByUserId($userId)
+    {
+        return \DB::rows('SELECT * FROM mailbox WHERE user_id = ?', [$userId]);
+    }
+
+    /**
      * @param $email
      * @param string $firstName
      * @param string $lastName
