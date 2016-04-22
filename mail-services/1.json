@@ -12,7 +12,6 @@
     "oauth": true,
     "host": "smtp.gmail.com",
     "port": 587,
-    "enc": "tls",
-    "auth": "XOAUTH2"
+    "enc": "tls"
   }
 }

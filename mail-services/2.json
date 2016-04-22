@@ -15,7 +15,6 @@
     "oauth": false,
     "host": "smtp.yandex.com",
     "port": 465,
-    "enc": "ssl",
-    "auth": "LOGIN"
+    "enc": "ssl"
   }
 }
