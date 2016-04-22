@@ -70,7 +70,14 @@ class Smtp
             $this->mail->addCustomHeader('References: ' . implode(' ', $refs));
 
             $this->mail->Subject = $data['subject'];
-            $this->mail->Body = $data['body'][0]['content'];
+
+            $body = '';
+            foreach (preg_split("/\r\n|\n|\r/", $data['body'][0]['content']) as $line)
+            {
+                $body .= '> ' . $line;
+            }
+
+            $this->mail->Body = implode("\n", $body);
 
             if (isset ($data['addresses']['from']))
             {
@@ -111,7 +118,7 @@ class Smtp
             throw new \Exception('Send not setup');
         }
         
-        $this->mail->Body = $body;  // TODO: merge with the quoted version of an existing body
+        $this->mail->Body = $body . "\n" . $this->mail->Body;
 
         if ($to && $subject)
         {
