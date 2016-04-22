@@ -1,0 +1,21 @@
+{
+  "name": "Yandex",
+  "code": "yandex",
+  "in":
+  {
+    "type": "imap",
+    "oauth": false,
+    "host": "imap.yandex.com",
+    "port": 993,
+    "enc": "ssl"
+  },
+  "out":
+  {
+    "type": "smtp",
+    "oauth": false,
+    "host": "smtp.yandex.com",
+    "port": 465,
+    "enc": "ssl",
+    "auth": "LOGIN"
+  }
+}
