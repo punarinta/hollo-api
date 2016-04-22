@@ -18,10 +18,6 @@ class Smtp
     {
         $cfg = \Sys::cfg('contextio');
         $this->conn = new ContextIO($cfg['key'], $cfg['secret']);
-        
-        $this->mail = new \PHPMailer();
-        $this->mail->isHTML(false);
-        $this->mail->isSMTP();
     }
 
     public function setupThread($userId, $messageId = null)
@@ -40,38 +36,37 @@ class Smtp
 
         $settings = json_decode($mailbox->settings, true) ?:[];
 
-        if ($settings['type'] == 1)
+        if (!file_exists($fileName = 'mail-services/' . $settings['service'] . '.json'))
         {
-            $this->mail->Host = $settings['host'];
-            $this->mail->SMTPAuth = (bool) @(strlen($settings['pass']) > 0);
-            $this->mail->Username = $settings['user'];
-            $this->mail->Password = $settings['pass'];
-            $this->mail->SMTPSecure = $settings['sec'];
-            $this->mail->Port = $settings['port'];
+            throw new \Exception('Unsupported mail service');
         }
-        elseif ($settings['type'] == 2)
+
+        $smtpConfig = \Sys::aPath(json_decode(file_get_contents($fileName), true), 'out');
+
+        if ($smtpConfig['oauth'])
         {
-            $token = json_decode(file_get_contents('google.token'), true);
-            $settings['token'] = $token['refresh_token'];
-
             $this->mail = new \PHPMailerOAuth();
-            $this->mail->isSMTP();
-            $this->mail->Host = 'smtp.gmail.com';
-            $this->mail->SMTPAuth = true;
             $this->mail->AuthType = 'XOAUTH2';
-            $this->mail->SMTPSecure = 'tls';
-            $this->mail->Port = 587;
-
             $this->mail->oauthUserEmail = $mailbox->email;
             $this->mail->oauthClientId = \Sys::cfg('social_auth.google.clientId');
             $this->mail->oauthClientSecret = \Sys::cfg('social_auth.google.secret');
             $this->mail->oauthRefreshToken = $settings['token'];
-            $this->mail->SMTPDebug = 4;
         }
         else
         {
-            throw new \Exception('Mailbox type not supported');
+            $this->mail = new \PHPMailer();
+            $this->mail->Username = $settings['user'];
+            $this->mail->Password = $settings['pass'];
         }
+
+        // TODO: support overridden host/port
+        $this->mail->Host = $smtpConfig['host'];
+        $this->mail->Port = $smtpConfig['port'];
+
+        $this->mail->SMTPSecure = $smtpConfig['enc'];
+        $this->mail->SMTPAuth = true;
+        $this->mail->SMTPDebug = 4;
+        $this->mail->isSMTP();
         
         if ($messageId)
         {
