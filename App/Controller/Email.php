@@ -10,43 +10,32 @@ namespace App\Controller;
 class Email extends Generic
 {
     /**
-     * Gets an access token
-     *
-     * @doc-var    (string) email!          - Your email.
-     * @doc-var    (string) firstName       - First name.
-     * @doc-var    (string) lastName        - Last name.
+     * Starts OAuth process
      *
      * @return bool
      * @throws \Exception
      */
-    static function getOAuthToken()
+    static function oAuthStart()
     {
-        if (!$email = trim(\Input::data('email')))
-        {
-            throw new \Exception(\Lang::translate('No email provided.'));
-        }
-
-        // check that the user does not exist
-        if (\Sys::svc('User')->findByEmail($email))
-        {
-            throw new \Exception(\Lang::translate('Cannot register. Probably this email address is already taken.'));
-        }
-
-        return \Sys::svc('Mailbox')->getOAuthToken($email, \Input::data('firstName'), \Input::data('lastName'));
+        return \Sys::svc('Mailbox')->getOAuthToken();
     }
 
     /**
+     * Completes OAuth process
+     *
      * @return mixed
      * @throws \Exception
      */
-    static function saveContextIdByToken()
+    static function oAuthComplete()
     {
-        if (!$token = \Input::data('token'))
+        if (!$code = \Input::data('code'))
         {
-            throw new \Exception('No token provided.');
+            throw new \Exception('No code provided.');
         }
 
-        return \Sys::svc('Mailbox')->saveContextIdByToken($token);
+        \Sys::svc('Mailbox')->processOAuthCode($code);
+        
+        return true;
     }
 
     /**

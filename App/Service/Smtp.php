@@ -154,6 +154,8 @@ class Smtp
             $this->mail->addAddress($toAtom['email'], $toAtom['name']);
         }
 
+        require 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
+
         if (!$this->mail->send())
         {
             throw new \Exception($this->mail->ErrorInfo);

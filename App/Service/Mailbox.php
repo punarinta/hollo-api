@@ -4,9 +4,6 @@ namespace App\Service;
 
 class Mailbox extends Generic
 {
-    const TYPE_IMAP  = 1;
-    const TYPE_OAUTH = 2;
-
     /**
      * @param $userId
      * @return array
@@ -17,23 +14,113 @@ class Mailbox extends Generic
     }
 
     /**
-     * @param $email
-     * @param string $firstName
-     * @param string $lastName
-     * @return null
-     * @throws \Exception
+     * If no code is present, i
+     * 
+     * @param null $code
+     * @return array|string
      */
-    public function getOAuthToken($email, $firstName = 'No first name', $lastName = 'No last name')
+    public function getOAuthToken($code = null)
     {
-        $response = $this->conn->addConnectToken(\Auth::user()->ext_id ?: null,
-        [
-            'callback_url'  => 'https://' . \Sys::cfg('mailless.app_domain'),
-            'email'         => $email,
-            'first_name'    => $firstName,
-            'last_name'     => $lastName
-        ]);
+        $client = new \Google_Client();
+        $client->setApplicationName('Hollo App');
+        $client->setClientId(\Sys::cfg('social_auth.google.clientId'));
+        $client->setClientSecret(\Sys::cfg('social_auth.google.secret'));
+        $client->setRedirectUri('https://' . \Sys::cfg('mailless.app_domain') . '/oauth/google');
+        $client->addScope('https://mail.google.com/');
+        $client->addScope('https://www.googleapis.com/auth/userinfo.email');
+        $client->addScope('https://www.googleapis.com/auth/plus.me');
+        $client->setAccessType('offline');
+        $client->setApprovalPrompt('force');
 
-        return $response->getDataProperty('browser_redirect_url');
+        if ($code)
+        {
+            $accessToken = $client->authenticate($code);
+            $client->setAccessToken($accessToken);
+
+            // use an access token to fetch email and picture
+            $accessToken = json_decode($accessToken, true);
+
+            $ch = curl_init('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' . $accessToken['access_token']);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $data = json_decode(curl_exec($ch), true) ?:[];
+            curl_close($ch);
+
+            return array
+            (
+                'refresh'   => $client->getRefreshToken(),
+                'email'     => $data['email'],
+                'avatar'    => $data['picture'],
+            );
+        }
+        else
+        {
+            return $client->createAuthUrl();
+        }
+    }
+    
+    public function processOAuthCode($code)
+    {
+        $oauthData = $this->getOAuthToken($code);
+
+        $token = $oauthData['token'];
+        $email = $oauthData['email'];
+
+        $user = \Auth::user();
+        if (!$user->ext_id)
+        {
+            // create Context.IO account
+            $data = $this->conn->addAccount(array
+            (
+                'email'                     => $email,
+                'server'                    => '',
+                'username'                  => $email,
+                'use_ssl'                   => 1,
+                'port'                      => '',
+                'type'                      => 'IMAP',
+                'provider_refresh_token'    => $token,
+                'provider_consumer_key'     => \Sys::cfg('social_auth.google.clientId'),
+            ));
+
+            $data = $data->getData();
+
+            $user->ext_id = $data['id'];
+            \Sys::svc('User')->update($user);
+            \Sys::svc('Auth')->sync();
+
+            // add webhook to an existing account
+            $this->conn->addWebhook($user->ext_id,
+            [
+                'callback_url'      => 'https://api.hollo.email/api/context-io',
+                'failure_notif_url' => 'https://api.hollo.email/api/context-io',
+            ]);
+        }
+        else
+        {
+            // just connect a source
+            $this->conn->addSource($user->ext_id, array
+            (
+                'email'                     => $email,
+                'server'                    => '',
+                'username'                  => $email,
+                'use_ssl'                   => 1,
+                'port'                      => '',
+                'type'                      => 'IMAP',
+                'provider_refresh_token'    => $token,
+                'provider_consumer_key'     => \Sys::cfg('social_auth.google.clientId'),
+            ));
+        }
+
+        // create a mailbox
+        $this->create(array
+        (
+            'user_id'   => \Auth::user()->id,
+            'email'     => $email,
+            'settings'  => json_encode(array
+            (
+                'token'     => $token,
+                'service'   => 1,
+            )),
+        ));
     }
 
     /**
@@ -59,30 +146,12 @@ class Mailbox extends Generic
 
         if (isset ($res['account']) && !$user->ext_id)
         {
-            $user->ext_id = $res['account']['id'];
-            \Sys::svc('User')->update($user);
-            \Sys::svc('Auth')->sync();
 
-            // add webhook
-            $this->conn->addWebhook($user->ext_id,
-            [
-                'callback_url'      => 'https://api.hollo.email/api/context-io',
-                'failure_notif_url' => 'https://api.hollo.email/api/context-io',
-            ]);
+
         }
         else throw new \Exception('getConnectToken() error: no account');
 
-        // create a mailbox
-        $this->create(array
-        (
-            'user_id'   => \Auth::user()->id,
-            'email'     => $res['email'],
-            'settings'  => json_encode(array
-            (
-                'token'     => '?',
-                'type'      => self::TYPE_OAUTH,
-            )),
-        ));
+
 
         \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
 
@@ -144,6 +213,8 @@ class Mailbox extends Generic
             $username = $email;
         }
 
+        // TODO: detect service by email
+
         $user = \Auth::user();
 
         if (\Auth::user()->ext_id)
@@ -204,7 +275,7 @@ class Mailbox extends Generic
                 'use_ssl'       => $ssl,
                 'password'      => $password,
                 'port'          => $port,
-                'type'          => self::TYPE_IMAP,
+                'type'          => 2,
             )),
         ));
 
