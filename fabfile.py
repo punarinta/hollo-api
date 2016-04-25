@@ -81,7 +81,7 @@ def get_git_commit():
 
 def restart():
     # restart services
-    sudo('service php5-fpm restart')
+    sudo('service php7.0-fpm restart')
     sudo('service nginx restart')
 
     # restart worker from a new location
