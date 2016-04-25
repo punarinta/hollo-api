@@ -64,10 +64,10 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No password was provided.'));
         }
 
-        if (\Sys::svc('User')->findByEmail($email))
+        if ($user = \Sys::svc('User')->findByEmail($email))
         {
             // login
-            \Sys::svc('Auth')->login($email, $password);
+            \Sys::svc('Auth')->login($user, $password);
         }
         else
         {

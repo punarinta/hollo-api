@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Model\Bcrypt;
+use App\Model\MailService;
 
 class Auth
 {
@@ -61,30 +62,26 @@ class Auth
     }
 
     /**
-     * @param $username
+     * Login cia IMAP
+     *
+     * @param $user
      * @param $password
      * @return mixed
      * @throws \Exception
      */
-    public function login($username, $password)
+    public function login($user, $password)
     {
-        // we're logging in by an email
-        if (!$user = \Sys::svc('User')->findByEmail($username))
-        {
-            throw new \Exception('Incorrect username or password.');
-        }
+        $cfg = json_decode($user->settings, true);
+        $s = MailService::getService($cfg['svc']);
 
-        $crypt = new Bcrypt();
-        $crypt->setCost(\Sys::cfg('sys.password_cost'));
-
-        // check password
-        if (!$crypt->verify($password, $user->password))
+        if (imap_open('{' . $s['in']['host'] . ':' . $s['in']['port'] . '}', $user->email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
 
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['profile'] = \Sys::svc('Profile')->findByUserId($user->id);
+        $_SESSION['-AUTH']['mail'] = [$user->email, $password];
     }
 
     /**
@@ -101,6 +98,8 @@ class Auth
      */
     public function register($email, $password, $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
     {
+        // create a new IMAP user
+
         $crypt = new Bcrypt;
         $password = $crypt->create($password);
 
