@@ -29,16 +29,6 @@ class Auth
     }
 
     /**
-     * Quick access to the current Profile entity
-     *
-     * @return mixed
-     */
-    static function profile()
-    {
-        return \Sys::svc('Auth')->profile();
-    }
-
-    /**
      * Tells if I have the specified role
      *
      * @param $role
