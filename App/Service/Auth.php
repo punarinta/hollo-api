@@ -229,6 +229,7 @@ class Auth
             // no user -> register
 
             $mailService = \Sys::svc('MailService')->findByEmail($email);
+            $in = \Sys::svc('MailService')->getCfg($mailService);
             $settings = ['svc' => $mailService->id];
 
             \DB::begin();
@@ -251,9 +252,11 @@ class Auth
                 }
 
                 // create Context.IO account
-                $data = $this->conn->addAccount($x = array
+                $data = $this->conn->addAccount(array
                 (
                     'email'                     => $email,
+                    'server'                    => $in['host'],
+                    'port'                      => $in['port'],
                     'username'                  => $email,
                     'use_ssl'                   => 1,
                     'type'                      => 'IMAP',

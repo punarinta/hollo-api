@@ -110,7 +110,7 @@ class User extends Generic
             }
         }
 
-        return \Sys::aPath(json_decode($user->settings, true) ?:[], $path);
+        return \Sys::aPath(json_decode(@$user->settings, true) ?:[], $path);
     }
 
     /**
