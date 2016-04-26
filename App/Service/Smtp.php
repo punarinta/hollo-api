@@ -27,43 +27,29 @@ class Smtp
             return false;
         }
 
-        if (!count($mailboxes = \Sys::svc('Mailbox')->findByUserId($userId)))
-        {
-            throw new \Exception('No mailboxes attached.');
-        }
+        $out = \Sys::svc('MailService')->getCfg(\Sys::svc('User')->setting(\Auth::user(), 'svc'), 'out');
 
-        $mailbox = $mailboxes[0];
-
-        $settings = json_decode($mailbox->settings, true) ?:[];
-
-        if (!file_exists($fileName = 'mail-services/' . $settings['service'] . '.json'))
-        {
-            throw new \Exception('Unsupported mail service');
-        }
-
-        $smtpConfig = \Sys::aPath(json_decode(file_get_contents($fileName), true), 'out');
-
-        if ($smtpConfig['oauth'])
+        if ($out['oauth'])
         {
             $this->mail = new \PHPMailerOAuth();
             $this->mail->AuthType = 'XOAUTH2';
-            $this->mail->oauthUserEmail = $mailbox->email;
-            $this->mail->oauthClientId = \Sys::cfg('social_auth.google.clientId');
-            $this->mail->oauthClientSecret = \Sys::cfg('social_auth.google.secret');
-            $this->mail->oauthRefreshToken = $settings['token'];
+            $this->mail->oauthUserEmail = $user->email;
+            $this->mail->oauthClientId = \Sys::cfg('oauth.google.clientId');
+            $this->mail->oauthClientSecret = \Sys::cfg('oauth.google.secret');
+            $this->mail->oauthRefreshToken = $_SESSION['-AUTH']['mail']['token'];
         }
         else
         {
             $this->mail = new \PHPMailer();
-            $this->mail->Username = $settings['user'];
-            $this->mail->Password = $settings['pass'];
+            $this->mail->Username = $_SESSION['-AUTH']['mail']['user'];
+            $this->mail->Password = $_SESSION['-AUTH']['mail']['pass'];
         }
 
         // TODO: support overridden host/port
-        $this->mail->Host = $smtpConfig['host'];
-        $this->mail->Port = $smtpConfig['port'];
+        $this->mail->Host = $out['host'];
+        $this->mail->Port = $out['port'];
 
-        $this->mail->SMTPSecure = $smtpConfig['enc'];
+        $this->mail->SMTPSecure = $out['enc'];
         $this->mail->SMTPAuth = true;
         $this->mail->SMTPDebug = 4;
         $this->mail->isSMTP();
@@ -118,9 +104,9 @@ class Smtp
             }
         }
 
-        // TODO: change user.email onto profile.name
-        $this->mail->setFrom($mailbox->email, $user->email);
-        $this->mail->addReplyTo($mailbox->email, $user->email);
+        $name = \Sys::svc('User')->name();
+        $this->mail->setFrom($user->email, $name);
+        $this->mail->addReplyTo($user->email, $name);
 
         $this->setup = true;
 
