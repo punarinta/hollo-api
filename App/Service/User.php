@@ -134,7 +134,7 @@ class User extends Generic
             }
         }
 
-        $s = json_decode($user->settings, true) ?:[];
+        $s = json_decode(@$user->settings, true) ?:[];
 
         return trim(@$s['firstName'] . ' ' . @$s['lastName']);
     }
