@@ -3,7 +3,9 @@
 namespace App\Service;
 use App\Model\ContextIO\ContextIO;
 
-include_once 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
+include_once 'vendor/phpmailer/phpmailer/class.phpmailer.php';
+include_once 'vendor/phpmailer/phpmailer/class.phpmaileroauth.php';
+include_once 'vendor/phpmailer/phpmailer/class.phpmaileroauthgoogle.php';
 include_once 'vendor/guzzlehttp/promises/src/functions_include.php';
 include_once 'vendor/guzzlehttp/psr7/src/functions_include.php';
 include_once 'vendor/guzzlehttp/guzzle/src/functions_include.php';
@@ -27,7 +29,7 @@ class Smtp
             return false;
         }
 
-        $out = \Sys::svc('MailService')->getCfg(\Sys::svc('User')->setting(\Auth::user(), 'svc'), 'out');
+        $out = \Sys::svc('MailService')->getCfg(\Sys::svc('User')->setting($user, 'svc'), 'out');
 
         if ($out['oauth'])
         {
@@ -51,7 +53,7 @@ class Smtp
 
         $this->mail->SMTPSecure = $out['enc'];
         $this->mail->SMTPAuth = true;
-        $this->mail->SMTPDebug = 4;
+    //    $this->mail->SMTPDebug = 4;
         $this->mail->isSMTP();
         
         if ($messageId)
