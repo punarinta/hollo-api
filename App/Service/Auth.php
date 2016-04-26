@@ -220,7 +220,7 @@ class Auth
     {
         $oauthData = $this->getOAuthToken($code);
 
-        $token = $oauthData['token'];
+        $token = $oauthData['refresh'];
         $email = $oauthData['email'];
         // $avatar = $oauthData['avatar'];
 
