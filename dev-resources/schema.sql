@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `mail_service` (
 --
 
 INSERT INTO `mail_service` (`id`, `name`, `domains`, `cfg_in`, `cfg_out`) VALUES
-  (1, 'Gmail', '|gmail.com|', '{"type":"imap","oauth":true}', '{"type":"smtp","oauth":true,"host":"smtp.gmail.com","port":587,"enc":"tls"}'),
+  (1, 'Gmail', '|gmail.com|', '{"type":"imap","oauth":true,"host":"imap.gmail.com","port":993}', '{"type":"smtp","oauth":true,"host":"smtp.gmail.com","port":587,"enc":"tls"}'),
   (2, 'Yandex', '|yandex.ru|yandex.com|ya.ru|', '{"type":"imap","oauth":false,"host":"imap.yandex.com","port":993,"enc":"ssl"}', '{"type":"smtp","oauth":false,"host":"smtp.yandex.com","port":465,"enc":"ssl"}');
 
 -- --------------------------------------------------------
