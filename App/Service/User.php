@@ -87,4 +87,51 @@ class User extends Generic
             'last_name'  => $settings->lastName,
         ));
     }
+
+    /**
+     * Returns a particular User setting
+     *
+     * @param $user
+     * @param null $path
+     * @return null
+     * @throws \Exception
+     */
+    public function setting($user, $path = null)
+    {
+        if (!is_object($user))
+        {
+            if (!$user = $this->findById($user))
+            {
+                throw new \Exception('User does not exist');
+            }
+        }
+
+        return \Sys::aPath(json_decode($user->settings, true) ?:[], $path);
+    }
+
+    /**
+     * Returns User's name
+     *
+     * @param $user
+     * @return mixed
+     * @throws \Exception
+     */
+    public function name($user = null)
+    {
+        if (!$user)
+        {
+            $user = \Auth::user();
+        }
+        else if (!is_object($user))
+        {
+            if (!$user = $this->findById($user))
+            {
+                throw new \Exception('User does not exist');
+            }
+        }
+
+        $s = json_decode($user->settings, true) ?:[];
+
+        return trim(@$s['firstName'] . ' ' . @$s['lastName']);
+    }
 }
