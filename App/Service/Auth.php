@@ -264,8 +264,14 @@ class Auth
                 ));
 
                 $data = $data->getData();
-
                 $user->ext_id = $data['id'];
+
+                // save token, just in case
+                // TODO: register, log out, login, post.
+                $s = \Sys::svc('User')->setting();
+                $s['token'] = $token;
+                $user->settings = json_encode($s);
+
                 \Sys::svc('User')->update($user);
 
                 // add webhook to an existing account
