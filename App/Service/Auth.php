@@ -116,7 +116,7 @@ class Auth
                 'ext_id'    => null,
                 'roles'     => \Auth::USER,
                 'created'   => time(),
-                'settings'  => $settings,
+                'settings'  => json_encode($settings),
             ));
 
             if (!$user->id)
@@ -242,7 +242,7 @@ class Auth
                     'ext_id'    => null,
                     'roles'     => \Auth::USER,
                     'created'   => time(),
-                    'settings'  => $settings,
+                    'settings'  => json_encode($settings),
                 ));
 
                 if (!$user->id)
@@ -251,13 +251,11 @@ class Auth
                 }
 
                 // create Context.IO account
-                $data = $this->conn->addAccount(array
+                $data = $this->conn->addAccount($x = array
                 (
                     'email'                     => $email,
-                    'server'                    => '',
                     'username'                  => $email,
                     'use_ssl'                   => 1,
-                    'port'                      => '',
                     'type'                      => 'IMAP',
                     'provider_refresh_token'    => $token,
                     'provider_consumer_key'     => \Sys::cfg('oauth.google.clientId'),

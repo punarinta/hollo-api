@@ -96,9 +96,13 @@ class User extends Generic
      * @return null
      * @throws \Exception
      */
-    public function setting($user, $path = null)
+    public function setting($user = null, $path = null)
     {
-        if (!is_object($user))
+        if (!$user)
+        {
+            $user = \Auth::user();
+        }
+        else if (!is_object($user))
         {
             if (!$user = $this->findById($user))
             {
