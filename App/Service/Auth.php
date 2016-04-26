@@ -66,10 +66,12 @@ class Auth
         // mail service is known
         $in = \Sys::svc('MailService')->getCfg($cfg['svc']);
 
-        if (imap_open('{' . $in['host'] . ':' . $in['port'] . '}', $user->email, $password))
+        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '}', $user->email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
+
+        imap_close($box);
 
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['mail'] = ['user' => $user->email, 'pass' => $password];
@@ -89,10 +91,12 @@ class Auth
         $mailService = \Sys::svc('MailService')->findByEmail($email);
         $in = \Sys::svc('MailService')->getCfg($mailService);
 
-        if (imap_open('{' . $in['host'] . ':' . $in['port'] . '}', $email, $password))
+        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '}', $email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
+
+        imap_close($box);
         
         $settings = ['svc' => $mailService->id];
         
