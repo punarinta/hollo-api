@@ -85,14 +85,21 @@ class Auth extends Generic
     }
 
     /**
+     * Initializes OAuth authentication procedure
      *
+     * @return string
      */
     static function getOAuthToken()
     {
-        \Sys::svc('Auth')->getOAuthToken();
+        // TODO: add a switch to support different OAuth providers
+
+        return \Sys::svc('Auth')->getOAuthToken();
     }
 
     /**
+     * Completes OAuth authentication procedure
+     *
+     * @return array
      * @throws \Exception
      */
     static function processOAuthCode()
@@ -102,7 +109,9 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No code was provided.'));
         }
 
-        \Sys::svc('Auth')->getOAuthToken($code);
+        \Sys::svc('Auth')->processOAuthCode($code);
+
+        return self::status();
     }
 
     /**
