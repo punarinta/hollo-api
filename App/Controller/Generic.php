@@ -31,7 +31,7 @@ class Generic
         // set up proper localization
     /*    if (\Auth::check())
         {
-            \Lang::setLocale(\Auth::user()->language);
+            \Lang::setLocale(\Sys::aPath(json_decode(\Auth::user()->settings, true)?:[]), 'locale');
         }*/
 
         // setup pagination

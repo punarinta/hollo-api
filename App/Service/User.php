@@ -64,4 +64,27 @@ class User extends Generic
 
         return $res['id'];
     }
+
+    /**
+     * Syncs remote account name with the local one
+     *
+     * @param $userId
+     * @throws \Exception
+     */
+    public function syncNames($userId)
+    {
+        $user = \Sys::svc('User')->findById($userId);
+        $settings = json_decode($user->settings);
+
+        if (!$user || !$user->ext_id)
+        {
+            throw new \Exception('Names sync is not possible');
+        }
+
+        $this->conn->modifyAccount($user->ext_id, array
+        (
+            'first_name' => $settings->firstName,
+            'last_name'  => $settings->lastName,
+        ));
+    }
 }

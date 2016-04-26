@@ -11,14 +11,13 @@ class Profile extends Generic
      */
     static public function read()
     {
-        $profile = \Auth::profile();
+        $settings = json_decode(\Auth::user()->settings);
        
         return array
         (
-            'firstName' => $profile->first_name,
-            'lastName'  => $profile->last_name,
-            'signature' => null,
-            'emails'    => \Sys::svc('Profile')->getEmailsForUser(\Auth::user()),
+            'firstName' => $settings->firstName,
+            'lastName'  => $settings->lastName,
+            'signature' => $settings->signature,
         );
     }
     
@@ -33,12 +32,12 @@ class Profile extends Generic
      */
     static public function update()
     {
-        $profile = \Auth::profile();
+        $user = \Auth::user();
+        $settings = json_decode($user->settings);
 
-        if (\Input::data('firstName') !== null) $profile->first_name = \Input::data('firstName');
-        if (\Input::data('lastName') !== null) $profile->last_name = \Input::data('lastName');
+        if (\Input::data('firstName') !== null) $settings->firstName = \Input::data('firstName');
+        if (\Input::data('lastName') !== null) $settings->lastName = \Input::data('lastName');
 
-        \Sys::svc('Contact')->update($profile);
-        \Sys::svc('Profile')->syncNames(\Auth::user()->id);
+        \Sys::svc('User')->update($user);
     }
 }
