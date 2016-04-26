@@ -19,12 +19,16 @@ $autoClasses0 =
     // 3rd parties
 //    'Predis'    => 'vendor/predis/predis/lib',
     'Resque'    => 'vendor/chrisboulton/php-resque/lib',
-//    'Google'    => 'vendor/google/apiclient/src',
+    'Google'    => 'vendor/google/apiclient/src',
 ];
 
 $autoClasses4 =
 [
-//    'Facebook\\' => 'vendor/facebook/php-sdk-v4/src/Facebook/',
+    'League\\OAuth2\\Client\\' => ['vendor/league/oauth2-client/src/', 'vendor/league/oauth2-google/src/'],
+    'Psr\\Http\\Message\\'  => 'vendor/psr/http-message/src/',
+    'GuzzleHttp\\Psr7\\'    => 'vendor/guzzlehttp/psr7/src/',
+    'GuzzleHttp\\Promise\\' => 'vendor/guzzlehttp/promises/src/',
+    'GuzzleHttp\\'          => 'vendor/guzzlehttp/guzzle/src/',
 ];
 
 spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4)
@@ -53,8 +57,23 @@ spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4)
     {
         if (0 === strpos($class, $namespace))
         {
-            @include_once $dir . strtr(str_replace($namespace, '', $class), '\\', '/') . '.php';
-            return true;
+            if (is_array($dir))
+            {
+                foreach ($dir as $dirry)
+                {
+                    $file = $dirry . strtr(str_replace($namespace, '', $class), '\\', '/') . '.php';
+                    if (file_exists($file))
+                    {
+                        @include_once $file;
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                @include_once $dir . strtr(str_replace($namespace, '', $class), '\\', '/') . '.php';
+                return true;
+            }
         }
     }
 
@@ -71,7 +90,7 @@ unset ($autoClasses0, $autoClasses4);
 
 // 4. Compiled routes
 
-// Built 26.04.16 @ 10:03:01 +0200
+// Built 26.04.16 @ 12:08:45 +0200
 
 $GLOBALS['-R'] = [
 'settings' => ['/api/settings', \Auth::USER, '\App\Controller\Settings', 'index'],
