@@ -46,24 +46,6 @@ class User extends Generic
     }
 
     /**
-     * Overwritten to insert Profile
-     *
-     * @param $data
-     * @return \StdClass
-     */
-    public function create($data)
-    {
-        $user = parent::create($data);
-
-        \Sys::svc('Profile')->create(array
-        (
-            'user_id'   => $user->id,
-        ));
-
-        return $user;
-    }
-
-    /**
      * Adds an account to a user
      *
      * @param $email

@@ -2,12 +2,18 @@
 
 namespace App\Service;
 
-use App\Model\Bcrypt;
-use App\Model\MailService;
+use App\Model\ContextIO\ContextIO;
 
 class Auth
 {
+    protected $conn   = null;
     protected $secure = true;
+
+    public function __construct()
+    {
+        $cfg = \Sys::cfg('contextio');
+        $this->conn = new ContextIO($cfg['key'], $cfg['secret']);
+    }
 
     /**
      * Returns a current logged-in user
@@ -19,21 +25,6 @@ class Auth
         if (isset ($_SESSION['-AUTH']['user']) && isset ($_SESSION['-AUTH']['user']->id))
         {
             return $_SESSION['-AUTH']['user'];
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns a profile for the current logged-in user
-     *
-     * @return null
-     */
-    public function profile()
-    {
-        if (isset ($_SESSION['-AUTH']['profile']) && isset ($_SESSION['-AUTH']['profile']->id))
-        {
-            return $_SESSION['-AUTH']['profile'];
         }
 
         return null;
@@ -56,110 +47,244 @@ class Auth
         }
 
         $_SESSION['-AUTH']['user'] = $user;
-        $_SESSION['-AUTH']['profile'] = \Sys::svc('Profile')->findByUserId($userId);
 
         return true;
     }
 
     /**
-     * Login cia IMAP
+     * Login via IMAP
      *
      * @param $user
      * @param $password
      * @return mixed
      * @throws \Exception
      */
-    public function login($user, $password)
+    public function loginImap($user, $password)
     {
-        $cfg = json_decode($user->settings, true);
-        $s = MailService::getService($cfg['svc']);
+        $cfg = json_decode($user->settings, true) ?:[];
 
-        if (imap_open('{' . $s['in']['host'] . ':' . $s['in']['port'] . '}', $user->email, $password))
+        // mail service is known
+        $in = \Sys::svc('MailService')->getCfg($cfg['svc']);
+
+        if (imap_open('{' . $in['host'] . ':' . $in['port'] . '}', $user->email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
 
         $_SESSION['-AUTH']['user'] = $user;
-        $_SESSION['-AUTH']['profile'] = \Sys::svc('Profile')->findByUserId($user->id);
-        $_SESSION['-AUTH']['mail'] = [$user->email, $password];
+        $_SESSION['-AUTH']['mail'] = ['user' => $user->email, 'pass' => $password];
     }
 
     /**
-     * Registers a new user
+     * Registers via IMAP
      *
      * @param $email
      * @param string $password
-     * @param string $firstName
-     * @param string $lastName
-     * @param string $lang
-     * @param bool $login
+     * @param string $locale
      * @return mixed
      * @throws \Exception
      */
-    public function register($email, $password, $firstName = '', $lastName = '', $lang = 'en_US', $login = false)
+    public function registerImap($email, $password, $locale = 'en_US')
     {
-        // create a new IMAP user
+        $mailService = \Sys::svc('MailService')->findByEmail($email);
+        $in = \Sys::svc('MailService')->getCfg($mailService);
 
-        $crypt = new Bcrypt;
-        $password = $crypt->create($password);
-
-        $user = \Sys::svc('User')->create(array
-        (
-            'email'         => $email,
-            'password'      => $password,
-            'ext_id'        => null,
-            'roles'         => \Auth::USER,
-            'locale'        => $lang,
-            'created'       => time(),
-        ));
-
-        if (!$user->id)
+        if (imap_open('{' . $in['host'] . ':' . $in['port'] . '}', $email, $password))
         {
-            throw new \Exception('Cannot add user');
+            throw new \Exception('Incorrect username or password.');
+        }
+        
+        $settings = ['svc' => $mailService->id];
+        
+        if ($locale != 'en_US')
+        {
+            $settings['locale'] = $locale;
+        }
+        
+        \DB::begin();
+        
+        try
+        {
+            // create Hollo account
+            $user = \Sys::svc('User')->create(array
+            (
+                'email'     => $email,
+                'ext_id'    => null,
+                'roles'     => \Auth::USER,
+                'created'   => time(),
+                'settings'  => $settings,
+            ));
+
+            if (!$user->id)
+            {
+                throw new \Exception('Cannot add user');
+            }
+
+            // create Context account
+            $res = $this->conn->addAccount(array
+            (
+                'email'         => $email,
+                'server'        => $in['host'],
+                'username'      => $email,
+                'use_ssl'       => $in['enc'] != 'no',
+                'password'      => $password,
+                'port'          => $in['port'],
+                'type'          => 'IMAP',
+            ));
+            
+            if (!$res)
+            {
+                throw new \Exception('Cannot add account');
+            }
+
+            $res = $res->getData();
+            $user->ext_id = $res['id'];
+            \Sys::svc('User')->update($user);
+
+            // add Context web-hook
+            $this->conn->addWebhook($user->ext_id,
+            [
+                'callback_url'      => 'https://api.hollo.email/api/context-io',
+                'failure_notif_url' => 'https://api.hollo.email/api/context-io',
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            \DB::rollback();
+            throw $e;
         }
 
-        // profile is created automatically, just fill in some stuff
-        $profile = \Sys::svc('Profile')->findByUserId($user->id, true);
+        \DB::commit();
 
-        $profile->first_name = $firstName;
-        $profile->last_name  = $lastName;
-        \Sys::svc('Profile')->update($profile);
+        $_SESSION['-AUTH']['user'] = $user;
+        $_SESSION['-AUTH']['mail'] = ['user' => $user->email, 'pass' => $password];
 
-        if ($login)
-        {
-            $_SESSION['-AUTH']['user'] = $user;
-            $_SESSION['-AUTH']['profile'] = $profile;
-        }
+        \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
 
         return $user;
     }
 
     /**
-     * Changes a password for a user
+     * If no code is present, init
      *
-     * @param $userId
-     * @param $password
-     * @param $passwordVerify
-     * @throws \Exception
+     * @param null $code
+     * @return array|string
      */
-    public function changePassword($userId, $password, $passwordVerify)
+    public function getOAuthToken($code = null)
     {
-        if ($password !== $passwordVerify)
+        $client = new \Google_Client();
+        $client->setApplicationName('Hollo App');
+        $client->setClientId(\Sys::cfg('social_auth.google.clientId'));
+        $client->setClientSecret(\Sys::cfg('social_auth.google.secret'));
+        $client->setRedirectUri('https://' . \Sys::cfg('mailless.app_domain') . '/oauth/google');
+        $client->addScope('https://mail.google.com/');
+        $client->addScope('https://www.googleapis.com/auth/userinfo.email');
+        $client->addScope('https://www.googleapis.com/auth/plus.me');
+        $client->setAccessType('offline');
+        $client->setApprovalPrompt('force');
+
+        if ($code)
         {
-            throw new \Exception(\Lang::translate('Password verification is wrong.'));
-        }
+            $accessToken = $client->authenticate($code);
+            $client->setAccessToken($accessToken);
 
-        if (!isset ($password[5]))
+            // use an access token to fetch email and picture
+            $accessToken = json_decode($accessToken, true);
+
+            $ch = curl_init('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' . $accessToken['access_token']);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $data = json_decode(curl_exec($ch), true) ?:[];
+            curl_close($ch);
+
+            return array
+            (
+                'refresh'   => $client->getRefreshToken(),
+                'email'     => $data['email'],
+                'avatar'    => $data['picture'],
+            );
+        }
+        else
         {
-            throw new \Exception('Password should be longer than 5 symbols');
+            return $client->createAuthUrl();
         }
-
-        $user = \Sys::svc('User')->findById($userId);
-
-        $crypt = new Bcrypt;
-        $user->password = $crypt->create($password);
-        \Sys::svc('User')->update($user);
     }
+
+    /**
+     * @param $code
+     */
+    public function processOAuthCode($code)
+    {
+        $oauthData = $this->getOAuthToken($code);
+
+        $token = $oauthData['token'];
+        $email = $oauthData['email'];
+        // $avatar = $oauthData['avatar'];
+
+        if (!$user = \Sys::svc('User')->findByEmail($email))
+        {
+            // no user -> register
+
+            $mailService = \Sys::svc('MailService')->findByEmail($email);
+            $settings = ['svc' => $mailService->id];
+
+            \DB::begin();
+
+            try
+            {
+                // create Hollo account
+                $user = \Sys::svc('User')->create(array
+                (
+                    'email'     => $email,
+                    'ext_id'    => null,
+                    'roles'     => \Auth::USER,
+                    'created'   => time(),
+                    'settings'  => $settings,
+                ));
+
+                if (!$user->id)
+                {
+                    throw new \Exception('Cannot add user');
+                }
+
+                // create Context.IO account
+                $data = $this->conn->addAccount(array
+                (
+                    'email'                     => $email,
+                    'server'                    => '',
+                    'username'                  => $email,
+                    'use_ssl'                   => 1,
+                    'port'                      => '',
+                    'type'                      => 'IMAP',
+                    'provider_refresh_token'    => $token,
+                    'provider_consumer_key'     => \Sys::cfg('social_auth.google.clientId'),
+                ));
+
+                $data = $data->getData();
+
+                $user->ext_id = $data['id'];
+                \Sys::svc('User')->update($user);
+
+                // add webhook to an existing account
+                $this->conn->addWebhook($user->ext_id,
+                [
+                    'callback_url'      => 'https://api.hollo.email/api/context-io',
+                    'failure_notif_url' => 'https://api.hollo.email/api/context-io',
+                ]);
+            }
+            catch (\Exception $e)
+            {
+                \DB::rollback();
+            }
+
+            \DB::commit();
+
+            \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
+        }
+
+        $_SESSION['-AUTH']['user'] = $user;
+        $_SESSION['-AUTH']['mail'] = ['token' => $token];
+    }
+
 
     /**
      * Logs you out
@@ -195,7 +320,6 @@ class Auth
         }
 
         $_SESSION['-AUTH']['user'] = $newUser;
-        $_SESSION['-AUTH']['profile'] = \Sys::svc('Profile')->findByUserId($newUser->id);
     }
 
     /**
@@ -211,7 +335,6 @@ class Auth
         }
 
         $_SESSION['-AUTH']['user'] = $_SESSION['-AUTH']['real-user'];
-        $_SESSION['-AUTH']['profile'] = \Sys::svc('Profile')->findByUserId($_SESSION['-AUTH']['real-user']->id);
 
         unset ($_SESSION['-AUTH']['real-user']);
     }
