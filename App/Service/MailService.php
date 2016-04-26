@@ -61,4 +61,44 @@ class MailService extends Generic
 
         return $this->findByDomain($domain[1]);
     }
+
+    /**
+     * Discovers IMAP settings for a specified email. Returns 'cfg_in'.
+     *
+     * @param $email
+     * @return array|bool
+     */
+    public function discoverEmail($email)
+    {
+        // TODO: refactor
+
+        $r = $this->conn->discovery(array
+        (
+            'source_type'   => 'IMAP',
+            'email'         => $email,
+        ));
+
+        if ($r = $r->getData())
+        {
+            if ($r['found'])
+            {
+                $r = $r['imap'];
+
+                return array
+                (
+                    'ssl'       => $r['use_ssl'],
+                    'port'      => $r['port'],
+                    'oauth'     => $r['oauth'],
+                    'server'    => $r['server'],
+                    'username'  => $r['username'],
+                );
+            }
+            else
+            {
+                return ['oauth' => false];
+            }
+        }
+
+        return false;
+    }
 }
