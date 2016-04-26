@@ -30,7 +30,6 @@ class Auth extends Generic
             (
                 'id'        => \Auth::user()->id,
                 'contextId' => \Auth::user()->ext_id,
-                'locale'    => \Auth::user()->locale,
                 'email'     => \Auth::user()->email,
             ) : null,
             'roles'     => \Auth::textRoles(isset ($_SESSION['-AUTH']['user']) ? $_SESSION['-AUTH']['user']->roles : 0),
@@ -39,7 +38,7 @@ class Auth extends Generic
     }
 
     /**
-     * Smartly choose between login and register
+     * Login via standard mechanisms
      *
      * @doc-var    (string) identity!       - User email.
      * @doc-var    (string) credential!     - User password.
@@ -47,7 +46,7 @@ class Auth extends Generic
      * @return array
      * @throws \Exception
      */
-    static function logister()
+    static function loginImap()
     {
         if (\Auth::check())
         {
@@ -67,7 +66,7 @@ class Auth extends Generic
         if ($user = \Sys::svc('User')->findByEmail($email))
         {
             // login
-            \Sys::svc('Auth')->login($user, $password);
+            \Sys::svc('Auth')->loginImap($user, $password);
         }
         else
         {
@@ -79,15 +78,31 @@ class Auth extends Generic
                 throw new \Exception(\Lang::translate('Malformed email.'));
             }
 
-            if (strlen($password) < 6)
-            {
-                throw new \Exception(\Lang::translate('Password must be minimum 6 symbols long.'));
-            }
-
-            \Sys::svc('Auth')->register($email, $password, '', '', $locale, true);
+            \Sys::svc('Auth')->registerImap($email, $password, $locale);
         }
 
         return self::status();
+    }
+
+    /**
+     *
+     */
+    static function getOAuthToken()
+    {
+        \Sys::svc('Auth')->getOAuthToken();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    static function processOAuthCode()
+    {
+        if (!$code = \Input::data('code'))
+        {
+            throw new \Exception(\Lang::translate('No code was provided.'));
+        }
+
+        \Sys::svc('Auth')->getOAuthToken($code);
     }
 
     /**
