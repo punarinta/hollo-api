@@ -98,7 +98,7 @@ class Auth
 
         imap_close($box);
         
-        $settings = ['svc' => $mailService->id];
+        $settings = ['svc' => (int) $mailService->id];
         
         if ($locale != 'en_US')
         {
@@ -230,7 +230,7 @@ class Auth
 
             $mailService = \Sys::svc('MailService')->findByEmail($email);
             $in = \Sys::svc('MailService')->getCfg($mailService);
-            $settings = ['svc' => $mailService->id];
+            $settings = ['svc' => (int) $mailService->id];
 
             \DB::begin();
 
@@ -268,10 +268,10 @@ class Auth
                 $user->ext_id = $data['id'];
 
                 // save token, just in case
-                // TODO: register, log out, login, post.
-                $s = \Sys::svc('User')->setting();
-                $s['token'] = $token;
-                $user->settings = json_encode($s);
+                // TODO: CHECK: register, log out, login, post.
+                // $s = \Sys::svc('User')->setting($user);
+                // $settings['token'] = $token;
+                // $user->settings = json_encode($s);
 
                 \Sys::svc('User')->update($user);
 
