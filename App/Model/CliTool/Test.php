@@ -10,6 +10,8 @@ class Test
 {
     public function smtp()
     {
+        // fill your own refresh token
+        $_SESSION['-AUTH']['mail']['token'] = 'foobar';
         \Sys::svc('Smtp')->setupThread(1, 1);
         \Sys::svc('Smtp')->send([['email'=>'cheaterx@yandex.ru', 'name'=>'Test Guy']], 'hollo, world!' . uniqid());
         return "\n";
