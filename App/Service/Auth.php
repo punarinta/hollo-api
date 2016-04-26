@@ -174,8 +174,8 @@ class Auth
     {
         $client = new \Google_Client();
         $client->setApplicationName('Hollo App');
-        $client->setClientId(\Sys::cfg('social_auth.google.clientId'));
-        $client->setClientSecret(\Sys::cfg('social_auth.google.secret'));
+        $client->setClientId(\Sys::cfg('oauth.google.clientId'));
+        $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
         $client->setRedirectUri('https://' . \Sys::cfg('mailless.app_domain') . '/oauth/google');
         $client->addScope('https://mail.google.com/');
         $client->addScope('https://www.googleapis.com/auth/userinfo.email');
@@ -256,7 +256,7 @@ class Auth
                     'port'                      => '',
                     'type'                      => 'IMAP',
                     'provider_refresh_token'    => $token,
-                    'provider_consumer_key'     => \Sys::cfg('social_auth.google.clientId'),
+                    'provider_consumer_key'     => \Sys::cfg('oauth.google.clientId'),
                 ));
 
                 $data = $data->getData();

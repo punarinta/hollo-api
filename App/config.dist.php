@@ -57,18 +57,8 @@ return array
         'support'       => 'dev+support@hollo.email',
         'noreply'       => 'dev+noreply@hollo.email',
     ),
-    'social_auth' => array
+    'oauth' => array
     (
-        'facebook' => array
-        (
-            'appId'     => '',
-            'secret'    => '',
-        ),
-        'twitter' => array
-        (
-            'key'     => '',
-            'secret'    => '',
-        ),
         'google' => array
         (
             'clientId'  => '.apps.googleusercontent.com',
