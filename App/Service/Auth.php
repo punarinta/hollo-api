@@ -66,7 +66,7 @@ class Auth
         // mail service is known
         $in = \Sys::svc('MailService')->getCfg($cfg['svc']);
 
-        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '}', $user->email, $password))
+        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $user->email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
@@ -91,7 +91,7 @@ class Auth
         $mailService = \Sys::svc('MailService')->findByEmail($email);
         $in = \Sys::svc('MailService')->getCfg($mailService);
 
-        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '}', $email, $password))
+        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
