@@ -59,43 +59,23 @@ class Message extends Generic
      */
     public function syncAll($user, $contact)
     {
-        // TODO: limit the amount of synced messages to 10 per contact
-
-        $count = 0;
-        $limit = 100;
-        $offset = 0;
-
         $params =
         [
             'include_body'  => 1,
-            'limit'         => $limit,
+            'limit'         => \Sys::cfg('sys.sync_depth'),     // max limit = 100
             'email'         => $contact->email,
             'date_after'    => $user->last_sync_ts ?: 1,
+            'sort_order'    => 'desc',
         ];
 
-        // paginate requests
-        while (1)
+        $rows = $this->conn->listMessages($user->ext_id, $params)->getData();
+
+        foreach ($rows as $row)
         {
-            $params['offset'] = $offset;
-
-            $rows = $this->conn->listMessages($user->ext_id, $params)->getData();
-
-            foreach ($rows as $row)
-            {
-                $this->processMessageSync($row, $contact);
-            }
-
-            $count += count($rows);
-            
-            if (count($rows) < $limit)
-            {
-                break;
-            }
-
-            $offset += $limit;
+            $this->processMessageSync($row, $contact);
         }
 
-        return $count;
+        return count($rows);
     }
 
     /**

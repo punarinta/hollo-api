@@ -3,12 +3,13 @@
 namespace App\Service;
 use App\Model\ContextIO\ContextIO;
 
-include_once 'vendor/phpmailer/phpmailer/class.phpmailer.php';
+/*include_once 'vendor/phpmailer/phpmailer/class.phpmailer.php';
 include_once 'vendor/phpmailer/phpmailer/class.phpmaileroauth.php';
-include_once 'vendor/phpmailer/phpmailer/class.phpmaileroauthgoogle.php';
-include_once 'vendor/guzzlehttp/promises/src/functions_include.php';
-include_once 'vendor/guzzlehttp/psr7/src/functions_include.php';
-include_once 'vendor/guzzlehttp/guzzle/src/functions_include.php';
+include_once 'vendor/phpmailer/phpmailer/class.phpmaileroauthgoogle.php';*/
+require_once 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
+require_once 'vendor/guzzlehttp/promises/src/functions_include.php';
+require_once 'vendor/guzzlehttp/psr7/src/functions_include.php';
+require_once 'vendor/guzzlehttp/guzzle/src/functions_include.php';
 
 class Smtp
 {
@@ -20,8 +21,18 @@ class Smtp
     {
         $cfg = \Sys::cfg('contextio');
         $this->conn = new ContextIO($cfg['key'], $cfg['secret']);
+        $this->mail = new \PHPMailer();
     }
 
+    /**
+     * Sets up message sending for a particular thread
+     *
+     * @param $userId
+     * @param null $messageId
+     * @return bool
+     * @throws \Exception
+     * @throws \phpmailerException
+     */
     public function setupThread($userId, $messageId = null)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
@@ -116,6 +127,8 @@ class Smtp
     }
 
     /**
+     * Sends a message, can add more recipients
+     *
      * @param array $to
      * @param $body
      * @param null $subject
@@ -141,8 +154,6 @@ class Smtp
         {
             $this->mail->addAddress($toAtom['email'], $toAtom['name']);
         }
-
-        require 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
 
         if (!$this->mail->send())
         {
