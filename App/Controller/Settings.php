@@ -38,6 +38,8 @@ class Profile extends Generic
         if (\Input::data('firstName') !== null) $settings->firstName = \Input::data('firstName');
         if (\Input::data('lastName') !== null) $settings->lastName = \Input::data('lastName');
 
+        // save settings back
+        $user->settings = json_encode($settings);
         \Sys::svc('User')->update($user);
     }
 }
