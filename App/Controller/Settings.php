@@ -24,7 +24,6 @@ class Profile extends Generic
     /**
      * Update your profile info
      *
-     * @doc-var     (int) id!               - Contact ID.
      * @doc-var     (string) firstName      - First name.
      * @doc-var     (string) lastName       - Last name.
      * @doc-var     (string) signature      - Signature.
