@@ -55,9 +55,10 @@ class Message extends Generic
      *
      * @param $user
      * @param $contact
-     * @return int
+     * @param int $offset
+     * @return mixed
      */
-    public function syncAll($user, $contact)
+    public function syncAll($user, $contact, $offset = 0)
     {
         $params =
         [
@@ -66,6 +67,7 @@ class Message extends Generic
             'email'         => $contact->email,
             'date_after'    => $user->last_sync_ts ?: 1,
             'sort_order'    => 'desc',
+            'offset'        => $offset,
         ];
 
         $rows = $this->conn->listMessages($user->ext_id, $params)->getData();
