@@ -51,7 +51,7 @@ class Message extends Generic
     }
 
     /**
-     * Performs message sync for a specified email
+     * Performs initial message sync for a specified contact
      *
      * @param $user
      * @param $contact
@@ -111,6 +111,13 @@ class Message extends Generic
                 'name'      => $data['addresses']['from']['name'],
                 'count'     => 1,
             ));
+        }
+        else
+        {
+            // update contact's count
+            $data = $this->conn->getContact($accountId, ['email' => $contact->email])->getData();
+            $contact->count = $data['count'];
+            \Sys::svc('Contact')->update($contact);
         }
 
         $this->processMessageSync($data, $contact);
