@@ -19,9 +19,35 @@ class Message extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        return \Sys::svc('Message')->findByContact($email, \Input::data('subject'));
+        return \Sys::svc('Message')->findByContactEmail($email, \Input::data('subject'));
     }
 
+    /**
+     * Returns N more messages for a contact
+     *
+     * @doc-var     (string) subject     - Filter by subject.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    static public function moreByEmail()
+    {
+        if (!$email = \Input::data('email'))
+        {
+            throw new \Exception('Email not provided.');
+        }
+
+        if (!$contact = \Sys::svc('Contact')->findByEmailAndUserId($email, \Auth::user()))
+        {
+            throw new \Exception('Contact not found');
+        }
+
+        return \Sys::svc('Message')->moreByContact($contact, \Auth::user());
+    }
+
+    /**
+     * @return bool
+     */
     static public function reply()
     {
         return true;

@@ -5,6 +5,8 @@ namespace App\Service;
 class Message extends Generic
 {
     /**
+     * Finds a Message by its external ID
+     *
      * @param $extId
      * @return null|\StdClass
      */
@@ -14,13 +16,26 @@ class Message extends Generic
     }
 
     /**
+     * Returns the total count of messages synced for this contact
+     *
+     * @param $email
+     * @return mixed
+     */
+    public function countByContact($email)
+    {
+        $x = \DB::row('SELECT count(cm.message_id) AS c FROM contact_message AS cm LEFT JOIN contact AS c ON c.id=cm.contact_id WHERE c.email = ?', [$email]);
+        return $x->c;
+    }
+
+    /**
      * Returns messages associated with a contact. May filter by subject.
      *
      * @param $email
      * @param null $subject
+     * @param int $offset
      * @return array
      */
-    public function findByContact($email, $subject = null)
+    public function findByContactEmail($email, $subject = null, $offset = 0)
     {
         $items = [];
 
@@ -35,6 +50,12 @@ class Message extends Generic
 
         $sql .= ' ORDER BY ts';
 
+        if ($offset)
+        {
+            $sql .= ' LIMIT=100 OFFSET=?';      // Anyway, 100 is a limit in Context.IO
+            $params[] = $offset;
+        }
+
         foreach (\DB::rows($sql, $params) as $item)
         {
             $items[] = array
@@ -48,6 +69,25 @@ class Message extends Generic
         }
 
         return $items;
+    }
+
+    /**
+     * Fetches new messages, saves them to DB and returns in a normalized view
+     *
+     * @param $contact
+     * @param $user
+     * @return array
+     */
+    public function moreByContact($contact, $user)
+    {
+        // count the total amount and sync next N
+        $total = $this->countByContact($contact->email);
+
+        // sync
+        $this->syncAll($user, $contact, $total);
+
+        // return with offset from DB
+        return $this->findByContactEmail($contact->email, null, $total);
     }
 
     /**
