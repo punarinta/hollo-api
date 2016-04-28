@@ -19,7 +19,19 @@ class Message extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        return \Sys::svc('Message')->findByContactEmail($email, \Input::data('subject'));
+        if (!$contact = \Sys::svc('Contact')->findByEmailAndUserId($email, \Auth::user()->id))
+        {
+            throw new \Exception('Contact not found.');
+        }
+
+        return array
+        (
+            'contact'   => array
+            (
+                'name'  => $contact->name,
+            ),
+            'messages'  => \Sys::svc('Message')->findByContactEmail($email, \Input::data('subject')),
+        );
     }
 
     /**
