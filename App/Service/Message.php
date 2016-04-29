@@ -83,8 +83,8 @@ class Message extends Generic
         // count the total amount and sync next N
         $total = $this->countByContact($contact->email);
 
-        // sync
-        $this->syncAll($user, $contact, $total);
+        // sync, even muted ones
+        $this->syncAll($user, $contact, $total, true);
 
         // return with offset from DB
         return $this->findByContactEmail($contact->email, null, $total);
@@ -96,9 +96,10 @@ class Message extends Generic
      * @param $user
      * @param $contact
      * @param int $offset
+     * @param bool $fetchAll
      * @return mixed
      */
-    public function syncAll($user, $contact, $offset = 0)
+    public function syncAll($user, $contact, $offset = 0, $fetchAll = false)
     {
         $params =
         [
@@ -114,7 +115,7 @@ class Message extends Generic
 
         foreach ($rows as $row)
         {
-            $this->processMessageSync($row, $contact);
+            $this->processMessageSync($row, $contact, $fetchAll);
         }
 
         return count($rows);
@@ -200,10 +201,15 @@ class Message extends Generic
 
     // === internal functions ===
 
-    protected function processMessageSync($messageData, $contact)
+    protected function processMessageSync($messageData, $contact, $fetchAll = false)
     {
-        // check if message is present and sync if necessary
+        // check if muted
+        if (!$fetchAll && $contact->muted)
+        {
+            return;
+        }
 
+        // check if message is present and sync if necessary
         $extId = $messageData['message_id'];
 
         if (!$message = \Sys::svc('Message')->findByExtId($extId))
