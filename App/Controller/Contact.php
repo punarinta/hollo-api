@@ -29,6 +29,7 @@ class Contact extends Generic
                 'id'        => $item->id,
                 'name'      => $item->name,
                 'email'     => $item->email,
+                'muted'     => $item->muted,
                 'count'     => $item->count,
                 'lastTs'    => $item->last_ts,
             );
@@ -42,6 +43,7 @@ class Contact extends Generic
      *
      * @doc-var     (int) id!           - Contact ID.
      * @doc-var     (string) name       - Contact name.
+     * @doc-var     (int) muted         - Muted or not.
      *
      * @throws \Exception
      */
@@ -58,6 +60,7 @@ class Contact extends Generic
         }
         
         if (\Input::data('name') !== null) $contact->name = \Input::data('name');
+        if (\Input::data('muted') !== null) $contact->muted = \Input::data('muted');
 
         \Sys::svc('Contact')->update($contact);
     }
