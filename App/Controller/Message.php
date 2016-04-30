@@ -29,6 +29,7 @@ class Message extends Generic
             'contact'   => array
             (
                 'name'  => $contact->name,
+                'muted' => $contact->muted,
             ),
             'messages'  => \Sys::svc('Message')->findByContactEmail($email, \Input::data('subject')),
         );
