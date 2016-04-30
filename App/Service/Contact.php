@@ -44,26 +44,34 @@ class Contact extends Generic
      * Returns contacts associated with the current user account
      *
      * @param $userId
-     * @param null $filterBy
-     * @param null $filter
+     * @param array $filters
      * @param null $sortBy
      * @param null $sortMode
      * @return array
      */
-    public function findAllByUserId($userId, $filterBy = null, $filter = null, $sortBy = null, $sortMode = null)
+    public function findAllByUserId($userId, $filters = [], $sortBy = null, $sortMode = null)
     {
         $sql = 'SELECT * FROM contact WHERE user_id=?';
         $params = [$userId];
         
-        if ($filterBy == 'name')
+        foreach ($filters as $filter)
         {
-            $sql .= ' AND `name` LIKE ?';
-            $params[] = $filter;
-        }
-        elseif ($filterBy == 'email')
-        {
-            $sql .= ' AND email LIKE ?';
-            $params[] = $filter;
+            switch ($filter['name'])
+            {
+                case 'name':
+                    $sql .= ' AND `name` LIKE ?';
+                    break;
+
+                case 'email':
+                    $sql .= ' AND email LIKE ?';
+                    break;
+
+                case 'muted':
+                    $sql .= ' AND muted=?';
+                    break;
+            }
+
+            $params[] = $filter['value'];
         }
 
         if ($sortBy)

@@ -7,10 +7,11 @@ class Contact extends Generic
     /**
      * Lists your contacts
      *
-     * @doc-var     (string) sortBy     - Sorting key. Options are 'name', 'email', 'lastTs'.
-     * @doc-var     (string) sortMode   - Sorting mode. Options are 'asc', 'desc'.
-     * @doc-var     (string) filterBy   - Filtering mode. Options are 'name', 'email'.
-     * @doc-var     (string) filter     - Filter string.
+     * @doc-var     (string) sortBy         - Sorting key. Options are 'name', 'email', 'lastTs'.
+     * @doc-var     (string) sortMode       - Sorting mode. Options are 'asc', 'desc'.
+     * @doc-var     (array) filters         - Array of 'filter'.
+     * @doc-var     (string) filter[].mode  - Filtering mode. Options are 'muted', 'name', 'email'.
+     * @doc-var     (string) filter[].value - Filter string.
      *
      * @return mixed
      * @throws \Exception
@@ -22,7 +23,7 @@ class Contact extends Generic
 
         $items = [];
 
-        foreach (\Sys::svc('Contact')->findAllByUserId(\Auth::user()->id, \Input::data('filterBy'), \Input::data('filter'), \Input::data('sortBy'), \Input::data('sortMode')) as $item)
+        foreach (\Sys::svc('Contact')->findAllByUserId(\Auth::user()->id, \Input::data('filters') ?:[], \Input::data('sortBy'), \Input::data('sortMode')) as $item)
         {
             $items[] = array
             (
