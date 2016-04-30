@@ -29,10 +29,8 @@ class Auth extends Generic
             'user'      => \Auth::check() ? array
             (
                 'id'        => \Auth::user()->id,
-                'contextId' => \Auth::user()->ext_id,
                 'email'     => \Auth::user()->email,
             ) : null,
-            'roles'     => \Auth::textRoles(isset ($_SESSION['-AUTH']['user']) ? $_SESSION['-AUTH']['user']->roles : 0),
             'sessionId' => session_id(),
         );
     }
