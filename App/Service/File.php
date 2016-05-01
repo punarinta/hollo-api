@@ -8,10 +8,10 @@ class File extends Generic
      * Returns files associated with a contact
      *
      * @param $email
-     * @param bool $withUrl
+     * @param bool $withImageUrl
      * @return array
      */
-    public function findByContact($email, $withUrl = false)
+    public function findByContact($email, $withImageUrl = false)
     {
         $items = [];
 
@@ -19,6 +19,15 @@ class File extends Generic
 
         foreach ($this->conn->listContactFiles(\Auth::user()->ext_id, ['email' => $email, 'limit'=>10])->getData() as $row)
         {
+            if ($withImageUrl && \Mime::isImage($row['type']))
+            {
+                $url = $this->getProcessorLink($row['file_id']);
+            }
+            else
+            {
+                $url = null;
+            }
+
             $items[] = array
             (
                 'messageId'     => $row['message_id'],
@@ -27,7 +36,7 @@ class File extends Generic
                 'ext'           => strtolower($row['file_name_structure'][1][0]),
                 'size'          => $row['size'],
                 'type'          => $row['type'],
-                'url'           => $withUrl ? $this->getProcessorLink($row['file_id']) : null,
+                'url'           => $url,
             );
         }
 

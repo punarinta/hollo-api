@@ -7,8 +7,8 @@ class File extends Generic
     /**
      * Finds contact's files
      *
-     * @doc-var     (string) email      - Contact email.
-     * @doc-var     (bool) withUrl      - Whether to extract URL or not.
+     * @doc-var     (string) email          - Contact email.
+     * @doc-var     (bool) withImageUrl     - Whether to extract image URL or not.
      *
      * @return mixed
      * @throws \Exception
@@ -20,7 +20,7 @@ class File extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        return \Sys::svc('File')->findByContact($email, \Input::data('withUrl'));
+        return \Sys::svc('File')->findByContact($email, \Input::data('withImageUrl'));
     }
 
     /**
