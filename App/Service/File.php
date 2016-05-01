@@ -8,15 +8,16 @@ class File extends Generic
      * Returns files associated with a contact
      *
      * @param $email
+     * @param bool $withUrl
      * @return array
      */
-    public function findByContact($email)
+    public function findByContact($email, $withUrl = false)
     {
         $items = [];
 
-        // TODO: fetch from local DB
+        // TODO: fetch from local DB (?)
 
-        foreach ($this->conn->listContactFiles(\Auth::user()->ext_id, ['email' => $email])->getData() as $row)
+        foreach ($this->conn->listContactFiles(\Auth::user()->ext_id, ['email' => $email, 'limit'=>10])->getData() as $row)
         {
             $items[] = array
             (
@@ -26,6 +27,7 @@ class File extends Generic
                 'ext'           => strtolower($row['file_name_structure'][1][0]),
                 'size'          => $row['size'],
                 'type'          => $row['type'],
+                'url'           => $withUrl ? $this->getProcessorLink($row['file_id']) : null,
             );
         }
 

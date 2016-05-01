@@ -5,6 +5,11 @@ namespace App\Controller;
 class File extends Generic
 {
     /**
+     * Finds contact's files
+     *
+     * @doc-var     (string) email      - Contact email.
+     * @doc-var     (bool) withUrl      - Whether to extract URL or not.
+     *
      * @return mixed
      * @throws \Exception
      */
@@ -15,7 +20,7 @@ class File extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        return \Sys::svc('File')->findByContact($email);
+        return \Sys::svc('File')->findByContact($email, \Input::data('withUrl'));
     }
 
     /**
