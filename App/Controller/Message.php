@@ -28,6 +28,7 @@ class Message extends Generic
         (
             'contact'   => array
             (
+                'id'    => $contact->id,
                 'name'  => $contact->name,
                 'muted' => $contact->muted,
             ),
