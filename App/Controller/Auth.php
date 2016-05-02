@@ -85,13 +85,15 @@ class Auth extends Generic
     /**
      * Initializes OAuth authentication procedure
      *
+     * @doc-var    (string) redirectUrl!     - Redirect URL.
+     *
      * @return string
      */
     static function getOAuthToken()
     {
         // TODO: add a switch to support different OAuth providers
 
-        return \Sys::svc('Auth')->getOAuthToken();
+        return \Sys::svc('Auth')->getOAuthToken(null, \Input::data('redirectUrl'));
     }
 
     /**

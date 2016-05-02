@@ -172,15 +172,21 @@ class Auth
      * If no code is present, init
      *
      * @param null $code
+     * @param null $redirectUrl
      * @return array|string
      */
-    public function getOAuthToken($code = null)
+    public function getOAuthToken($code = null, $redirectUrl = null)
     {
+        if (!$redirectUrl)
+        {
+            $redirectUrl = 'https://' . \Sys::cfg('mailless.app_domain') . '/oauth/google';
+        }
+
         $client = new \Google_Client();
         $client->setApplicationName('Hollo App');
         $client->setClientId(\Sys::cfg('oauth.google.clientId'));
         $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
-        $client->setRedirectUri('https://' . \Sys::cfg('mailless.app_domain') . '/oauth/google');
+        $client->setRedirectUri($redirectUrl);
         $client->addScope('https://mail.google.com/');
         $client->addScope('https://www.googleapis.com/auth/userinfo.email');
         $client->addScope('https://www.googleapis.com/auth/plus.me');
