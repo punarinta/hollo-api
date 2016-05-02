@@ -99,6 +99,8 @@ class Auth extends Generic
     /**
      * Completes OAuth authentication procedure
      *
+     * @doc-var    (string) redirectUrl!     - Redirect URL.
+     *
      * @return array
      * @throws \Exception
      */
@@ -109,7 +111,7 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No code was provided.'));
         }
 
-        \Sys::svc('Auth')->processOAuthCode($code);
+        \Sys::svc('Auth')->processOAuthCode($code, \Input::data('redirectUrl'));
 
         return self::status();
     }

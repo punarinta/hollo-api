@@ -221,10 +221,12 @@ class Auth
 
     /**
      * @param $code
+     * @param null $redirectUrl
+     * @throws \Exception
      */
-    public function processOAuthCode($code)
+    public function processOAuthCode($code, $redirectUrl = null)
     {
-        $oauthData = $this->getOAuthToken($code);
+        $oauthData = $this->getOAuthToken($code, $redirectUrl);
 
         $token = $oauthData['refresh'];
         $email = $oauthData['email'];
