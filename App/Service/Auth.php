@@ -230,7 +230,7 @@ class Auth
 
         $token = $oauthData['refresh'];
         $email = $oauthData['email'];
-        // $avatar = $oauthData['avatar'];
+        $avatar = $oauthData['avatar'];
 
         if (!$user = \Sys::svc('User')->findByEmail($email))
         {
@@ -302,6 +302,7 @@ class Auth
 
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['mail'] = ['token' => $token];
+        $_SESSION['-AUTH']['avatar'] = $avatar;
     }
 
 
