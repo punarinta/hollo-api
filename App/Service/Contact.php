@@ -164,6 +164,7 @@ class Contact extends Generic
                         'email'     => $email,
                         'name'      => isset ($row['name']) ? $row['name'] : null,
                         'count'     => 0,
+                        'muted'     => 0,
                     ));
 
                     $syncCount = $row['count'];
