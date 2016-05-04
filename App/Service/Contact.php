@@ -56,7 +56,7 @@ class Contact extends Generic
         
         foreach ($filters as $filter)
         {
-            switch ($filter['name'])
+            switch ($filter['mode'])
             {
                 case 'name':
                     $sql .= ' AND `name` LIKE ?';
