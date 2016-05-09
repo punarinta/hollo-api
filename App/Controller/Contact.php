@@ -31,6 +31,7 @@ class Contact extends Generic
                 'name'      => $item->name,
                 'email'     => $item->email,
                 'muted'     => $item->muted,
+                'read'      => $item->read,
                 'count'     => $item->count,
                 'lastTs'    => $item->last_ts,
             );

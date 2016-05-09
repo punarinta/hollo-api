@@ -155,6 +155,7 @@ class Message extends Generic
                 'name'      => $data['addresses']['from']['name'],
                 'count'     => 1,
                 'muted'     => 0,
+                'read'      => false,
             ));
         }
         else

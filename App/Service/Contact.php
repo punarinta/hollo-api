@@ -165,6 +165,7 @@ class Contact extends Generic
                         'name'      => isset ($row['name']) ? $row['name'] : null,
                         'count'     => 0,
                         'muted'     => 0,
+                        'read'      => 1,
                     ));
 
                     $syncCount = $row['count'];
@@ -176,6 +177,7 @@ class Contact extends Generic
 
                     // update count only after message sync is done
                     $contact->count = $row['count'];
+                    $contact->read = false;
                     $contact->last_ts = max($row['last_received'], $row['last_sent']);      // NB: not a sync, but a mailing event!
                     \Sys::svc('Contact')->update($contact);
                 }
