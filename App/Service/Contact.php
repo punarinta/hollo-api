@@ -94,6 +94,10 @@ class Contact extends Generic
                 $sql .= ' DESC';
             }
         }
+        else
+        {
+            $sql .= ' ORDER BY `read` ASC, email ASC';
+        }
 
         return \DB::rows($sql, $params);
     }
