@@ -154,7 +154,7 @@ class Message extends Generic
                 'email'     => $data['addresses']['from']['email'],
                 'name'      => $data['addresses']['from']['name'],
                 'count'     => 1,
-                'muted'     => 0,
+                'muted'     => 1,
                 'read'      => false,
             ));
         }
@@ -166,7 +166,14 @@ class Message extends Generic
             \Sys::svc('Contact')->update($contact);
         }
 
-        $this->processMessageSync($data, $contact);
+        // TODO: refactor to avoid to update() calls
+
+        if ($this->processMessageSync($data, $contact))
+        {
+            // there was a new message
+            $contact->read = false;
+            \Sys::svc('Contact')->update($contact);
+        }
 
         return true;
     }
@@ -204,12 +211,19 @@ class Message extends Generic
 
     // === internal functions ===
 
+    /**
+     * @param $messageData
+     * @param $contact
+     * @param bool $fetchAll
+     * @return bool
+     * @throws \Exception
+     */
     protected function processMessageSync($messageData, $contact, $fetchAll = false)
     {
         // check if muted
         if (!$fetchAll && $contact->muted)
         {
-            return;
+            return false;
         }
 
         // check if message is present and sync if necessary
@@ -236,7 +250,7 @@ class Message extends Generic
             if (!isset ($messageData['body'][0]))
             {
                 // no body?
-                return;
+                return false;
             }
 
             $message = \Sys::svc('Message')->create(array
@@ -251,6 +265,8 @@ class Message extends Generic
         }
 
         \DB::prepare('REPLACE INTO contact_message (contact_id, message_id) VALUES (?,?)', [$contact->id, $message->id])->execute();
+
+        return true;
     }
 
     protected function clearSubject($subject)
