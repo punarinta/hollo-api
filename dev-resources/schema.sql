@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS `contact` (
   `user_id` bigint(20) unsigned NOT NULL,
   `email` varchar(128) NOT NULL,
   `name` varchar(128) DEFAULT NULL,
-  `muted` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `muted` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `read` tinyint(1) unsigned NOT NULL DEFAULT '1',
   `count` int(10) unsigned NOT NULL DEFAULT '0',
   `last_ts` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
