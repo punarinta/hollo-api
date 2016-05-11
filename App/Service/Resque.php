@@ -27,7 +27,7 @@ class Resque
             $config = \Sys::cfg('redis');
 
             // Check if Redis is running
-            if (!is_resource($conn = fsockopen($config['host'], $config['port'])))
+            if (!is_resource($conn = fsockopen($config['host'], $config['port'], $a, $b, 5)))
             {
                 return false;
             }
