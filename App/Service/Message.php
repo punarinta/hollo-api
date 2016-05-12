@@ -61,6 +61,7 @@ class Message extends Generic
         {
             $items[] = array
             (
+                'id'        => $item->message_id,
                 'ts'        => $item->ts,
                 'body'      => $item->body,
                 'subject'   => $this->clearSubject($item->subject),
