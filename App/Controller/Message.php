@@ -60,10 +60,22 @@ class Message extends Generic
     }
 
     /**
+     * Reply to a message or compose a new one
+     *
+     * @doc-var     (string) subject        - Message subject.
+     * @doc-var     (string) body           - Message body.
+     * @doc-var     (int) messageId         - Hollo's message ID.
+     *
      * @return bool
+     * @throws \Exception
      */
-    static public function reply()
+    static public function send()
     {
+        if (!$body = \Input::data('body'))
+        {
+            throw new \Exception('Body not provided.');
+        }
+
         return true;
     }
 }

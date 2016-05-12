@@ -66,6 +66,8 @@ class Smtp
         $this->mail->SMTPAuth = true;
     //    $this->mail->SMTPDebug = 4;
         $this->mail->isSMTP();
+
+        $this->mail->Subject = '';
         
         if ($messageId)
         {
