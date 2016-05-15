@@ -66,4 +66,40 @@ class Contact extends Generic
 
         \Sys::svc('Contact')->update($contact);
     }
+
+    /**
+     * Mute contact
+     *
+     * @doc-var     (int) id!       - Contact ID.
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    static public function mute()
+    {
+        if (!$id = \Input::data('id'))
+        {
+            throw new \Exception('No ID provided.');
+        }
+
+        return true;
+    }
+
+    /**
+     * Mark contact as read
+     *
+     * @doc-var     (int) id!       - Contact ID.
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    static public function read()
+    {
+        if (!$id = \Input::data('id'))
+        {
+            throw new \Exception('No ID provided.');
+        }
+
+        return true;
+    }
 }
