@@ -103,6 +103,9 @@ class Message extends Generic
      */
     public function syncAll($user, $contact, $offset = 0, $fetchAll = false)
     {
+        // don't sync your own message to yourself
+        if ($contact->email == $user->email) return 0;
+
         $params =
         [
             'include_body'  => 1,
@@ -148,6 +151,9 @@ class Message extends Generic
             {
                 throw new \Exception('User does not exist.');
             }
+
+            // don't sync your own message to yourself
+            if ($data['addresses']['from']['email'] == $user->email) return false;
 
             $contact = \Sys::svc('Contact')->create(array
             (

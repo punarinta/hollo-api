@@ -161,6 +161,9 @@ class Contact extends Generic
                 }
                 else
                 {
+                    // don't keep your own messages to yourself
+                    if ($email == $user->email) continue;
+                    
                     // contact doesn't exist -> insert
                     $contact = \Sys::svc('Contact')->create(array
                     (
