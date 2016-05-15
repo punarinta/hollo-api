@@ -45,7 +45,8 @@ class Contact extends Generic
      *
      * @doc-var     (int) id!           - Contact ID.
      * @doc-var     (string) name       - Contact name.
-     * @doc-var     (int) muted         - Muted or not.
+     * @doc-var     (bool) muted        - Muted or not.
+     * @doc-var     (bool) read         - Read or not.
      *
      * @throws \Exception
      */
@@ -63,43 +64,8 @@ class Contact extends Generic
         
         if (\Input::data('name') !== null) $contact->name = \Input::data('name');
         if (\Input::data('muted') !== null) $contact->muted = \Input::data('muted');
+        if (\Input::data('read') !== null) $contact->read = \Input::data('read');
 
         \Sys::svc('Contact')->update($contact);
-    }
-
-    /**
-     * Mute contact
-     *
-     * @doc-var     (int) id!       - Contact ID.
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    static public function mute()
-    {
-        if (!$id = \Input::data('id'))
-        {
-            throw new \Exception('No ID provided.');
-        }
-
-        return true;
-    }
-
-    /**
-     * Mark contact as read
-     *
-     * @doc-var     (int) id!       - Contact ID.
-     *
-     * @return bool
-     * @throws \Exception
-     */
-    static public function read()
-    {
-        if (!$id = \Input::data('id'))
-        {
-            throw new \Exception('No ID provided.');
-        }
-
-        return true;
     }
 }
