@@ -232,12 +232,12 @@ class Auth
         $email = $oauthData['email'];
         $avatar = $oauthData['avatar'];
 
+        $mailService = \Sys::svc('MailService')->findByEmail($email);
+        $in = \Sys::svc('MailService')->getCfg($mailService);
+
         if (!$user = \Sys::svc('User')->findByEmail($email))
         {
             // no user -> register
-
-            $mailService = \Sys::svc('MailService')->findByEmail($email);
-            $in = \Sys::svc('MailService')->getCfg($mailService);
             $settings = ['svc' => (int) $mailService->id];
 
             \DB::begin();
@@ -298,6 +298,25 @@ class Auth
             \DB::commit();
 
             \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
+        }
+        else
+        {
+            if (empty ($this->conn->listSources($user->ext_id, ['status_ok' => 1])->getData()))
+            {
+                $this->conn->deleteSource($user->ext_id, ['label' => 0]);
+
+                $this->conn->addSource($user->ext_id, array
+                (
+                    'email'                     => $email,
+                    'server'                    => $in['host'],
+                    'port'                      => $in['port'],
+                    'username'                  => $email,
+                    'use_ssl'                   => 1,
+                    'type'                      => 'IMAP',
+                    'provider_refresh_token'    => $token,
+                    'provider_consumer_key'     => \Sys::cfg('oauth.google.clientId'),
+                ));
+            }
         }
 
         $_SESSION['-AUTH']['user'] = $user;
