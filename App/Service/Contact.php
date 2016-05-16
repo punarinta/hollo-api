@@ -164,20 +164,21 @@ class Contact extends Generic
                 else
                 {
                     // don't keep your own messages to yourself
-                    if ($email == $user->email) continue;
-                    
-                    // contact doesn't exist -> insert
-                    \Sys::svc('Contact')->create(array
-                    (
-                        'user_id'   => $user->id,
-                        'email'     => $email,
-                        'name'      => isset ($row['name']) ? $row['name'] : null,
-                        'count'     => 0,
-                        'muted'     => 0,
-                        'read'      => 1,
-                    ));
+                    if ($email != $user->email)
+                    {
+                        // contact doesn't exist -> insert
+                        \Sys::svc('Contact')->create(array
+                        (
+                            'user_id'   => $user->id,
+                            'email'     => $email,
+                            'name'      => isset ($row['name']) ? $row['name'] : null,
+                            'count'     => 0,
+                            'muted'     => 0,
+                            'read'      => 1,
+                        ));
 
-                    $syncCount = $row['count'];
+                        $syncCount = $row['count'];
+                    }
                 }
 
                 if ($syncCount)
