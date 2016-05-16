@@ -14,7 +14,7 @@ class ContextIO
      */
     static public function index()
     {
-        // TODO: possibly add athentication — https://context.io/docs/2.0/accounts/webhooks#callbacks
+        // TODO: possibly add authentication — https://context.io/docs/2.0/accounts/webhooks#callbacks
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST')
         {
