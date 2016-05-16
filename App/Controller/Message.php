@@ -7,7 +7,8 @@ class Message extends Generic
     /**
      * Returns contacts messages
      *
-     * @doc-var     (string) subject     - Filter by subject.
+     * @doc-var     (string) subject    - Filter by subject.
+     * @doc-var     (bool) ninja        - Ninja mode, set 'true' to keep messages unread.
      *
      * @return mixed
      * @throws \Exception
@@ -22,6 +23,12 @@ class Message extends Generic
         if (!$contact = \Sys::svc('Contact')->findByEmailAndUserId($email, \Auth::user()->id))
         {
             throw new \Exception('Contact not found.');
+        }
+
+        if (!\Input::data('ninja'))
+        {
+            $contact->read = 1;
+            \Sys::svc('Contact')->update($contact);
         }
 
         return array
