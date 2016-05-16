@@ -387,6 +387,9 @@ class Message extends Generic
         // remove zero-width space
         $content = str_replace("\xE2\x80\x8B", '', $content);
 
+        // most probably that was HTML
+        if (!strlen(trim($content))) return null;
+
         return trim($content);
     }
 }
