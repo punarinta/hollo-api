@@ -132,6 +132,8 @@ class Contact extends Generic
             'active_after'  => $lastSyncTs,
         ];
 
+        $contactsToSync = [];
+
         while (1)
         {
             $params['offset'] = $offset;
@@ -147,7 +149,7 @@ class Contact extends Generic
 
                 if ($verbose)
                 {
-                    echo "Syncing '$email'... ";
+                    echo "Checking '$email'... ";
                 }
 
                 if ($contact = \Sys::svc('Contact')->findByEmailAndUserId($email, $user->id))
@@ -165,7 +167,7 @@ class Contact extends Generic
                     if ($email == $user->email) continue;
                     
                     // contact doesn't exist -> insert
-                    $contact = \Sys::svc('Contact')->create(array
+                    \Sys::svc('Contact')->create(array
                     (
                         'user_id'   => $user->id,
                         'email'     => $email,
@@ -180,13 +182,7 @@ class Contact extends Generic
 
                 if ($syncCount)
                 {
-                    $countMsg += \Sys::svc('Message')->syncAll($user, $contact);
-
-                    // update count only after message sync is done
-                    $contact->count = $row['count'];
-                    $contact->read = false;
-                    $contact->last_ts = max($row['last_received'], $row['last_sent']);      // NB: not a sync, but a mailing event!
-                    \Sys::svc('Contact')->update($contact);
+                    $contactsToSync[] = $row;
                 }
 
                 if ($verbose)
@@ -203,6 +199,35 @@ class Contact extends Generic
             }
 
             $offset += $limit;
+        }
+
+        // sync messages for those contacts
+        foreach ($contactsToSync as $row)
+        {
+            $email = $row['email'];
+
+            if ($verbose)
+            {
+                echo "Syncing '$email'... ";
+            }
+
+            // contact always exists at this point
+            $contact = \Sys::svc('Contact')->findByEmailAndUserId($email, $user->id);
+
+            $syncCount = \Sys::svc('Message')->syncAll($user, $contact);
+
+            // update count only after message sync is done
+            $contact->count = $row['count'];
+            $contact->read = false;
+            $contact->last_ts = max($row['last_received'], $row['last_sent']);      // NB: not a sync, but a mailing event!
+            \Sys::svc('Contact')->update($contact);
+
+            if ($verbose)
+            {
+                echo "$syncCount new.\n";
+            }
+
+            $countMsg += $syncCount;
         }
 
         // indicate completed transaction

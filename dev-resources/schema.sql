@@ -73,7 +73,7 @@ INSERT INTO `mail_service` (`id`, `name`, `domains`, `cfg_in`, `cfg_out`) VALUES
 CREATE TABLE IF NOT EXISTS `message` (
   `id` bigint(20) unsigned NOT NULL,
   `ext_id` char(24) NOT NULL,
-  `sender` varchar(128) NOT NULL,
+  `from_contact_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `subject` varchar(256) DEFAULT NULL,
   `body` mediumtext,
   `files` mediumtext,

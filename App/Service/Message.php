@@ -40,7 +40,13 @@ class Message extends Generic
     {
         $items = [];
 
-        $sql = 'SELECT * FROM message AS m LEFT JOIN contact_message AS cm ON m.id=cm.message_id LEFT JOIN contact AS c ON c.id=cm.contact_id WHERE c.email = ? AND c.user_id=?';
+        $sql =
+            "SELECT m.*, c2.id AS c2_id, c2.name AS c2_name, c2.email AS c2_email
+             FROM message AS m 
+             LEFT JOIN contact_message AS cm ON m.id=cm.message_id
+             LEFT JOIN contact AS c ON c.id=cm.contact_id
+             LEFT JOIN contact AS c2 ON c2.id=m.from_contact_id
+             WHERE c.email = ? AND c.user_id=?";
         $params = [$email, $userId];
 
         if ($subject)
@@ -61,11 +67,16 @@ class Message extends Generic
         {
             $items[] = array
             (
-                'id'        => $item->message_id,
+                'id'        => $item->id,
                 'ts'        => $item->ts,
                 'body'      => $item->body,
                 'subject'   => $this->clearSubject($item->subject),
-                'from'      => $item->sender,
+                'from'      => array
+                (
+                    'id'    => $item->c2_id,
+                    'email' => $item->c2_email,
+                    'name'  => $item->c2_name,
+                ),
                 'files'     => json_decode($item->files, true),
             );
         }
@@ -120,7 +131,7 @@ class Message extends Generic
 
         foreach ($rows as $row)
         {
-            $this->processMessageSync($row, $contact, $fetchAll);
+            $this->processMessageSync($user, $row, $contact, $fetchAll);
         }
 
         return count($rows);
@@ -175,7 +186,7 @@ class Message extends Generic
 
         // TODO: refactor to avoid to update() calls
 
-        if ($this->processMessageSync($data, $contact))
+        if ($this->processMessageSync($user, $data, $contact))
         {
             // there was a new message
             $contact->read = false;
@@ -225,7 +236,7 @@ class Message extends Generic
      * @return bool
      * @throws \Exception
      */
-    protected function processMessageSync($messageData, $contact, $fetchAll = false)
+    protected function processMessageSync($user, $messageData, $contact, $fetchAll = false)
     {
         // check if muted
         if (!$fetchAll && $contact->muted)
@@ -260,14 +271,21 @@ class Message extends Generic
                 return false;
             }
 
+            if ($messageData['addresses']['from']['email'] == $user->email) $senderId = 0;
+            else
+            {
+                $sender = \Sys::svc('Contact')->findByEmailAndUserId($messageData['addresses']['from']['email'], $contact->user_id);
+                $senderId = $sender->id;
+            }
+
             $message = \Sys::svc('Message')->create(array
             (
-                'ts'            => $messageData['date'],
-                'body'          => $this->clearContent($messageData['body'][0]['content'], $contact->email),
-                'sender'        => $messageData['addresses']['from']['email'],
-                'subject'       => $messageData['subject'],
-                'ext_id'        => $extId,
-                'files'         => empty($files) ? '' : json_encode($files),
+                'ts'                => $messageData['date'],
+                'body'              => $this->clearContent($messageData['body'][0]['content'], $contact->email),
+                'from_contact_id'   => $senderId,
+                'subject'           => $messageData['subject'],
+                'ext_id'            => $extId,
+                'files'             => empty($files) ? '' : json_encode($files),
             ));
         }
 
