@@ -232,7 +232,7 @@ class Message extends Generic
             throw new \Exception('Body does not exist');
         }
 
-        $message->body = $this->clearContent($data['body'][$bodyId]['content'], $data['addresses']['from']['email']);
+        $message->body = $this->clearContent($data['body'][$bodyId]['type'], $data['body'][$bodyId]['content'], $data['addresses']['from']['email']);
         \Sys::svc('Message')->update($message);
 
         return true;
@@ -292,7 +292,7 @@ class Message extends Generic
             $message = \Sys::svc('Message')->create(array
             (
                 'ts'                => $messageData['date'],
-                'body'              => $this->clearContent($messageData['body'][0]['content'], $contact->email),
+                'body'              => $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content'], $contact->email),
                 'from_contact_id'   => $senderId,
                 'subject'           => $messageData['subject'],
                 'ext_id'            => $extId,
@@ -322,12 +322,43 @@ class Message extends Generic
     }
 
     /**
+     * @param $type
      * @param $content
      * @param $email        — sender
-     * @return mixed
+     * @return null
      */
-    protected function clearContent($content, $email)
+    protected function clearContent($type, $content, $email)
     {
+        /*
+
+        samples:
+
+        -- Please reply above this line --
+
+         */
+
+        if ($type == 'text/html')
+        {
+            // do not let HTML spam in
+            if (substr($content, 0, 1) == '<')
+            {
+                // use prelim check to speedup
+                if (substr($content, 0, 5) == '<html') return null;
+                if (substr($content, 0, 5) == '<meta') return null;
+                if (substr($content, 0, 5) == '<?xml') return null;
+                if (substr($content, 0, 5) == '<!-- ') return null;
+            }
+            if (strpos($content, '<table') !== false) return null;
+            if (strpos($content, '<!DOCTYPE html') !== false) return null;
+
+            $content = preg_replace('/<blockquote(.*)<\/blockquote>/igm', '', $content);
+            $content = str_replace('</div><div>', "\n", $content);
+            $content = str_ireplace(['<br />','<br>','<br/>'], "\n", $content);
+            $content = strip_tags($content);
+            $content = html_entity_decode($content);
+        }
+
+
         // remove email
         $email = str_replace('.', '\.', $email);
         if (preg_match("/^.*(<$email\s*>).*$/s", $content, $matches))
