@@ -164,15 +164,16 @@ class Message extends Generic
             return false;
         }
 
+        if (!$user = \Sys::svc('User')->findByExtId($accountId))
+        {
+            throw new \Exception('User does not exist.');
+        }
+
         $data = $data->getData();
 
         if (!$contact = \Sys::svc('Contact')->findByEmailAndAccountId($data['addresses']['from']['email'], $accountId))
         {
             // no contact exist, create it
-            if (!$user = \Sys::svc('User')->findByExtId($accountId))
-            {
-                throw new \Exception('User does not exist.');
-            }
 
             // don't sync your own message to yourself
             if ($data['addresses']['from']['email'] == $user->email) return false;
@@ -184,7 +185,7 @@ class Message extends Generic
                 'name'      => $data['addresses']['from']['name'],
                 'count'     => 1,
                 'muted'     => 0,
-                'read'      => false,
+                'read'      => 0,
             ));
         }
         else
@@ -241,6 +242,7 @@ class Message extends Generic
     // === internal functions ===
 
     /**
+     * @param $user
      * @param $messageData
      * @param $contact
      * @param bool $fetchAll

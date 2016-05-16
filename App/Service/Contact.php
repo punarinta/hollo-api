@@ -167,7 +167,7 @@ class Contact extends Generic
                     if ($email != $user->email)
                     {
                         // contact doesn't exist -> insert
-                        \Sys::svc('Contact')->create(array
+                        $this->create(array
                         (
                             'user_id'   => $user->id,
                             'email'     => $email,
@@ -259,5 +259,12 @@ class Contact extends Generic
         }
 
         return count($res->getData()) == 0;
+    }
+
+    public function create($array)
+    {
+        // lookup the email in the spam database and force 'muted' to 1 if found
+
+        return parent::create($array);
     }
 }
