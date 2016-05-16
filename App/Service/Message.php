@@ -351,7 +351,7 @@ class Message extends Generic
             if (strpos($content, '<table') !== false) return null;
             if (strpos($content, '<!DOCTYPE html') !== false) return null;
 
-            $content = preg_replace('/<blockquote(.*)<\/blockquote>/igm', '', $content);
+            $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
             $content = str_replace('</div><div>', "\n", $content);
             $content = str_ireplace(['<br />','<br>','<br/>'], "\n", $content);
             $content = strip_tags($content);
