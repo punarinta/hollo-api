@@ -275,15 +275,44 @@ class Contact extends Generic
 
         if (in_array($email[0],
         [
-            'no-reply',
-            'no_reply',
+            'admin',
+            'automailer',
+            'billing',
+            'contact',
+            'customer',
+            'delivery',
+            'donate',
             'dontreply',
             'donotreply',
+            'email',
+            'forum',
+            'hello',
+            'help',
+            'info',
+            'inform',
+            'mail',
+            'messages',
             'news',
             'newsletter',
-            'info',
-            'mailer',
-        ]) || strpos($email[0], 'noreply') === 0)
+            'no_reply',
+            'post',
+            'postmaster',
+            'reklama',
+            'robot',
+            'service',
+            'subscription',
+            'team',
+            'webmaster',
+            'welcome',
+        ])
+            || strpos($email[0], 'mailer') !== false
+            || strpos($email[0], 'noreply') !== false
+            || strpos($email[0], 'no-reply') !== false
+            || strpos($email[0], 'notif') !== false
+            || strpos($email[0], 'sales') !== false
+            || strpos($email[0], 'support') !== false
+            || strpos($email[0], 'update') !== false
+        )
         {
             return true;
         }
@@ -309,6 +338,9 @@ class Contact extends Generic
                 }
             }
         }
+
+        // emails consisting from numbers only are probably not what you want
+        if (intval($email[0]) > 0) return true;
 
         return false;
     }
