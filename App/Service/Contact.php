@@ -264,14 +264,14 @@ class Contact extends Generic
     }
 
     /**
-     * Before inserting the record check if it should be muted or not
+     * Check if the contact is muted by default or not
      *
-     * @param $array
-     * @return \StdClass
+     * @param $email
+     * @return bool
      */
-    public function create($array)
+    public function isMuted($email)
     {
-        $email = explode('@', $array['email']);
+        $email = explode('@', $email);
 
         if (in_array($email[0],
         [
@@ -285,7 +285,7 @@ class Contact extends Generic
             'mailer',
         ]) || strpos($email[0], 'noreply') === 0)
         {
-            $array['muted'] = 1;
+            return true;
         }
         elseif (count($email) === 2)
         {
@@ -295,7 +295,7 @@ class Contact extends Generic
             {
                 if (!$rows[0]->user)
                 {
-                    $array['muted'] = 1;
+                    return true;
                 }
                 else
                 {
@@ -303,12 +303,25 @@ class Contact extends Generic
                     {
                         if ($row->user == $email[0])
                         {
-                            $array['muted'] = 1;
-                            break;
+                            return true;
                         }
                     }
                 }
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $array
+     * @return \StdClass
+     */
+    public function create($array)
+    {
+        if ($this->isMuted($array['email']))
+        {
+            $array['muted'] = 1;
         }
 
         return parent::create($array);
