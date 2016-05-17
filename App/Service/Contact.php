@@ -167,7 +167,7 @@ class Contact extends Generic
                     if ($email != $user->email)
                     {
                         // contact doesn't exist -> insert
-                        $this->create(array
+                        $contact = $this->create(array
                         (
                             'user_id'   => $user->id,
                             'email'     => $email,
@@ -188,6 +188,7 @@ class Contact extends Generic
 
                 if ($verbose)
                 {
+                    if ($contact->muted) echo "\033[01;31m(muted) \033[0m";
                     echo "$syncCount new.\n";
                 }
             }
@@ -261,9 +262,43 @@ class Contact extends Generic
         return count($res->getData()) == 0;
     }
 
+    /**
+     * Before inserting the record check if it should be muted or not
+     *
+     * @param $array
+     * @return \StdClass
+     */
     public function create($array)
     {
-        // lookup the email in the spam database and force 'muted' to 1 if found
+        $email = explode('@', $array['email']);
+
+        if (in_array($email[0], ['noreply', 'no-reply', 'news', 'newsletter', 'info', 'dontreply']))
+        {
+            $array['muted'] = 1;
+        }
+        elseif (count($email) === 2)
+        {
+            // lookup the email in the spam database and force 'muted' to 1 if found
+
+            if (count($rows = \DB::rows('SELECT * FROM muted WHERE domain=?', [$email[1]])))
+            {
+                if (!$rows[0]->user)
+                {
+                    $array['muted'] = 1;
+                }
+                else
+                {
+                    foreach ($rows as $row)
+                    {
+                        if ($row->user == $email[0])
+                        {
+                            $array['muted'] = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         return parent::create($array);
     }
