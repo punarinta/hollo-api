@@ -216,7 +216,7 @@ class Contact extends Generic
             // contact always exists at this point
             $contact = \Sys::svc('Contact')->findByEmailAndUserId($email, $user->id);
 
-            $syncCount = \Sys::svc('Message')->syncAll($user, $contact);
+            $syncCount = $contact->muted ? 0 : \Sys::svc('Message')->syncAll($user, $contact);
 
             // update count only after message sync is done
             $contact->count = $row['count'];
