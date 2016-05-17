@@ -98,6 +98,15 @@ CREATE TABLE IF NOT EXISTS `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Table structure for table `muted`
+--
+
+CREATE TABLE IF NOT EXISTS `muted` (
+  `user` varchar(255) DEFAULT NULL,
+  `domain` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Indexes for dumped tables
 --
 
@@ -130,6 +139,12 @@ ADD PRIMARY KEY (`id`);
 --
 ALTER TABLE `user`
 ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `muted`
+--
+ALTER TABLE `muted`
+ADD UNIQUE KEY `pair` (`user`,`domain`);
 
 --
 -- AUTO_INCREMENT for dumped tables
