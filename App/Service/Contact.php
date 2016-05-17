@@ -226,6 +226,7 @@ class Contact extends Generic
 
             if ($verbose)
             {
+                if ($contact->muted) echo "\033[01;31m(muted) \033[0m";
                 echo "$syncCount new.\n";
             }
 
