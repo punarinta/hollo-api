@@ -127,22 +127,28 @@ class Message extends Generic
             'offset'        => $offset,
         ];
 
-        if ($data = $this->conn->listMessages($user->ext_id, $params))
-        {
-            // TODO: here a connection drop was once detected
-            $rows = $data->getData();
+        $attempt = 0;
 
-            foreach ($rows as $row)
+        while ($attempt < 10)
+        {
+            if ($data = $this->conn->listMessages($user->ext_id, $params))
             {
-                $this->processMessageSync($user, $row, $contact, $fetchAll);
-            }
+                // TODO: here a connection drop was once detected
+                $rows = $data->getData();
 
-            return count($rows);
-        }
-        else
-        {
-            echo "Error syncing '{$contact->email}'\n";
-            print_r($params);
+                foreach ($rows as $row)
+                {
+                    $this->processMessageSync($user, $row, $contact, $fetchAll);
+                }
+
+                return count($rows);
+            }
+            else
+            {
+                ++$attempt;
+                echo "Error syncing '{$contact->email}', attempt #$attempt\n";
+                print_r($params);
+            }
         }
 
         return 0;
