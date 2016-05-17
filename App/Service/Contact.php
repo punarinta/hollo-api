@@ -273,7 +273,17 @@ class Contact extends Generic
     {
         $email = explode('@', $array['email']);
 
-        if (in_array($email[0], ['no-reply', 'no_reply', 'news', 'newsletter', 'info', 'dontreply', 'donotreply']) || strpos($email[0], 'noreply') === 0)
+        if (in_array($email[0],
+        [
+            'no-reply',
+            'no_reply',
+            'dontreply',
+            'donotreply',
+            'news',
+            'newsletter',
+            'info',
+            'mailer',
+        ]) || strpos($email[0], 'noreply') === 0)
         {
             $array['muted'] = 1;
         }
