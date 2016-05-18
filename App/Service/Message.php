@@ -180,11 +180,13 @@ class Message extends Generic
 
         if (!$contact = \Sys::svc('Contact')->findByEmailAndAccountId($data['addresses']['from']['email'], $accountId))
         {
-            // no contact exist, create it
+            if ($data['addresses']['from']['email'] == $user->email)
+            {
+                // don't sync your own message to yourself
+                return false;
+            }
 
-            // don't sync your own message to yourself
-            if ($data['addresses']['from']['email'] == $user->email) return false;
-
+            // no contact exist -> create it
             $contact = \Sys::svc('Contact')->create(array
             (
                 'user_id'   => $user->id,
@@ -193,22 +195,21 @@ class Message extends Generic
                 'count'     => 1,
                 'muted'     => 0,
                 'read'      => 0,
+                'last_ts'   => $data['date'],
             ));
         }
         else
         {
             // update contact's count
-            $data = $this->conn->getContact($accountId, ['email' => $contact->email])->getData();
-            $contact->count = $data['count'];
-            \Sys::svc('Contact')->update($contact);
+            $contactData = $this->conn->getContact($accountId, ['email' => $contact->email])->getData();
+            $contact->count = $contactData['count'];
         }
-
-        // TODO: refactor to avoid to update() calls
 
         if ($this->processMessageSync($user, $data, $contact))
         {
             // there was a new message
-            $contact->read = false;
+            $contact->read = 0;
+            $contact->last_ts = $data['date'];
             \Sys::svc('Contact')->update($contact);
         }
 

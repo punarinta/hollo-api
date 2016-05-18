@@ -175,6 +175,7 @@ class Contact extends Generic
                             'count'     => 0,
                             'muted'     => 0,
                             'read'      => 1,
+                            'last_ts'   => 0,
                         ));
 
                         $syncCount = $row['count'];
