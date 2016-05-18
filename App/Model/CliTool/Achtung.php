@@ -36,7 +36,7 @@ class Achtung
 
         foreach (\Sys::svc('Contact')->findAllByUserId($userId) as $contact)
         {
-            foreach (\Sys::svc('Message')->findByContactEmail($contact->email, $userId) as $message)
+            foreach (\Sys::svc('Message')->findByContactId($contact->id) as $message)
             {
                 // kill message and its links
                 \Sys::svc('Message')->delete($message);

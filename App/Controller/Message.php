@@ -7,25 +7,36 @@ class Message extends Generic
     /**
      * Returns contacts messages
      *
+     * @doc-var     (int) id            - Contact's ID.
+     * @doc-var     (string) email      - Contact's email. Needed if no email provided.
      * @doc-var     (string) subject    - Filter by subject.
      * @doc-var     (bool) ninja        - Ninja mode, set 'true' to keep messages unread.
      *
      * @return mixed
      * @throws \Exception
      */
-    static public function findByEmail()
+    static public function findByReference()
     {
-        if (!$email = \Input::data('email'))
+        if (!$id = \Input::data('id'))
         {
-            throw new \Exception('Email not provided.');
-        }
+            if (!$email = \Input::data('email'))
+            {
+                throw new \Exception('Email not provided.');
+            }
 
-        if (!$contact = \Sys::svc('Contact')->findByEmailAndUserId($email, \Auth::user()->id))
+            if (!$contact = \Sys::svc('Contact')->findByEmailAndUserId($email, \Auth::user()->id))
+            {
+                throw new \Exception('Contact not found.');
+            }
+        }
+        elseif (!$contact = \Sys::svc('Contact')->findByIdAndUserId($id, \Auth::user()->id))
         {
             throw new \Exception('Contact not found.');
         }
 
-        if (!\Input::data('ninja'))
+        $msgs = \Sys::svc('Message')->findByContactId($contact->id, \Input::data('subject'));
+
+        if ($msgs && !\Input::data('ninja'))
         {
             $contact->read = 1;
             \Sys::svc('Contact')->update($contact);
@@ -39,7 +50,7 @@ class Message extends Generic
                 'name'  => $contact->name,
                 'muted' => $contact->muted,
             ),
-            'messages'  => \Sys::svc('Message')->findByContactEmail($email, \Auth::user()->id, \Input::data('subject')),
+            'messages'  => $msgs,
         );
     }
 

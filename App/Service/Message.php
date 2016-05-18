@@ -31,13 +31,12 @@ class Message extends Generic
     /**
      * Returns messages associated with a contact. May filter by subject.
      *
-     * @param $email
-     * @param $userId
+     * @param $contactId
      * @param null $subject
      * @param int $offset
      * @return array
      */
-    public function findByContactEmail($email, $userId, $subject = null, $offset = 0)
+    public function findByContactId($contactId, $subject = null, $offset = 0)
     {
         $items = [];
 
@@ -47,8 +46,8 @@ class Message extends Generic
              LEFT JOIN contact_message AS cm ON m.id=cm.message_id
              LEFT JOIN contact AS c ON c.id=cm.contact_id
              LEFT JOIN contact AS c2 ON c2.id=m.from_contact_id
-             WHERE c.email = ? AND c.user_id=?";
-        $params = [$email, $userId];
+             WHERE c.id = ?";
+        $params = [$contactId];
 
         if ($subject)
         {
@@ -101,7 +100,7 @@ class Message extends Generic
         $this->syncAll($user, $contact, $total, true);
 
         // return with offset from DB
-        return $this->findByContactEmail($contact->email, $user->id, null, $total);
+        return $this->findByContactId($contact->id, null, $total);
     }
 
     /**
