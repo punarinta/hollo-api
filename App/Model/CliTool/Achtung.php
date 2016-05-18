@@ -18,6 +18,7 @@ class Achtung
         $this->justRun('TRUNCATE table contact');
         $this->justRun('TRUNCATE table message');
         $this->justRun('TRUNCATE table contact_message');
+        $this->justRun('UPDATE `user` SET last_sync_ts=1');
 
         return "\n";
     }
