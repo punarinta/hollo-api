@@ -16,14 +16,15 @@ class Message extends Generic
     }
 
     /**
-     * Returns the total count of messages synced for this contact
+     * Returns the total count of messages synced for this contact and user
      *
      * @param $email
+     * @param $userId
      * @return mixed
      */
-    public function countByContact($email)
+    public function countByContactAndUserId($email, $userId)
     {
-        $x = \DB::row('SELECT count(cm.message_id) AS c FROM contact_message AS cm LEFT JOIN contact AS c ON c.id=cm.contact_id WHERE c.email = ?', [$email]);
+        $x = \DB::row('SELECT count(cm.message_id) AS c FROM contact_message AS cm LEFT JOIN contact AS c ON c.id=cm.contact_id WHERE c.email = ? AND c.user_id=?', [$email, $userId]);
         return $x->c;
     }
 
@@ -94,7 +95,7 @@ class Message extends Generic
     public function moreByContact($contact, $user)
     {
         // count the total amount and sync next N
-        $total = $this->countByContact($contact->email);
+        $total = $this->countByContact($contact->email, $user->id);
 
         // sync, even muted ones
         $this->syncAll($user, $contact, $total, true);
