@@ -41,6 +41,37 @@ class Contact extends Generic
     }
 
     /**
+     * Adds a contact by his email
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    static public function add()
+    {
+        if (!$email = \Input::data('email'))
+        {
+            throw new \Exception('No email provided.');
+        }
+
+        // check just in case
+        if ($contact = \Sys::svc('Contact')->findByEmailAndUserId($email, \Auth::user()->id))
+        {
+            return $contact;
+        }
+
+        return \Sys::svc('Contact')->create(array
+        (
+            'user_id'   => \Auth::user()->id,
+            'email'     => $email,
+            'name'      => null,
+            'count'     => 0,
+            'muted'     => 0,
+            'read'      => 1,
+            'last_ts'   => 0,
+        ));
+    }
+
+    /**
      * Update contact info
      *
      * @doc-var     (int) id!           - Contact ID.
