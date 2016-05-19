@@ -72,7 +72,7 @@ class Contact extends Generic
     }
 
     /**
-     * Update contact info
+     * Updates contact info
      *
      * @doc-var     (int) id!           - Contact ID.
      * @doc-var     (string) name       - Contact name.
@@ -98,5 +98,37 @@ class Contact extends Generic
         if (\Input::data('read') !== null) $contact->read = \Input::data('read');
 
         \Sys::svc('Contact')->update($contact);
+    }
+
+    /**
+     * Deletes a contact
+     *
+     * @doc-var     (int) id!           - Contact ID.
+     *
+     * @throws \Exception
+     */
+    static public function delete()
+    {
+        if (!$id = \Input::data('id'))
+        {
+            throw new \Exception('No contact ID provided.');
+        }
+
+        if (!$contact = \Sys::svc('Contact')->findByIdAndUserId($id, \Auth::user()->id))
+        {
+            throw new \Exception('Contact not found.');
+        }
+
+        foreach (\Sys::svc('Message')->findByContactId($contact->id) as $message)
+        {
+            // kill message and its links
+            \Sys::svc('Message')->delete($message);
+            $stmt = \DB::prepare('DELETE FROM contact_message WHERE contact_id=? AND message_id=?', [$contact->id, $message->id]);
+            $stmt->execute();
+            $stmt->close();
+        }
+
+        // kill contact
+        \Sys::svc('Contact')->delete($contact);
     }
 }
