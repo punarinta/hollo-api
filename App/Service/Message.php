@@ -65,7 +65,7 @@ class Message extends Generic
 
         foreach (\DB::rows($sql, $params) as $item)
         {
-            $items[] = array
+            $items[] = \DB::toObject(array
             (
                 'id'        => $item->id,
                 'ts'        => $item->ts,
@@ -78,7 +78,7 @@ class Message extends Generic
                     'name'  => $item->c2_name,
                 ),
                 'files'     => json_decode($item->files, true),
-            );
+            ));
         }
 
         return $items;
