@@ -40,7 +40,7 @@ class Achtung
             {
                 // kill message and its links
                 \Sys::svc('Message')->delete($message);
-                $this->justRun('DELETE FROM contact_message WHERE contact_id=? AND message_id=?', [$contact->id, $message->id]);
+                $this->justRun('DELETE FROM contact_message WHERE contact_id=? OR message_id=?', [$contact->id, $message->id]);
                 ++$messageCount;
             }
 
