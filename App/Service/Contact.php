@@ -103,6 +103,20 @@ class Contact extends Generic
     }
 
     /**
+     * Separately counts unread muted and unmuted contacts
+     *
+     * @param $userId
+     * @return array
+     */
+    public function countUnreadByUserId($userId)
+    {
+        // unmuted count goes first
+        $r = \DB::rows('SELECT muted, count(0) AS x FROM `contact` WHERE `read`=0 AND user_id=? GROUP BY muted ORDER BY muted', [$userId]);
+
+        return [$r[0]->x, $r[1]->x];
+    }
+
+    /**
      * Checks if it's necessary to sync any contact and performs that sync
      *
      * @param null $userId
