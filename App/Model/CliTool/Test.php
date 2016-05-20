@@ -2,12 +2,30 @@
 
 namespace App\Model\CliTool;
 
+use App\Model\ContextIO\ContextIO;
+
 /**
  * Class Test
  * @package App\Model\CliTool
  */
 class Test
 {
+    public function updateSource()
+    {
+        $user = \Sys::svc('User')->findById(1);
+
+        $cfg = \Sys::cfg('contextio');
+        $conn = new ContextIO($cfg['key'], $cfg['secret']);
+
+        $res = $conn->post($user->ext_id, 'sources/0', array
+        (
+            'status'                    => 'DISABLED',
+            'provider_refresh_token'    => 'hello world',
+        ));
+
+        print_r($res->getData());
+    }
+
     public function smtp()
     {
         // fill your own refresh token

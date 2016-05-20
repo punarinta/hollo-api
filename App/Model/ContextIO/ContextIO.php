@@ -1601,7 +1601,7 @@ class ContextIO
 		return $this->_doCall('PUT', $account, $action, $parameters, null, null, $httpHeadersToSet);
 	}
 
-	protected function post($account, $action='', $parameters=null, $file=null, $httpHeadersToSet=array()) {
+	public function post($account, $action='', $parameters=null, $file=null, $httpHeadersToSet=array()) {
 		return $this->_doCall('POST', $account, $action, $parameters, $file, null, $httpHeadersToSet);
 	}
 

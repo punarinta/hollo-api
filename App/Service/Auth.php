@@ -303,7 +303,7 @@ class Auth
         {
             if (empty ($this->conn->listSources($user->ext_id, ['status_ok' => 1])->getData()))
             {
-                $this->conn->deleteSource($user->ext_id, ['label' => 0]);
+                /*$this->conn->deleteSource($user->ext_id, ['label' => 0]);
 
                 $this->conn->addSource($user->ext_id, array
                 (
@@ -315,6 +315,12 @@ class Auth
                     'type'                      => 'IMAP',
                     'provider_refresh_token'    => $token,
                     'provider_consumer_key'     => \Sys::cfg('oauth.google.clientId'),
+                ));*/
+
+                $this->conn->post($user->ext_id, 'sources/0', array
+                (
+                    'status'                    => 1,
+                    'provider_refresh_token'    => $token,
                 ));
             }
         }
