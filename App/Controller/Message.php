@@ -93,6 +93,9 @@ class Message extends Generic
         {
             throw new \Exception('Body not provided.');
         }
+        
+        // force Context.IO sync
+        // \Sys::svc('User')->syncExt(\Auth::user());
 
         return true;
     }
