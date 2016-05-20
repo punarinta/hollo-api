@@ -89,6 +89,30 @@ class User extends Generic
     }
 
     /**
+     * Trigger an external mail sync
+     * 
+     * @param $user
+     * @return null
+     * @throws \Exception
+     */
+    public function syncExt($user)
+    {
+        if (!is_object($user))
+        {
+            $user = \Sys::svc('User')->findById($user);
+        }
+
+        if (!$user || !$user->ext_id)
+        {
+            throw new \Exception('Sync is not possible');
+        }
+
+        $res = $this->conn->syncSource($user->ext_id, ['label' => 0]);
+
+        return $res ? $res->getData() : null;
+    }
+
+    /**
      * Returns a particular User setting
      *
      * @param $user
