@@ -15,29 +15,30 @@ class File extends Generic
     {
         $items = [];
 
-        // TODO: fetch from local DB (?)
-
-        foreach ($this->conn->listContactFiles(\Auth::user()->ext_id, ['email' => $email, 'limit'=>10])->getData() as $row)
+        if ($data = $this->conn->listContactFiles(\Auth::user()->ext_id, ['email' => $email, 'limit' => 10]))
         {
-            if ($withImageUrl && \Mime::isImage($row['type']))
+            foreach ($data->getData() as $row)
             {
-                $url = $this->getProcessorLink($row['file_id']);
-            }
-            else
-            {
-                $url = null;
-            }
+                if ($withImageUrl && \Mime::isImage($row['type']))
+                {
+                    $url = $this->getProcessorLink($row['file_id']);
+                }
+                else
+                {
+                    $url = null;
+                }
 
-            $items[] = array
-            (
-                'messageId'     => $row['message_id'],
-                'fileId'        => $row['file_id'],
-                'name'          => $row['file_name_structure'][0][0],
-                'ext'           => strtolower(@$row['file_name_structure'][1][0]),
-                'size'          => $row['size'],
-                'type'          => $row['type'],
-                'url'           => $url,
-            );
+                $items[] = array
+                (
+                    'messageId'     => $row['message_id'],
+                    'fileId'        => $row['file_id'],
+                    'name'          => $row['file_name_structure'][0][0],
+                    'ext'           => strtolower(@$row['file_name_structure'][1][0]),
+                    'size'          => $row['size'],
+                    'type'          => $row['type'],
+                    'url'           => $url,
+                );
+            }
         }
 
         return $items;
