@@ -116,6 +116,17 @@ class Smtp
                         $this->mail->addCC($from['email'], $from['name']);
                     }
                 }
+
+                if (isset ($data['addresses']['to']))
+                {
+                    foreach ($data['addresses']['to'] as $from)
+                    {
+                        if ($from['email'] != $user->email)
+                        {
+                            $this->mail->addCC($from['email'], $from['name']);
+                        }
+                    }
+                }
             }
         }
 
@@ -134,12 +145,15 @@ class Smtp
      * @param array $to
      * @param $body
      * @param null $subject
-     * @return bool
+     * @param array $attachments
+     * @return bool|null|\PHPMailer
      * @throws \Exception
      * @throws \phpmailerException
      */
-    public function send($to = [], $body, $subject = null)
+    public function send($to = [], $body, $subject = null, $attachments = [])
     {
+        $tempFiles = [];
+
         if (!$this->setup)
         {
             throw new \Exception('Send not setup');
@@ -147,7 +161,7 @@ class Smtp
 
         $this->mail->Body = $body . "\n" . $this->mail->Body;
 
-        if ($to && $subject)
+        if ($subject)
         {
             $this->mail->Subject = $subject;
         }
@@ -157,11 +171,26 @@ class Smtp
             $this->mail->addAddress($toAtom['email'], $toAtom['name']);
         }
 
-        if (!$this->mail->send())
+        foreach ($attachments as $file)
         {
-            throw new \Exception($this->mail->ErrorInfo);
+            // save file first
+            $path = tempnam('data/temp', 'upl-');
+            $tempFiles[] = $path;
+
+            $this->mail->addAttachment($path, $file['name'], 'base64', $file['type']);
         }
 
-        return true;
+       /* if (!$this->mail->send())
+        {
+            throw new \Exception($this->mail->ErrorInfo);
+        }*/
+
+        // cleanup possible temporary files
+        foreach ($tempFiles as $file)
+        {
+            unlink($file);
+        }
+
+        return [$this->mail, $this->mail->getToAddresses(), $this->mail->getCcAddresses(), $this->mail->getAttachments()];
     }
 }

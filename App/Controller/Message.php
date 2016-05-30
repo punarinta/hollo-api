@@ -80,23 +80,43 @@ class Message extends Generic
     /**
      * Reply to a message or compose a new one
      *
+     * @doc-var     (string) body!          - Message body.
+     * @doc-var     (int) messageId         - Hollo's message ID to reply to.
+     * @doc-var     (array) to              - Array of extra recipient emails. Required if no messageId given.
      * @doc-var     (string) subject        - Message subject.
-     * @doc-var     (string) body           - Message body.
-     * @doc-var     (int) messageId         - Hollo's message ID.
+     * @doc-var     (array) files           - Message attachments.
+     * @doc-var     (string) file[].name    - File name.
+     * @doc-var     (string) file[].type    - File MIME type.
+     * @doc-var     (int) file[].size       - File size.
+     * @doc-var     (string) file[].data    - Base64 file data.
      *
      * @return bool
      * @throws \Exception
      */
     static public function send()
     {
-        if (!$body = \Input::data('body'))
+        if (!$body = trim(\Input::data('body')))
         {
+            // TODO: sanitize?
             throw new \Exception('Body not provided.');
         }
-        
-        // force Context.IO sync
+
+        $to = \Input::data('to') ?: [];
+
+        if (!$messageId = \Input::data('messageId'))
+        {
+            if (!$to)
+            {
+                throw new \Exception('Neither message ID nor recipient list is provided.');
+            }
+        }
+
+        \Sys::svc('Smtp')->setupThread(\Auth::user()->id, $messageId);
+        $res = \Sys::svc('Smtp')->send($to, $body, \Input::data('subject'), \Input::data('files'));
+
+        // force Context.IO sync after mail is sent
         // \Sys::svc('User')->syncExt(\Auth::user());
 
-        return true;
+        return $res;
     }
 }
