@@ -113,7 +113,7 @@ class Smtp
                 {
                     foreach ($data['addresses']['cc'] as $from)
                     {
-                        $this->mail->addCC($from['email'], $from['name']);
+                        $this->mail->addCC($from['email'], @$from['name']);
                     }
                 }
 
@@ -123,7 +123,7 @@ class Smtp
                     {
                         if ($from['email'] != $user->email)
                         {
-                            $this->mail->addCC($from['email'], $from['name']);
+                            $this->mail->addCC($from['email'], @$from['name']);
                         }
                     }
                 }
