@@ -92,10 +92,21 @@ class Contact extends Generic
         {
             throw new \Exception('Contact not found.');
         }
+
+        if ($name = trim(\Input::data('name')))
+        {
+            $contact->name = $name;
+        }
         
-        if (\Input::data('name') !== null) $contact->name = \Input::data('name');
-        if (\Input::data('muted') !== null) $contact->muted = \Input::data('muted');
-        if (\Input::data('read') !== null) $contact->read = \Input::data('read');
+        if (\Input::data('muted') !== null)
+        {
+            $contact->muted = \Input::data('muted');
+        }
+
+        if (\Input::data('read') !== null)
+        {
+            $contact->read = \Input::data('read');
+        }
 
         \Sys::svc('Contact')->update($contact);
     }
