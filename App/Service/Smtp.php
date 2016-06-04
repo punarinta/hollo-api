@@ -168,7 +168,7 @@ class Smtp
 
         foreach ($to as $toAtom)
         {
-            $this->mail->addAddress($toAtom['email'], $toAtom['name']);
+            $this->mail->addAddress($toAtom['email'], @$toAtom['name']);
         }
 
         foreach ($attachments as $file)
