@@ -100,13 +100,13 @@ class Smtp
                 }
 
                 $ts = date('r', $data['date']);
-                $name = explode('@', $data['addresses']['from']['name']);
+                $name = explode('@', $data['addresses']['from']['email']);
                 $this->mail->Body = "\nOn {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
 
                 if (isset ($data['addresses']['from']))
                 {
                     // reply back to sender
-                    $this->mail->addAddress($data['addresses']['from']['email'], $data['addresses']['from']['name']);
+                    $this->mail->addAddress($data['addresses']['from']['email'], @$data['addresses']['from']['name']);
                 }
 
                 if (isset ($data['addresses']['cc']))
