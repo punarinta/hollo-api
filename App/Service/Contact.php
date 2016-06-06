@@ -136,6 +136,9 @@ class Contact extends Generic
         $user = \Sys::svc('User')->findById($userId, true);
         $lastSyncTs = $user->last_sync_ts ?: 1;
 
+        // ext sync
+        \Sys::svc('User')->syncExt($user);
+
         // indicate started transaction
         $user->is_syncing = 1;
         \Sys::svc('User')->update($user);
