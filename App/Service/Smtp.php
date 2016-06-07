@@ -159,7 +159,11 @@ class Smtp
             throw new \Exception('Send not setup');
         }
 
-        $this->mail->Body = $body . "\n" . $this->mail->Body;
+        if ($body)
+        {
+            // body may be empty in case of a files only post
+            $this->mail->Body = $body . "\n" . $this->mail->Body;
+        }
 
         if ($subject)
         {

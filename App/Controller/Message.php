@@ -95,10 +95,13 @@ class Message extends Generic
      */
     static public function send()
     {
-        if (!$body = trim(\Input::data('body')))
+        $body = trim(\Input::data('body'));
+        $files = \Input::data('files');
+
+        if (!$body && !$files)
         {
             // TODO: sanitize?
-            throw new \Exception('Body not provided.');
+            throw new \Exception('Neither body provided, nor files.');
         }
 
         $to = \Input::data('to') ?: [];
@@ -112,7 +115,7 @@ class Message extends Generic
         }
 
         \Sys::svc('Smtp')->setupThread(\Auth::user()->id, $messageId);
-        $res = \Sys::svc('Smtp')->send($to, $body, \Input::data('subject'), \Input::data('files'));
+        $res = \Sys::svc('Smtp')->send($to, $body, \Input::data('subject'), $files);
 
         // force Context.IO sync after mail is sent
         // \Sys::svc('User')->syncExt(\Auth::user());
