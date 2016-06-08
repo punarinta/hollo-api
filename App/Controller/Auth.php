@@ -32,6 +32,7 @@ class Auth extends Generic
                 'email'     => \Auth::user()->email,
                 'name'      => \Sys::svc('User')->name(),
                 'ava'       => @$_SESSION['-AUTH']['avatar'],
+                'settings'  => json_decode(\Auth::user()->settings),
             ) : null,
             'sessionId' => session_id(),
         );
