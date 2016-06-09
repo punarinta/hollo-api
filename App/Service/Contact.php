@@ -146,7 +146,7 @@ class Contact extends Generic
         $params =
         [
             'limit'         => $limit,
-            'active_after'  => $lastSyncTs,
+            'active_after'  => $lastSyncTs - 86400,
         ];
 
         $contactsToSync = [];
@@ -199,6 +199,7 @@ class Contact extends Generic
                     }
                 }
 
+                // TODO: $syncCount check is very doubtful here
                 if ($syncCount)
                 {
                     $contactsToSync[] = $row;
