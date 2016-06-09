@@ -90,16 +90,16 @@ unset ($autoClasses0, $autoClasses4);
 
 // 4. Compiled routes
 
-// Built 26.04.16 @ 12:08:45 +0200
+// Built 09.06.16 @ 12:59:25 +0200
 
 $GLOBALS['-R'] = [
-'settings' => ['/api/settings', \Auth::USER, '\App\Controller\Settings', 'index'],
-'context-io' => ['/api/context-io', \Auth::GUEST, '\App\Controller\ContextIO', 'index'],
-'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],
-'message' => ['/api/message', \Auth::USER, '\App\Controller\Message', 'index'],
+'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
 'contact' => ['/api/contact', \Auth::USER, '\App\Controller\Contact', 'index'],
 'email' => ['/api/email', \Auth::USER, '\App\Controller\Email', 'index'],
-'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
+'message' => ['/api/message', \Auth::USER, '\App\Controller\Message', 'index'],
+'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],
+'settings' => ['/api/settings', \Auth::USER, '\App\Controller\Settings', 'index'],
+'context-io' => ['/api/context-io', \Auth::GUEST, '\App\Controller\ContextIO', 'index'],
 ];
 
 // 5. Run application
