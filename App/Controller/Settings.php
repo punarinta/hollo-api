@@ -18,6 +18,7 @@ class Settings extends Generic
             'firstName' => $settings->firstName,
             'lastName'  => $settings->lastName,
             'signature' => $settings->signature,
+            'flags'     => $settings->flags,
         );
     }
     
