@@ -53,6 +53,10 @@ class Achtung
 
         echo "Delected $contactCount contacts and $messageCount messages.\n";
 
+        $this->justRun('ALTER TABLE contact AUTO_INCREMENT = 1');
+        $this->justRun('ALTER TABLE message AUTO_INCREMENT = 1');
+        $this->justRun('UPDATE user SET last_sync_ts=1 WHERE id=?', [$userId]);
+
         return "\n";
     }
 
