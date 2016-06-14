@@ -146,7 +146,7 @@ class Contact extends Generic
         $params =
         [
             'limit'         => $limit,
-            'active_after'  => $lastSyncTs - 86400,
+            'active_after'  => abs($lastSyncTs - 86400),
         ];
 
         $contactsToSync = [];

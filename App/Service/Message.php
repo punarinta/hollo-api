@@ -122,7 +122,7 @@ class Message extends Generic
             'include_body'  => 1,
             'limit'         => \Sys::cfg('sys.sync_depth'),     // max limit = 100
             'email'         => $contact->email,
-            'date_after'    => $user->last_sync_ts ? $user->last_sync_ts - 86400 : 1,
+            'date_after'    => $user->last_sync_ts ? abs($user->last_sync_ts - 86400) : 1,
             'sort_order'    => 'desc',
             'offset'        => $offset,
         ];
