@@ -294,42 +294,56 @@ class Contact extends Generic
 
         if (in_array($email[0],
         [
+            'account',
             'admin',
             'automailer',
+            'bekraftelse',
             'billing',
+            'booking',
+            'career',
             'contact',
-            'customer',
+            'demo',
             'delivery',
             'donate',
-            'dontreply',
-            'donotreply',
             'email',
+            'event',
             'forum',
             'hello',
             'help',
             'info',
             'inform',
+            'invite',
             'mail',
+            'marketing',
+            'medlem',
+            'member',
             'messages',
-            'news',
-            'newsletter',
-            'no_reply',
+            'nobody',
+            'online',
             'post',
             'postmaster',
             'reklama',
             'robot',
             'service',
+            'student',
             'subscription',
             'team',
             'webmaster',
+            'weekly',
             'welcome',
         ])
+            || strpos($email[0], 'customer') !== false
+            || strpos($email[0], 'feedback') !== false
             || strpos($email[0], 'mailer') !== false
-            || strpos($email[0], 'noreply') !== false
-            || strpos($email[0], 'no-reply') !== false
+            || strpos($email[0], 'message') !== false
+            || strpos($email[0], 'news') !== false
             || strpos($email[0], 'notif') !== false
+            || strpos($email[0], 'nyhet') !== false
+            || strpos($email[0], 'regist') !== false
+            || strpos($email[0], 'reply') !== false
             || strpos($email[0], 'sales') !== false
             || strpos($email[0], 'support') !== false
+            || strpos($email[0], 'survey') !== false
             || strpos($email[0], 'update') !== false
         )
         {
