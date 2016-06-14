@@ -8,3 +8,4 @@ App/config.php
 *.log
 deploy.tar.gz
 *.token
+ignore*
