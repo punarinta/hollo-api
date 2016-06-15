@@ -146,7 +146,8 @@ class Message extends Generic
             else
             {
                 ++$attempt;
-                echo "Error syncing '{$contact->email}', attempt #$attempt\n";
+                echo "Error syncing '{$contact->email}', attempt #$attempt in 3 seconds\n";
+                sleep(3);
                 print_r($params);
             }
         }
