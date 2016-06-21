@@ -63,7 +63,8 @@ class Contact extends Generic
                     break;
 
                 case 'email':
-                    $sql .= ' AND email LIKE ?';
+                    $sql .= " AND email LIKE ?";
+                    $filter['value'] = '%' . $filter['value'] . '%';
                     break;
 
                 case 'muted':
