@@ -15,7 +15,8 @@ class DB
         {
             throw new \Exception('Cannot connect to the DB');
         }
-        mysqli_query($GLOBALS['-DB-L'], 'SET NAMES utf8');
+
+        mysqli_set_charset($GLOBALS['-DB-L'], 'utf8mb4');
     }
 
     /**

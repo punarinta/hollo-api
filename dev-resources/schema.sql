@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `message` (
   `ext_id` char(24) NOT NULL,
   `from_contact_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `subject` varchar(256) DEFAULT NULL,
-  `body` mediumtext,
+  `body` mediumtext CHARACTER SET utf8mb4,
   `files` mediumtext,
   `ts` bigint(20) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
