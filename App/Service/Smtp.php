@@ -179,6 +179,12 @@ class Smtp
         {
             // save file first
             $path = tempnam('data/temp', 'upl-');
+
+            $f = fopen($path, 'wb');
+            stream_filter_append($f, 'convert.base64-decode');
+            fwrite($f, substr($file['data'], strpos($file['data'], ',') + 1));
+            fclose($f);
+
             $tempFiles[] = $path;
 
             $this->mail->addAttachment($path, $file['name'], 'base64', $file['type']);
