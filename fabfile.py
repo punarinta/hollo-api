@@ -59,6 +59,7 @@ def symlink_current():
     # sudo('ln -s {} {}/data/files'.format(FILES_DIR, current))
     # sudo('rm -rf {}/public/files'.format(current))
     # sudo('ln -s {} {}/public/files'.format(FILES_DIR, current))
+    sudo('mkdir {}/data/temp'.format(current))
 
 # def build():
     # create a new source distribution as tarball
