@@ -123,7 +123,7 @@ class Message extends Generic
         $res = \Sys::svc('Smtp')->send($to, $body, \Input::data('subject'), $files);
 
         // force Context.IO sync after mail is sent
-        // \Sys::svc('User')->syncExt(\Auth::user());
+        \Sys::svc('User')->syncExt(\Auth::user());
 
         return $res;
     }
