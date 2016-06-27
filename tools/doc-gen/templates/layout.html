@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>API Documentation</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+</head>
+
+<body id="api-docs" class="container-fluid">
+    <header>
+        <h1>Coursio API Documentation</h1>
+    </header>
+
+    <h3>General</h3>
+
+    <p>
+        An API method is always called via an HTTP POST request to an entity-named endpoint. Exact method name and any
+        possible parameters are placed into the request payload and encoded as a JSON string. RPC model has a routing
+        advantage over REST in our quite complex case and allows us to use the same API calls internally if we need to
+        prerender JSON data into the view before serving the page.
+    </p>
+    <p>
+        API uses <em>camelCased</em> names rather than <em>under_scored</em>.
+    </p>
+
+    <hr>
+    <h3>HTTP request structure</h3>
+    <p>All the fields except <strong>method</strong> are not obligatory.</p>
+    <pre>
+{
+    "method": "someMethod",   // method name
+    "data":
+    {
+        ...                   // all the function arguments go here
+    }
+    "pageStart": 0,           // data output starting row
+    "pageLength": 10          // data output row limit
+}</pre>
+
+    <p>
+        If no output page limit is specified, then no limitation is performed. Normally you will not need to use
+        pagination as in many cases nice filtering is available within the methods themselves.
+    </p>
+
+    <hr>
+    <h3>Responses structure</h3>
+    <pre>
+{
+    "isError": false,         // a boolean showing the overall operation result
+    "errMsg": null,           // possible error message string
+    "data":
+    {
+        ...                   // output from the called method
+    }
+}</pre>
+
+    <hr>
+    <h3>HTTP response codes</h3>
+
+    <table class="real-table">
+        <thead>
+            <tr><th>Code</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>401</td><td>Function requires proper authentication.</td></tr>
+            <tr><td>403</td><td>Access for the current user is denied.</td></tr>
+            <tr><td>404</td><td>Function doesn't exist.</td></tr>
+            <tr><td>500</td><td>Internal error or an undefined situation.</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+    <h3>Authentication</h3>
+    <p>
+        If user login was successful the server sends back the session identifier (<strong>sessionId</strong>
+        property in the response structure). This identifier may be later sent together with any API call to work
+        within the same login session. Identifier is sent in an HTTP header <strong>Token</strong>.
+    </p>
+
+    <hr>
+    <h3>Testing</h3>
+    <p>
+        For testing purposes one may use a version of API connected to a test database
+        (<a href="https://t-api.s.coursio.com/">https://t-api.s.coursio.com/</a>). All external services (e.g. payments
+        providers) connected to this version are also in test mode. Test database is at regular intervals synchronized
+        with a production one, so do not count on keeping your data there for a long period.
+    </p>
+
+    <hr>
+    <h3>Available functions</h3>
+    <p>
+        Click on a specific endpoint to see a list of functions contained. Click on a function name to see a list of
+        parameters. Use 'Test' button to test API live. As the majority of function will require authentication, you
+        may use login form at the bottom of this page to log in.
+    </p>
+
+    <a class="toggle-all" href="#">Toggle all</a>
+
+    <ul>
+    [LIST_COLLECTIONS]
+    </ul>
+
+    <form class="login-form container-float form-inline">
+        <input type="email" class="form-control identity" placeholder="Email"/>
+        <input type="password" class="form-control credential" placeholder="Password"/>
+        <button class="btn btn-default">Login</button>
+    </form>
+
+    <footer>
+        <div>
+            <a target="_blank" href="http://coursio.com">Coursio site</a>
+            | <a target="_blank" href="https://github.com/punarinta/coursio-api">Code examples</a>
+        </div>
+        <div>&nbsp;</div>
+    </footer>
+    <script src="jquery.min.js"></script>
+</body>
+<script>
+    $('.login-form .identity').val(localStorage.getItem('login-identity'));
+    $('.login-form .credential').val(localStorage.getItem('login-credential'));
+
+    $('.toggle-all').click(function()
+    {
+        $('.togglable').toggle();
+        return false
+    });
+    $('.toggle-local').click(function()
+    {
+        $(this).parent().parent().find('.procedures.togglable').toggle();
+        return false
+    });
+    $('.toggle-method').click(function()
+    {
+        $(this).parent().parent().find('.api-form.togglable').toggle();
+        return false
+    });
+
+    function call(url, method, params, page)
+    {
+        var pageStart = 0, pageLength = 25;
+
+        if (typeof page !== "undefined")
+        {
+            pageStart = page.start;
+            pageLength = page.length;
+        }
+
+        // make a request
+        $.ajax(
+                {
+                    type: 'POST',
+                    url: url,
+                    data: JSON.stringify({ method:method, data:params, pageStart:pageStart, pageLength:pageLength}),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(json)
+                    {
+                        if (json.isError) alert('API error: ' + json.errMsg);
+                        else
+                        {
+                            // var string = JSON.stringify(json.data);
+                            // $(_this).parent().find('pre').removeClass('hidden').show().text(string.length > 300 ? 'Too long. See console.' : string);
+                            console.log(json)
+                        }
+                    },
+                    failure: function(json)
+                    {
+                        console.error(json)
+                    }
+                });
+    }
+
+    $('.api-form button').click(function()
+    {
+        var url = $(this).parents('.api-data-url').data('url'),
+            method = $(this).parents('.api-data-method').data('method'),
+            params = {};
+
+        // list parameters
+        $(this).parents('.api-form').find('tbody tr').each(function(i, e)
+        {
+            var key = $(e).find('.name').text();
+            params[key] = $(e).find('.value').val()
+        });
+
+        // var _this = this;
+
+        call(url, method, params);
+
+        return false
+    });
+
+    $('.login-form button').click(function()
+    {
+        var params =
+        {
+            identity:   $('.login-form .identity').val(),
+            credential: $('.login-form .credential').val()
+        };
+
+        localStorage.setItem('login-identity', params.identity);
+        localStorage.setItem('login-credential', params.credential);
+
+        $.ajax(
+        {
+            type: 'POST',
+            url: '/api/auth',
+            data: JSON.stringify({ method:'login', data:params }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(json)
+            {
+                if (json.isError) alert('Login failed: ' + json.errMsg);
+                else alert('Logged in');
+            },
+            failure: function(json)
+            {
+                console.error(json)
+            }
+        });
+
+        return false
+    });
+</script>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter32984249 = new Ya.Metrika({
+                    id:32984249,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true,
+                    webvisor:true,
+                    trackHash:true
+                });
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+                s = d.createElement("script"),
+                f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/32984249" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+</html>

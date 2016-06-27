@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+/**
+ * Class Message
+ * @package App\Controller
+ * @doc-api-path /api/message
+ */
 class Message extends Generic
 {
     /**

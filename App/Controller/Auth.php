@@ -119,10 +119,6 @@ class Auth extends Generic
         return self::status();
     }
 
-    /**
-     * @return array
-     * @throws \Exception
-     */
     static function incarnate()
     {
         if (!\Auth::amI(\Auth::ADMIN))
@@ -140,9 +136,6 @@ class Auth extends Generic
         return self::status();
     }
 
-    /**
-     * @return array
-     */
     static function wakeUp()
     {
         \Sys::svc('Auth')->wakeUp();

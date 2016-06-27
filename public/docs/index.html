@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>API Documentation</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+</head>
+
+<body id="api-docs" class="container-fluid">
+    <header>
+        <h1>Coursio API Documentation</h1>
+    </header>
+
+    <h3>General</h3>
+
+    <p>
+        An API method is always called via an HTTP POST request to an entity-named endpoint. Exact method name and any
+        possible parameters are placed into the request payload and encoded as a JSON string. RPC model has a routing
+        advantage over REST in our quite complex case and allows us to use the same API calls internally if we need to
+        prerender JSON data into the view before serving the page.
+    </p>
+    <p>
+        API uses <em>camelCased</em> names rather than <em>under_scored</em>.
+    </p>
+
+    <hr>
+    <h3>HTTP request structure</h3>
+    <p>All the fields except <strong>method</strong> are not obligatory.</p>
+    <pre>
+{
+    "method": "someMethod",   // method name
+    "data":
+    {
+        ...                   // all the function arguments go here
+    }
+    "pageStart": 0,           // data output starting row
+    "pageLength": 10          // data output row limit
+}</pre>
+
+    <p>
+        If no output page limit is specified, then no limitation is performed. Normally you will not need to use
+        pagination as in many cases nice filtering is available within the methods themselves.
+    </p>
+
+    <hr>
+    <h3>Responses structure</h3>
+    <pre>
+{
+    "isError": false,         // a boolean showing the overall operation result
+    "errMsg": null,           // possible error message string
+    "data":
+    {
+        ...                   // output from the called method
+    }
+}</pre>
+
+    <hr>
+    <h3>HTTP response codes</h3>
+
+    <table class="real-table">
+        <thead>
+            <tr><th>Code</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>401</td><td>Function requires proper authentication.</td></tr>
+            <tr><td>403</td><td>Access for the current user is denied.</td></tr>
+            <tr><td>404</td><td>Function doesn't exist.</td></tr>
+            <tr><td>500</td><td>Internal error or an undefined situation.</td></tr>
+        </tbody>
+    </table>
+
+    <hr>
+    <h3>Authentication</h3>
+    <p>
+        If user login was successful the server sends back the session identifier (<strong>sessionId</strong>
+        property in the response structure). This identifier may be later sent together with any API call to work
+        within the same login session. Identifier is sent in an HTTP header <strong>Token</strong>.
+    </p>
+
+    <hr>
+    <h3>Testing</h3>
+    <p>
+        For testing purposes one may use a version of API connected to a test database
+        (<a href="https://t-api.s.coursio.com/">https://t-api.s.coursio.com/</a>). All external services (e.g. payments
+        providers) connected to this version are also in test mode. Test database is at regular intervals synchronized
+        with a production one, so do not count on keeping your data there for a long period.
+    </p>
+
+    <hr>
+    <h3>Available functions</h3>
+    <p>
+        Click on a specific endpoint to see a list of functions contained. Click on a function name to see a list of
+        parameters. Use 'Test' button to test API live. As the majority of function will require authentication, you
+        may use login form at the bottom of this page to log in.
+    </p>
+
+    <a class="toggle-all" href="#">Toggle all</a>
+
+    <ul>
+    <li class="collection api-data-url" data-url="/api/auth">
+    <h3>
+        <a class="toggle-local" href="#"><span>/api/auth</span></a>
+    </h3>
+    <ul class="procedures togglable">
+        <li class="procedure api-data-method" data-method="logout">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">logout()</span></a>
+        —
+        <span class="description">Logs you out</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters hidden">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="status">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">status()</span></a>
+        —
+        <span class="description">Returns current status</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters hidden">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="loginImap">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">loginImap()</span></a>
+        —
+        <span class="description">Login via standard mechanisms</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="required">
+    <td class="name">identity</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>User email.</p></td>
+</tr>
+<tr class="required">
+    <td class="name">credential</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>User password.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="getOAuthToken">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">getOAuthToken()</span></a>
+        —
+        <span class="description">Initializes OAuth authentication procedure</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="required">
+    <td class="name">redirectUrl</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Redirect URL.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="processOAuthCode">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">processOAuthCode()</span></a>
+        —
+        <span class="description">Completes OAuth authentication procedure</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="required">
+    <td class="name">redirectUrl</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Redirect URL.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+
+    </ul>
+</li>
+<li class="collection api-data-url" data-url="/api/contact">
+    <h3>
+        <a class="toggle-local" href="#"><span>/api/contact</span></a>
+    </h3>
+    <ul class="procedures togglable">
+        <li class="procedure api-data-method" data-method="find">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">find()</span></a>
+        —
+        <span class="description">Lists your contacts</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="">
+    <td class="name">sortBy</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Sorting key. Options are 'name', 'email', 'lastTs'.</p></td>
+</tr>
+<tr class="">
+    <td class="name">sortMode</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Sorting mode. Options are 'asc', 'desc'.</p></td>
+</tr>
+<tr class="">
+    <td class="name">filters</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">array</td>
+    <td class="description"><p>Array of 'filter'.</p></td>
+</tr>
+<tr class="">
+    <td class="name">filter[].mode</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Filtering mode. Options are 'muted', 'name', 'email'.</p></td>
+</tr>
+<tr class="">
+    <td class="name">filter[].value</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Filter string.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="add">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">add()</span></a>
+        —
+        <span class="description">Adds a contact by his email</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters hidden">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="update">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">update()</span></a>
+        —
+        <span class="description">Updates contact info</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="required">
+    <td class="name">id</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">int</td>
+    <td class="description"><p>Contact ID.</p></td>
+</tr>
+<tr class="">
+    <td class="name">name</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Contact name.</p></td>
+</tr>
+<tr class="">
+    <td class="name">muted</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">bool</td>
+    <td class="description"><p>Muted or not.</p></td>
+</tr>
+<tr class="">
+    <td class="name">read</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">bool</td>
+    <td class="description"><p>Read or not.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="delete">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">delete()</span></a>
+        —
+        <span class="description">Deletes a contact</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="required">
+    <td class="name">id</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">int</td>
+    <td class="description"><p>Contact ID.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+
+    </ul>
+</li>
+<li class="collection api-data-url" data-url="/api/email">
+    <h3>
+        <a class="toggle-local" href="#"><span>/api/email</span></a>
+    </h3>
+    <ul class="procedures togglable">
+        <li class="procedure api-data-method" data-method="oAuthStart">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">oAuthStart()</span></a>
+        —
+        <span class="description">Starts OAuth process</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters hidden">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="oAuthComplete">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">oAuthComplete()</span></a>
+        —
+        <span class="description">Completes OAuth process</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters hidden">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="discover">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">discover()</span></a>
+        —
+        <span class="description">Discovers IMAP settings for a specified email</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters hidden">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="attach">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">attach()</span></a>
+        —
+        <span class="description">Attaches email and creates an account if necessary</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="required">
+    <td class="name">email</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Email.</p></td>
+</tr>
+<tr class="">
+    <td class="name">password</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Password.</p></td>
+</tr>
+<tr class="">
+    <td class="name">server</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Server.</p></td>
+</tr>
+<tr class="">
+    <td class="name">port</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Port.</p></td>
+</tr>
+<tr class="">
+    <td class="name">username</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Username.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+
+    </ul>
+</li>
+<li class="collection api-data-url" data-url="/api/file">
+    <h3>
+        <a class="toggle-local" href="#"><span>/api/file</span></a>
+    </h3>
+    <ul class="procedures togglable">
+        <li class="procedure api-data-method" data-method="findByEmail">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">findByEmail()</span></a>
+        —
+        <span class="description">Finds contact's files</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="">
+    <td class="name">email</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Contact email.</p></td>
+</tr>
+<tr class="">
+    <td class="name">withImageUrl</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">bool</td>
+    <td class="description"><p>Whether to extract image URL or not.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="getFileUrl">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">getFileUrl()</span></a>
+        —
+        <span class="description">@return mixed</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters hidden">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+
+    </ul>
+</li>
+<li class="collection api-data-url" data-url="/api/message">
+    <h3>
+        <a class="toggle-local" href="#"><span>/api/message</span></a>
+    </h3>
+    <ul class="procedures togglable">
+        <li class="procedure api-data-method" data-method="findByReference">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">findByReference()</span></a>
+        —
+        <span class="description">Returns contacts messages</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="">
+    <td class="name">id</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">int</td>
+    <td class="description"><p>Contact's ID.</p></td>
+</tr>
+<tr class="">
+    <td class="name">email</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Contact's email. Needed if no email provided.</p></td>
+</tr>
+<tr class="">
+    <td class="name">subject</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Filter by subject.</p></td>
+</tr>
+<tr class="">
+    <td class="name">ninja</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">bool</td>
+    <td class="description"><p>Ninja mode, set 'true' to keep messages unread.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="moreByContactId">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">moreByContactId()</span></a>
+        —
+        <span class="description">Returns N more messages for a contact</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="required">
+    <td class="name">contactId</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">int</td>
+    <td class="description"><p>Contact's ID</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="send">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">send()</span></a>
+        —
+        <span class="description">Reply to a message or compose a new one</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="required">
+    <td class="name">body</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Message body.</p></td>
+</tr>
+<tr class="">
+    <td class="name">messageId</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">int</td>
+    <td class="description"><p>Hollo's message ID to reply to.</p></td>
+</tr>
+<tr class="">
+    <td class="name">to</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">array</td>
+    <td class="description"><p>Array of extra recipient emails. Required if no messageId given.</p></td>
+</tr>
+<tr class="">
+    <td class="name">subject</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Message subject.</p></td>
+</tr>
+<tr class="">
+    <td class="name">files</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">array</td>
+    <td class="description"><p>Message attachments.</p></td>
+</tr>
+<tr class="">
+    <td class="name">file[].name</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>File name.</p></td>
+</tr>
+<tr class="">
+    <td class="name">file[].type</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>File MIME type.</p></td>
+</tr>
+<tr class="">
+    <td class="name">file[].size</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">int</td>
+    <td class="description"><p>File size.</p></td>
+</tr>
+<tr class="">
+    <td class="name">file[].data</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Base64 file data.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+
+    </ul>
+</li>
+<li class="collection api-data-url" data-url="/api/settings">
+    <h3>
+        <a class="toggle-local" href="#"><span>/api/settings</span></a>
+    </h3>
+    <ul class="procedures togglable">
+        <li class="procedure api-data-method" data-method="read">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">read()</span></a>
+        —
+        <span class="description">Returns information about your profile</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters hidden">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="update">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">update()</span></a>
+        —
+        <span class="description">Update your profile info</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="">
+    <td class="name">firstName</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>First name.</p></td>
+</tr>
+<tr class="">
+    <td class="name">lastName</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Last name.</p></td>
+</tr>
+<tr class="">
+    <td class="name">signature</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Signature.</p></td>
+</tr>
+<tr class="">
+    <td class="name">flag</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">object</td>
+    <td class="description"><p>Set an arbitrary flag.</p></td>
+</tr>
+<tr class="">
+    <td class="name">flag.name</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Flag name.</p></td>
+</tr>
+<tr class="">
+    <td class="name">flag.value</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">bool</td>
+    <td class="description"><p>Flag status.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+
+    </ul>
+</li>
+
+    </ul>
+
+    <form class="login-form container-float form-inline">
+        <input type="email" class="form-control identity" placeholder="Email"/>
+        <input type="password" class="form-control credential" placeholder="Password"/>
+        <button class="btn btn-default">Login</button>
+    </form>
+
+    <footer>
+        <div>
+            <a target="_blank" href="http://coursio.com">Coursio site</a>
+            | <a target="_blank" href="https://github.com/punarinta/coursio-api">Code examples</a>
+        </div>
+        <div>&nbsp;</div>
+    </footer>
+    <script src="jquery.min.js"></script>
+</body>
+<script>
+    $('.login-form .identity').val(localStorage.getItem('login-identity'));
+    $('.login-form .credential').val(localStorage.getItem('login-credential'));
+
+    $('.toggle-all').click(function()
+    {
+        $('.togglable').toggle();
+        return false
+    });
+    $('.toggle-local').click(function()
+    {
+        $(this).parent().parent().find('.procedures.togglable').toggle();
+        return false
+    });
+    $('.toggle-method').click(function()
+    {
+        $(this).parent().parent().find('.api-form.togglable').toggle();
+        return false
+    });
+
+    function call(url, method, params, page)
+    {
+        var pageStart = 0, pageLength = 25;
+
+        if (typeof page !== "undefined")
+        {
+            pageStart = page.start;
+            pageLength = page.length;
+        }
+
+        // make a request
+        $.ajax(
+                {
+                    type: 'POST',
+                    url: url,
+                    data: JSON.stringify({ method:method, data:params, pageStart:pageStart, pageLength:pageLength}),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(json)
+                    {
+                        if (json.isError) alert('API error: ' + json.errMsg);
+                        else
+                        {
+                            // var string = JSON.stringify(json.data);
+                            // $(_this).parent().find('pre').removeClass('hidden').show().text(string.length > 300 ? 'Too long. See console.' : string);
+                            console.log(json)
+                        }
+                    },
+                    failure: function(json)
+                    {
+                        console.error(json)
+                    }
+                });
+    }
+
+    $('.api-form button').click(function()
+    {
+        var url = $(this).parents('.api-data-url').data('url'),
+            method = $(this).parents('.api-data-method').data('method'),
+            params = {};
+
+        // list parameters
+        $(this).parents('.api-form').find('tbody tr').each(function(i, e)
+        {
+            var key = $(e).find('.name').text();
+            params[key] = $(e).find('.value').val()
+        });
+
+        // var _this = this;
+
+        call(url, method, params);
+
+        return false
+    });
+
+    $('.login-form button').click(function()
+    {
+        var params =
+        {
+            identity:   $('.login-form .identity').val(),
+            credential: $('.login-form .credential').val()
+        };
+
+        localStorage.setItem('login-identity', params.identity);
+        localStorage.setItem('login-credential', params.credential);
+
+        $.ajax(
+        {
+            type: 'POST',
+            url: '/api/auth',
+            data: JSON.stringify({ method:'login', data:params }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(json)
+            {
+                if (json.isError) alert('Login failed: ' + json.errMsg);
+                else alert('Logged in');
+            },
+            failure: function(json)
+            {
+                console.error(json)
+            }
+        });
+
+        return false
+    });
+</script>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function (d, w, c) {
+        (w[c] = w[c] || []).push(function() {
+            try {
+                w.yaCounter32984249 = new Ya.Metrika({
+                    id:32984249,
+                    clickmap:true,
+                    trackLinks:true,
+                    accurateTrackBounce:true,
+                    webvisor:true,
+                    trackHash:true
+                });
+            } catch(e) { }
+        });
+
+        var n = d.getElementsByTagName("script")[0],
+                s = d.createElement("script"),
+                f = function () { n.parentNode.insertBefore(s, n); };
+        s.type = "text/javascript";
+        s.async = true;
+        s.src = "https://mc.yandex.ru/metrika/watch.js";
+
+        if (w.opera == "[object Opera]") {
+            d.addEventListener("DOMContentLoaded", f, false);
+        } else { f(); }
+    })(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/32984249" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+</html>

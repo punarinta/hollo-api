@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+/**
+ * Class Contact
+ * @package App\Controller
+ * @doc-api-path /api/contact
+ */
 class Contact extends Generic
 {
     /**

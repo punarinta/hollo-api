@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+/**
+ * Class File
+ * @package App\Controller
+ * @doc-api-path /api/file
+ */
 class File extends Generic
 {
     /**

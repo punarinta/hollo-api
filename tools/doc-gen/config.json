@@ -1,0 +1,21 @@
+{
+    "input":
+    {
+        "dirs":
+        [
+            "/home/robin/src/mailless/api/App/Controller"
+        ],
+        "paths":     "/home/robin/src/mailless/api/App/routing.php",
+        "root_url":  "/"
+    },
+    "output":
+    {
+        "filename": "/home/robin/src/mailless/api/public/docs/index.html"
+    },
+    "exclude":
+    [
+        "ContextIO.php",
+        "Generic.php",
+        "Upload.php"
+    ]
+}

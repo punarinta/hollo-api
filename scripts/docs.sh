@@ -4,7 +4,6 @@ cd "$(dirname "$0")"
 
 cd ../tools/doc-gen
 php main.php
-php main.php config-mr.wolf.json
 cd ../../scripts
 
 case "$1" in

@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+/**
+ * Class Settings
+ * @package App\Controller
+ * @doc-api-path /api/settings
+ */
 class Settings extends Generic
 {
     /**

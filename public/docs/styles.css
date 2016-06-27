@@ -1,0 +1,18 @@
+.hidden,.togglable {display: none}
+table {border-collapse: collapse}
+td {padding-top:15px !important}
+td input {margin-top:-6px !important}
+hr {border-bottom: 0}
+li.procedure {list-style: none; padding: 25px 15px; border-bottom: 1px solid #e0e0e0}
+li.collection {list-style: none; display: table-row}
+.procedure .name {font-weight: bold}
+.parameters {margin-top: 10px}
+.api-form button {margin-top: 10px}
+.api-result {margin: 20px 0 0}
+.required td {color: rgb(255, 95, 0)}
+.login-form {margin:30px 0 30px 40px}
+h3 a {text-decoration:none!important;}
+header {text-align:center;margin:35px 0 30px;}
+pre {display: inline-block}
+.real-table {border:1px solid #ccc}
+.real-table tr * {border:1px solid #ccc; padding:5px 10px !important}
