@@ -184,10 +184,10 @@ class Smtp
             $this->mail->addAttachment($path, $file['name'], 'base64', $file['type']);
         }
 
-       /* if (!$this->mail->send())
+        if (!$this->mail->send())
         {
             throw new \Exception($this->mail->ErrorInfo);
-        }*/
+        }
 
         // cleanup possible temporary files
         foreach ($tempFiles as $file)

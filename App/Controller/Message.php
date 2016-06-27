@@ -125,6 +125,6 @@ class Message extends Generic
         // force Context.IO sync after mail is sent
         \Sys::svc('User')->syncExt(\Auth::user());
 
-        return $res;
+        return true; // $res;
     }
 }
