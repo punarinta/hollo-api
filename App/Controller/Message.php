@@ -57,19 +57,19 @@ class Message extends Generic
     /**
      * Returns N more messages for a contact
      *
-     * @doc-var     (string) subject     - Filter by subject.
+     * @doc-var     (int) contactId!        - Contact's ID
      *
      * @return mixed
      * @throws \Exception
      */
-    static public function moreByEmail()
+    static public function moreByContactId()
     {
-        if (!$email = \Input::data('email'))
+        if (!$contactId = \Input::data('contactId'))
         {
             throw new \Exception('Email not provided.');
         }
 
-        if (!$contact = \Sys::svc('Contact')->findByEmailAndUserId($email, \Auth::user()))
+        if (!$contact = \Sys::svc('Contact')->findByIdAndUserId($contactId, \Auth::user()))
         {
             throw new \Exception('Contact not found');
         }
