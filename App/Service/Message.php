@@ -59,7 +59,7 @@ class Message extends Generic
 
         if ($offset)
         {
-            $sql .= ' LIMIT=100 OFFSET=?';      // Anyway, 100 is a limit in Context.IO
+            $sql .= ' LIMIT 100 OFFSET ?';      // Anyway, 100 is a limit in Context.IO
             $params[] = $offset;
         }
 
@@ -94,7 +94,7 @@ class Message extends Generic
     public function moreByContact($contact, $user)
     {
         // count the total amount and sync next N
-        $total = $this->countByContact($contact->email, $user->id);
+        $total = $this->countByContactAndUserId($contact->email, $user->id);
 
         // sync, even muted ones
         $this->syncAll($user, $contact, $total, true);

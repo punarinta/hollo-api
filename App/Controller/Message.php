@@ -74,7 +74,7 @@ class Message extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        if (!$contact = \Sys::svc('Contact')->findByIdAndUserId($contactId, \Auth::user()))
+        if (!$contact = \Sys::svc('Contact')->findByIdAndUserId($contactId, \Auth::user()->id))
         {
             throw new \Exception('Contact not found');
         }
