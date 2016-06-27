@@ -231,15 +231,20 @@ class Message extends Generic
             throw new \Exception('Message does not exist');
         }
 
-        if (!$data = $this->conn->getMessage(\Auth::user()->id, ['message_id' => $message->ext_id, 'include_body' => 1]))
+        // '571f73e9920d7f18098b4567'
+        if (!$data = $this->conn->getMessage(\Auth::user()->ext_id, ['message_id' => $message->ext_id, 'include_body' => 1]))
         {
             return false;
         }
+
+        $data = $data->getData();
 
         if (!isset ($data['body'][$bodyId]['content']))
         {
             throw new \Exception('Body does not exist');
         }
+
+        // echo replace4byte($data['body'][$bodyId]['content']);
 
         $message->body = $this->clearContent($data['body'][$bodyId]['type'], $data['body'][$bodyId]['content'], $data['addresses']['from']['email']);
         \Sys::svc('Message')->update($message);
