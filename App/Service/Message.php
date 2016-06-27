@@ -247,6 +247,31 @@ class Message extends Generic
         return true;
     }
 
+    /**
+     * Removes excessive messages
+     *
+     * @param $contactId
+     */
+    public function removeOld($contactId)
+    {
+        $messages = $this->findByContactId($contactId, null, 0);
+
+        foreach (array_slice($messages, \Sys::cfg('sys.sync_depth')) as $message)
+        {
+            // remove message link for this contact
+            $stmt = \DB::prepare('DELETE FROM contact_message WHERE message_id=? AND contact_id=?', [$message->id, $contactId]);
+            $stmt->execute();
+            $stmt->close();
+
+            // if the message became orphan, remove it too
+            $x = \DB::row('SELECT count(0) AS c FROM contact_message WHERE message_id=?', [$message->id]);
+            if (!$x->c)
+            {
+                $this->delete($message);
+            }
+        }
+    }
+
     // === internal functions ===
 
     /**
