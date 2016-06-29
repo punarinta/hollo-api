@@ -87,7 +87,7 @@ class Contact extends Generic
             }
             elseif ($sortBy == 'lastTs')
             {
-                $sql .= ' ORDER BY last_ts';
+                $sql .= ' ORDER BY last_ts DESC';
             }
 
             if ($sortMode == 'desc')
