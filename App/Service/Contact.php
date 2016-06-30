@@ -79,15 +79,15 @@ class Contact extends Generic
         {
             if ($sortBy == 'name')
             {
-                $sql .= ' ORDER BY `name`';
+                $sql .= ' ORDER BY `read` ASC, `name`';
             }
             elseif ($sortBy == 'email')
             {
-                $sql .= ' ORDER BY email';
+                $sql .= ' ORDER BY `read` ASC, email';
             }
             elseif ($sortBy == 'lastTs')
             {
-                $sql .= ' ORDER BY last_ts DESC';
+                $sql .= ' ORDER BY `read` ASC, last_ts DESC';
             }
 
             if ($sortMode == 'desc')
