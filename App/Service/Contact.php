@@ -247,7 +247,7 @@ class Contact extends Generic
             }
             else
             {
-                $syncCount = \Sys::svc('Message')->syncAll($user, $contact);
+                $syncCount = \Sys::svc('Message')->syncAll($user, $contact, 0, false, $force);
 
                 // sleep a bit to prevent API request queue growth
                 usleep(600000);

@@ -110,9 +110,10 @@ class Message extends Generic
      * @param $contact
      * @param int $offset
      * @param bool $fetchAll
-     * @return mixed
+     * @param bool $force
+     * @return int
      */
-    public function syncAll($user, $contact, $offset = 0, $fetchAll = false)
+    public function syncAll($user, $contact, $offset = 0, $fetchAll = false, $force = false)
     {
         // don't sync your own message to yourself
         if ($contact->email == $user->email) return 0;
@@ -122,7 +123,7 @@ class Message extends Generic
             'include_body'  => 1,
             'limit'         => \Sys::cfg('sys.sync_depth'),     // max limit = 100
             'email'         => $contact->email,
-            'date_after'    => $user->last_sync_ts ? abs($user->last_sync_ts - 86400) : 1,
+            'date_after'    => ($user->last_sync_ts && !$force) ? abs($user->last_sync_ts - 86400) : 1,
             'sort_order'    => 'desc',
             'offset'        => $offset,
         ];
