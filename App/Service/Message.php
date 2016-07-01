@@ -97,10 +97,12 @@ class Message extends Generic
         $total = $this->countByContactAndUserId($contact->email, $user->id);
 
         // sync, even muted ones
-        $this->syncAll($user, $contact, $total, true);
+        $this->syncAll($user, $contact, $total, true, true);
 
         // return with offset from DB
-        return $this->findByContactId($contact->id, null, $total);
+        $messages = $this->findByContactId($contact->id);
+
+        return array_slice($messages, 0, count($messages) - $total);
     }
 
     /**
