@@ -55,7 +55,7 @@ class Message extends Generic
             $params[] = '%' . $subject . '%';
         }
 
-        $sql .= ' ORDER BY ts';
+        $sql .= ' ORDER BY ts ASC';
 
         if ($offset)
         {
@@ -263,6 +263,7 @@ class Message extends Generic
     public function removeOld($contactId)
     {
         $messages = $this->findByContactId($contactId, null, 0);
+        $messages = array_reverse($messages);
         $messages = array_slice($messages, \Sys::cfg('sys.sync_depth'));
 
         foreach ($messages as $message)
