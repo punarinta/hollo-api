@@ -122,9 +122,10 @@ class Contact extends Generic
      *
      * @param null $userId
      * @param bool $verbose
+     * @param bool $force
      * @return array
      */
-    public function syncAll($userId = null, $verbose = false)
+    public function syncAll($userId = null, $verbose = false, $force = false)
     {
         $countMsg = 0;
         $countContacts = 0;
@@ -146,9 +147,13 @@ class Contact extends Generic
 
         $params =
         [
-            'limit'         => $limit,
-            'active_after'  => abs($lastSyncTs - 86400),
+            'limit' => $limit
         ];
+
+        if (!$force)
+        {
+            $params['active_after'] = abs($lastSyncTs - 86400);
+        }
 
         $contactsToSync = [];
 
@@ -201,7 +206,7 @@ class Contact extends Generic
                 }
 
                 // TODO: $syncCount check is very doubtful here
-                if ($syncCount)
+                if ($syncCount || $force)
                 {
                     $contactsToSync[] = $row;
                 }
