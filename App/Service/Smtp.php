@@ -91,7 +91,7 @@ class Smtp
                 $this->mail->addCustomHeader('In-Reply-To: ' . $data['email_message_id']);
                 $this->mail->addCustomHeader('References: ' . implode(' ', $refs));
 
-                $this->mail->Subject = $data['subject'];
+                $this->mail->Subject = 'Re: ' . $data['subject'];
 
                 $body = [];
                 foreach (preg_split("/\r\n|\n|\r/", $data['body'][0]['content']) as $line)
