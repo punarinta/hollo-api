@@ -341,9 +341,9 @@ class Message extends Generic
             $message = \Sys::svc('Message')->create(array
             (
                 'ts'                => $messageData['date'],
-                'body'              => $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content'], $contact->email),
+                'body'              => iconv('UTF-8', 'ISO-8859-1', $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content'], $contact->email)),
                 'from_contact_id'   => $senderId,
-                'subject'           => $messageData['subject'],
+                'subject'           => iconv('UTF-8', 'ISO-8859-1', $messageData['subject']),
                 'ext_id'            => $extId,
                 'files'             => empty($files) ? '' : json_encode($files),
             ));
