@@ -102,7 +102,9 @@ class Message extends Generic
         // return with offset from DB
         $messages = $this->findByContactId($contact->id);
 
-        return array_slice($messages, 0, count($messages) - $total);
+        $count = count($messages) - $total;
+
+        return $count > 0 ? array_slice($messages, 0, $count) : [];
     }
 
     /**
