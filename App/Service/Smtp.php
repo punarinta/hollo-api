@@ -93,8 +93,10 @@ class Smtp
 
                 $this->mail->Subject = 'Re: ' . $data['subject'];
 
+                $content = iconv('UTF-8', 'ISO-8859-1', $data['body'][0]['content']);
+
                 $body = [];
-                foreach (preg_split("/\r\n|\n|\r/", $data['body'][0]['content']) as $line)
+                foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
                 {
                     $body[] = '> ' . $line;
                 }
