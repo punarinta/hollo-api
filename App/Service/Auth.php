@@ -61,12 +61,21 @@ class Auth
      */
     public function loginImap($user, $password)
     {
-        $auth = new \EmailAuth\Auth;
+        $cfg = json_decode($user->settings, true) ?:[];
 
-        if (!$auth->login($user->email, $password))
+        // mail service is known
+        if (!$in = \Sys::svc('MailService')->getCfg($cfg['svc']))
+        {
+            // bullshit, but we don't want to say 'unsupported'
+            throw new \Exception('Mail service provider did not respond.');
+        }
+
+        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $user->email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
+
+        imap_close($box);
 
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['mail'] = ['user' => $user->email, 'pass' => $password];
@@ -83,8 +92,20 @@ class Auth
      */
     public function registerImap($email, $password, $locale = 'en_US')
     {
-        $mailService = \Sys::svc('MailService')->findByEmail($email);
-        $in = \Sys::svc('MailService')->getCfg($mailService);
+        if ($mailService = \Sys::svc('MailService')->findByEmail($email))
+        {
+            $in = \Sys::svc('MailService')->getCfg($mailService);
+        }
+        else
+        {
+            if (!$mailService = \Sys::svc('MailService')->fullDiscoverAndSave($email))
+            {
+                // bullshit, but we don't want to say 'unsupported'
+                throw new \Exception('Mail service provider did not respond.');
+            }
+
+            $in = \Sys::svc('MailService')->getCfg($mailService);
+        }
 
         if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $email, $password))
         {
