@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use EmailAuth\Discover;
+
 class MailService extends Generic
 {
     /**
@@ -30,6 +32,38 @@ class MailService extends Generic
         {
             return json_decode($mailService->cfg_out, true) ?:[];
         }
+    }
+
+    /**
+     * Tries to discover IMAP and SMTP settings and creates a new MailService
+     *
+     * @param $email
+     * @return null|\StdClass
+     */
+    public function fullDiscoverAndSave($email)
+    {
+        $discover = new Discover;
+
+        if (!$imapCfg = $discover->imap($email))
+        {
+            return null;
+        }
+
+        if (!$smtpCfg = $discover->smtp($email))
+        {
+            return null;
+        }
+
+        $domain = explode('@', $email);
+        $domain = $domain[1];
+
+        return $this->create(array
+        (
+            'name'      => $domain,
+            'domains'   => "|$domain|",
+            'cfg_in'    => json_encode(['type'=>'imap', 'oauth' => false, 'host' => $imapCfg['host'], 'port' => $imapCfg['port'], 'enc' => $imapCfg['encryption']]),
+            'cfg_out'   => json_encode(['type'=>'smtp', 'oauth' => false, 'host' => $smtpCfg['host'], 'port' => $smtpCfg['port'], 'enc' => $smtpCfg['encryption']]),
+        ));
     }
 
     /**
