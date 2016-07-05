@@ -34,6 +34,7 @@ $autoClasses4 =
     'GuzzleHttp\\Psr7\\'    => 'vendor/guzzlehttp/psr7/src/',
     'GuzzleHttp\\Promise\\' => 'vendor/guzzlehttp/promises/src/',
     'GuzzleHttp\\'          => 'vendor/guzzlehttp/guzzle/src/',
+    'EmailAuth\\'           => 'vendor/punarinta/email-auth/src/',
 ];
 
 spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4)

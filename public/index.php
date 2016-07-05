@@ -34,6 +34,7 @@ $autoClasses4 =
     'GuzzleHttp\\Psr7\\'    => 'vendor/guzzlehttp/psr7/src/',
     'GuzzleHttp\\Promise\\' => 'vendor/guzzlehttp/promises/src/',
     'GuzzleHttp\\'          => 'vendor/guzzlehttp/guzzle/src/',
+    'EmailAuth\\'           => 'vendor/punarinta/email-auth/src/',
 ];
 
 spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4)
@@ -95,7 +96,7 @@ unset ($autoClasses0, $autoClasses4);
 
 // 4. Compiled routes
 
-// Built 09.06.16 @ 12:59:25 +0200
+// Built 05.07.16 @ 13:35:17 +0200
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
