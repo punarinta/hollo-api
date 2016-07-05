@@ -61,17 +61,12 @@ class Auth
      */
     public function loginImap($user, $password)
     {
-        $cfg = json_decode($user->settings, true) ?:[];
+        $auth = new \EmailAuth\Auth;
 
-        // mail service is known
-        $in = \Sys::svc('MailService')->getCfg($cfg['svc']);
-
-        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $user->email, $password))
+        if (!$auth->login($user->email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
-
-        imap_close($box);
 
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['mail'] = ['user' => $user->email, 'pass' => $password];
