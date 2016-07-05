@@ -70,6 +70,8 @@ class Auth
             throw new \Exception('Mail service provider did not respond.');
         }
 
+        // TODO support non-SSL login
+
         if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $user->email, $password))
         {
             throw new \Exception('Incorrect username or password.');
@@ -106,6 +108,8 @@ class Auth
 
             $in = \Sys::svc('MailService')->getCfg($mailService);
         }
+
+        // TODO support non-SSL login
 
         if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $email, $password))
         {
