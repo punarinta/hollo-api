@@ -46,6 +46,20 @@ class User extends Generic
     }
 
     /**
+     * Returns all the users participating in the Chat
+     *
+     * @param $chatId
+     * @param bool $short
+     * @return array
+     */
+    public function findByChatId($chatId, $short = false)
+    {
+        $what = $short ? '*' : 'id, email, name';
+
+        return \DB::rows('SELECT ' . $what . ' FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=?', [$chatId]);
+    }
+
+    /**
      * Adds an account to a user
      *
      * @param $email
