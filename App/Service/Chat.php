@@ -57,4 +57,35 @@ class Chat extends Generic
 
         return \DB::rows($sql, $params);
     }
+
+    /**
+     * Finds a Chat by emails of all its participants
+     *
+     * @param array $emails
+     * @return bool
+     */
+    public function findByEmails($emails = [])
+    {
+        $sql = 'SELECT * FROM chat AS c';
+        $params = [\Auth::user()->id];
+        $where = 'WHERE user_id=?';
+        $counter = 0;
+
+        foreach ($emails as $email)
+        {
+            if (!$user = \Sys::svc('User')->findByEmail($email))
+            {
+                // this user doesn't even exist
+                return false;
+            }
+
+            $sql .= " LEFT JOIN chat_user AS cu$counter ON cu$counter.chat_id=c.id";
+            $where .= ' AND cu$counter.user_id=?';
+            $params[] = $user->id;
+
+            ++$counter;
+        }
+
+        return $counter ? \DB::row($sql . $where, $params) : false;
+    }
 }
