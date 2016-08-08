@@ -83,6 +83,71 @@ class Message extends Generic
     }
 
     /**
+     * Returns messages within a Chat
+     *
+     * @doc-var     (int) chatId        - Chat's ID.
+     * @doc-var     (string) subject    - Filter by subject.
+     * @doc-var     (bool) ninja        - Ninja mode, set 'true' to keep messages unread.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    static public function findByChatId()
+    {
+        if (!$chatId = \Input::data('chatId'))
+        {
+            throw new \Exception('Chat ID not provided.');
+        }
+
+        if (!$chat = \Sys::svc('Chat')->findById($chatId))
+        {
+            throw new \Exception('Chat does not exist.');
+        }
+
+        $msgs = \Sys::svc('Message')->findByChatId($chat->id, \Input::data('subject'));
+
+        if ($msgs && !\Input::data('ninja'))
+        {
+            $chat->read = 1;
+            \Sys::svc('Chat')->update($chat);
+        }
+
+        return array
+        (
+            'chat'   => array
+            (
+                'id'    => $chat->id,
+                'name'  => $chat->name,
+                'muted' => $chat->muted,
+            ),
+            'messages'  => $msgs,
+        );
+    }
+
+    /**
+     * Returns N more messages for a Chat
+     *
+     * @doc-var     (int) chatId!        - Chat's ID
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    static public function moreByChatId()
+    {
+        if (!$chatId = \Input::data('chatId'))
+        {
+            throw new \Exception('Email not provided.');
+        }
+
+        if (!$chat = \Sys::svc('Chat')->findById($chatId))
+        {
+            throw new \Exception('Chat does not exist.');
+        }
+
+        return \Sys::svc('Message')->moreByChat($chat, \Auth::user());
+    }
+
+    /**
      * Reply to a message or compose a new one
      *
      * @doc-var     (string) body!          - Message body.
