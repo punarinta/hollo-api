@@ -62,12 +62,13 @@ class Chat extends Generic
      * Finds a Chat by emails of all its participants
      *
      * @param array $emails
-     * @return bool
+     * @param $userId
+     * @return bool|null|\StdClass
      */
-    public function findByEmails($emails = [])
+    public function findByEmailsAndUserId($emails = [], $userId)
     {
         $sql = 'SELECT * FROM chat AS c';
-        $params = [\Auth::user()->id];
+        $params = [$userId];
         $where = 'WHERE user_id=?';
         $counter = 0;
 
