@@ -49,14 +49,19 @@ class User extends Generic
      * Returns all the users participating in the Chat
      *
      * @param $chatId
-     * @param bool $short
+     * @param bool $forContacts
      * @return array
      */
-    public function findByChatId($chatId, $short = false)
+    public function findByChatId($chatId, $forContacts = false)
     {
-        $what = $short ? 'id, email, name' : '*';
-
-        return \DB::rows('SELECT ' . $what . ' FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=?', [$chatId]);
+        if ($forContacts)
+        {
+            return \DB::rows('SELECT id, email, name FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=? AND u.id!=?', [$chatId, \Auth::user()->id]);
+        }
+        else
+        {
+            return \DB::rows('SELECT * FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=?', [$chatId]);
+        }
     }
 
     /**
