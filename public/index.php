@@ -96,11 +96,12 @@ unset ($autoClasses0, $autoClasses4);
 
 // 4. Compiled routes
 
-// Built 05.07.16 @ 13:35:17 +0200
+// Built 11.08.16 @ 19:02:51 +0300
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
 'contact' => ['/api/contact', \Auth::USER, '\App\Controller\Contact', 'index'],
+'chat' => ['/api/chat', \Auth::USER, '\App\Controller\Chat', 'index'],
 'email' => ['/api/email', \Auth::USER, '\App\Controller\Email', 'index'],
 'message' => ['/api/message', \Auth::USER, '\App\Controller\Message', 'index'],
 'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],
