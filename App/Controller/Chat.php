@@ -21,6 +21,13 @@ class Chat extends Generic
             // get flags
             $flags = \Sys::svc('Chat')->getFlags($chat->id, \Auth::user()->id);
 
+            $lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id)->body;
+
+            if (mb_strlen($lastMsg) > 20)
+            {
+                $lastMsg = mb_substr($lastMsg, 0, 20) . '…';
+            }
+
             $items[] = array
             (
                 'id'        => $chat->id,
@@ -29,6 +36,7 @@ class Chat extends Generic
                 'read'      => $flags->read,
                 'count'     => $chat->count,
                 'lastTs'    => $chat->last_ts,
+                'lastMsg'   => $lastMsg,
                 'users'     => \Sys::svc('User')->findByChatId($chat->id, true),
             );
         }

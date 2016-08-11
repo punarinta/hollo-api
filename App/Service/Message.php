@@ -5,6 +5,17 @@ namespace App\Service;
 class Message extends Generic
 {
     /**
+     * Returns the last message from the chat
+     *
+     * @param $chatId
+     * @return null|\StdClass
+     */
+    public function getLastByChatId($chatId)
+    {
+        return \DB::row('SELECT * FROM message WHERE chat_id = ? ORDER BY ts DESC LIMIT 1', [$chatId]);
+    }
+
+    /**
      * Finds a Message by its external ID
      *
      * @param $extId
