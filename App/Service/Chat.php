@@ -15,7 +15,7 @@ class Chat extends Generic
      */
     public function findAllByUserId($userId, $filters = [], $sortBy = null, $sortMode = null)
     {
-        $sql = 'SELECT * FROM chat WHERE user_id=?';
+        $sql = 'SELECT * FROM chat AS c LEFT JOIN chat_user AS cu ON cu.chat_id=c.id WHERE cu.user_id=?';
         $params = [$userId];
 
         foreach ($filters as $filter)
@@ -62,14 +62,13 @@ class Chat extends Generic
      * Finds a Chat by emails of all its participants
      *
      * @param array $emails
-     * @param $userId
      * @return bool|null|\StdClass
      */
-    public function findByEmailsAndUserId($emails = [], $userId)
+    public function findByEmails($emails = [])
     {
         $sql = 'SELECT * FROM chat AS c';
-        $params = [$userId];
-        $where = 'WHERE user_id=?';
+        $params = [];
+        $where = ' WHERE 1=1';
         $counter = 0;
 
         foreach ($emails as $email)
