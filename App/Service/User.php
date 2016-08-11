@@ -54,7 +54,7 @@ class User extends Generic
      */
     public function findByChatId($chatId, $short = false)
     {
-        $what = $short ? '*' : 'id, email, name';
+        $what = $short ? 'id, email, name' : '*';
 
         return \DB::rows('SELECT ' . $what . ' FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=?', [$chatId]);
     }
