@@ -23,9 +23,9 @@ class Chat extends Generic
 
             $lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id)->body;
 
-            if (mb_strlen($lastMsg) > 20)
+            if (mb_strlen($lastMsg) > 25)
             {
-                $lastMsg = mb_substr($lastMsg, 0, 20) . '…';
+                $lastMsg = mb_substr($lastMsg, 0, 25) . '…';
             }
 
             $items[] = array
