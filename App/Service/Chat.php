@@ -59,6 +59,18 @@ class Chat extends Generic
     }
 
     /**
+     * Gets 'read' and 'muted' flags for given Chat and User
+     *
+     * @param $chatId
+     * @param $userId
+     * @return null|\StdClass
+     */
+    public function getFlags($chatId, $userId)
+    {
+        return \DB::row('SELECT `read`, muted FROM chat_user WHERE chat_id=? AND user_id=?', [$chatId, $userId]);
+    }
+
+    /**
      * Finds a Chat by emails of all its participants
      *
      * @param array $emails

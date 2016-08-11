@@ -18,14 +18,18 @@ class Chat extends Generic
 
         foreach (\Sys::svc('Chat')->findAllByUserId(\Auth::user()->id, \Input::data('filters') ?:[], \Input::data('sortBy'), \Input::data('sortMode')) as $chat)
         {
+            // get flags
+            $flags = \Sys::svc('Chat')->getFlags($chat->id, \Auth::user()->id);
+
             $items[] = array
             (
                 'id'        => $chat->id,
-                'muted'     => $chat->muted,
-                'read'      => $chat->read,
+                'name'      => $chat->name,
+                'muted'     => $flags->muted,
+                'read'      => $flags->read,
                 'count'     => $chat->count,
                 'lastTs'    => $chat->last_ts,
-                'users'     => \Sys::svc('Chat')->findByChatId($chat->id, true),
+                'users'     => \Sys::svc('User')->findByChatId($chat->id, true),
             );
         }
 
