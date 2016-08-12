@@ -105,11 +105,12 @@ class Message extends Generic
         }
 
         $msgs = \Sys::svc('Message')->findByChatId($chat->id, \Input::data('subject'));
+        $flags = \Sys::svc('Chat')->getFlags($chat->id, \Auth::user()->id);
 
         if ($msgs && !\Input::data('ninja'))
         {
-            $chat->read = 1;
-            \Sys::svc('Chat')->update($chat);
+            $flags->read = 1;
+            \Sys::svc('Chat')->setFlags($chatId, \Auth::user()->id, $flags);
         }
 
         return array
@@ -118,7 +119,8 @@ class Message extends Generic
             (
                 'id'    => $chat->id,
                 'name'  => $chat->name,
-                'muted' => $chat->muted,
+                'muted' => $flags->muted,
+                'users' => \Sys::svc('User')->findByChatId($chat->id, true),
             ),
             'messages'  => $msgs,
         );

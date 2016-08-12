@@ -4,8 +4,8 @@
 $t1 = microtime(1);
 $m1 = memory_get_usage();
 
-/*error_reporting(E_ALL);
-ini_set('display_errors', 1);*/
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // 1. Preliminary settings
 
