@@ -71,6 +71,20 @@ class Chat extends Generic
     }
 
     /**
+     * Sets 'read' or/and 'muted' flags for given Chat and User
+     *
+     * @param $chatId
+     * @param $userId
+     * @param $flags
+     */
+    public function setFlags($chatId, $userId, $flags)
+    {
+        $stmt = \DB::prepare('UPDATE chat_user SET muted=?, `read`=? WHERE chat_id=? AND user_id=? LIMIT 1', [$flags->muted, $flags->read, $chatId, $userId]);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    /**
      * Finds a Chat by emails of all its participants
      *
      * @param array $emails
