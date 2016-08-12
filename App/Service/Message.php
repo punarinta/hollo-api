@@ -96,6 +96,59 @@ class Message extends Generic
     }
 
     /**
+     * Returns messages associated with a chat. May filter by subject.
+     *
+     * @param $contactId
+     * @param null $subject
+     * @param int $offset
+     * @return array
+     */
+    public function findByChatId($contactId, $subject = null, $offset = 0)
+    {
+        $items = [];
+
+        $sql = "SELECT m.*, u.id AS u_id, u.name AS u_name, u.email AS u_email
+             FROM message AS m 
+             LEFT JOIN `user` AS u ON u.id=m.user_id
+             WHERE chat_id = ?";
+        $params = [$contactId];
+
+        if ($subject)
+        {
+            $sql .= ' AND m.subject LIKE ?';
+            $params[] = '%' . $subject . '%';
+        }
+
+        $sql .= ' ORDER BY ts ASC';
+
+        if ($offset)
+        {
+            $sql .= ' LIMIT 100 OFFSET ?';      // Anyway, 100 is a limit in Context.IO
+            $params[] = $offset;
+        }
+
+        foreach (\DB::rows($sql, $params) as $item)
+        {
+            $items[] = \DB::toObject(array
+            (
+                'id'        => $item->id,
+                'ts'        => $item->ts,
+                'body'      => $item->body,
+                'subject'   => $this->clearSubject($item->subject),
+                'from'      => array
+                (
+                    'id'    => $item->u_id,
+                    'email' => $item->u_email,
+                    'name'  => $item->u_name,
+                ),
+                'files'     => json_decode($item->files, true),
+            ));
+        }
+
+        return $items;
+    }
+
+    /**
      * Fetches new messages, saves them to DB and returns in a normalized view
      *
      * @param $contact
