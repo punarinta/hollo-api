@@ -88,8 +88,8 @@ class Chat extends Generic
      *
      * @doc-var     (int) id!           - Chat ID.
      * @doc-var     (string) name       - Chat name.
-     * @doc-var     (bool) muted        - Chat name.
-     * @doc-var     (bool) read         - Chat name.
+     * @doc-var     (bool) muted        - Whether the Chat is muted for you or not.
+     * @doc-var     (bool) read         - Whether the Chat is read by you or not.
      *
      * @throws \Exception
      */
