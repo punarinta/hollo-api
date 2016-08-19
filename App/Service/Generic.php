@@ -93,7 +93,7 @@ class Generic
      */
     public function delete($object)
     {
-        $stmt = \DB::prepare('DELETE FROM `' . $this->class_name . '` WHERE id=? LIMIT 1', [$object->id]);
+        $stmt = \DB::prepare('DELETE FROM `' . $this->class_name . '` WHERE id=? LIMIT 1', [is_object($object) ? $object->id : $object]);
         $stmt->execute();
         $stmt->close();
 
