@@ -21,7 +21,14 @@ class Chat extends Generic
             // get flags
             $flags = \Sys::svc('Chat')->getFlags($chat->id, \Auth::user()->id);
 
-            $lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id)->body;
+            if ($lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id))
+            {
+                $lastMsg = $lastMsg->body;
+            }
+            else
+            {
+                $lastMsg = null;
+            }
 
             if (mb_strlen($lastMsg) > 25)
             {
