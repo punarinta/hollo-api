@@ -88,6 +88,8 @@ class Chat extends Generic
      *
      * @doc-var     (int) id!           - Chat ID.
      * @doc-var     (string) name       - Chat name.
+     * @doc-var     (bool) muted        - Chat name.
+     * @doc-var     (bool) read         - Chat name.
      *
      * @throws \Exception
      */
@@ -98,7 +100,9 @@ class Chat extends Generic
             throw new \Exception('No ID provided.');
         }
 
-        if (!$chat = \Sys::svc('Chat')->findByIdAndUserId($id, \Auth::user()->id))
+        $userId = \Auth::user()->id;
+
+        if (!$chat = \Sys::svc('Chat')->findByIdAndUserId($id, $userId))
         {
             throw new \Exception('Chat not found.');
         }
@@ -108,6 +112,27 @@ class Chat extends Generic
         {
             $chat->name = $name;
             \Sys::svc('Chat')->update($chat);
+        }
+
+        // a bit more logic here may save some DB requests in the future
+        if (\Input::data('muted') !== null && \Input::data('read') !== null)
+        {
+            $flags = new \StdClass();
+            $flags->read = \Input::data('read');
+            $flags->muted = \Input::data('muted');
+            \Sys::svc('Chat')->setFlags($id, $userId, $flags);
+        }
+        else
+        {
+            if (\Input::data('muted') !== null)
+            {
+                \Sys::svc('Chat')->setMutedFlag($id, $userId, \Input::data('muted'));
+            }
+
+            if (\Input::data('read') !== null)
+            {
+                \Sys::svc('Chat')->setReadFlag($id, $userId, \Input::data('read'));
+            }
         }
     }
 
