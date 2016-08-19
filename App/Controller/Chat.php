@@ -9,6 +9,18 @@ namespace App\Controller;
  */
 class Chat extends Generic
 {
+    /**
+     * Lists your chats
+     *
+     * @doc-var     (string) sortBy         - Sorting key. Options are 'name', 'lastTs'.
+     * @doc-var     (string) sortMode       - Sorting mode. Options are 'asc', 'desc'.
+     * @doc-var     (array) filters         - Array of 'filter'.
+     * @doc-var     (string) filter[].mode  - Filtering mode. Options are 'muted', 'name'.
+     * @doc-var     (string) filter[].value - Filter string.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
     static public function find()
     {
         // issue an immediate sync
@@ -128,8 +140,6 @@ class Chat extends Generic
      *
      * @doc-var     (int) id!           - Chat ID.
      * @doc-var     (string) name       - Chat name.
-     * @doc-var     (bool) muted        - Muted or not.
-     * @doc-var     (bool) read         - Read or not.
      *
      * @throws \Exception
      */
@@ -145,53 +155,34 @@ class Chat extends Generic
             throw new \Exception('Chat not found.');
         }
 
+        // prevent from setting an empty name
         if ($name = trim(\Input::data('name')))
         {
             $chat->name = $name;
-        }
-
-        if (\Input::data('muted') !== null)
-        {
-            $chat->muted = \Input::data('muted');
-        }
-
-        if (\Input::data('read') !== null)
-        {
-            $chat->read = \Input::data('read');
         }
 
         \Sys::svc('Chat')->update($chat);
     }
 
     /**
-     * Deletes a contact
+     * Leaves you from a chat
      *
-     * @doc-var     (int) id!           - Contact ID.
+     * @doc-var     (int) id!       - Chat ID.
      *
      * @throws \Exception
      */
-    static public function delete()
+    static public function leave()
     {
         if (!$id = \Input::data('id'))
         {
-            throw new \Exception('No contact ID provided.');
+            throw new \Exception('No chat ID provided.');
         }
 
-        if (!$contact = \Sys::svc('Contact')->findByIdAndUserId($id, \Auth::user()->id))
+        if (!$chat = \Sys::svc('Chat')->findByIdAndUserId($id, \Auth::user()->id))
         {
-            throw new \Exception('Contact not found.');
+            throw new \Exception('Chat not found.');
         }
 
-        foreach (\Sys::svc('Message')->findByContactId($contact->id) as $message)
-        {
-            // kill message and its links
-            \Sys::svc('Message')->delete($message);
-            $stmt = \DB::prepare('DELETE FROM contact_message WHERE contact_id=? AND message_id=?', [$contact->id, $message->id]);
-            $stmt->execute();
-            $stmt->close();
-        }
-
-        // kill contact
-        \Sys::svc('Contact')->delete($contact);
+        return \Sys::svc('Chat')->dropUser($chat->id, \Auth::user()->id);
     }
 }
