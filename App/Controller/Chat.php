@@ -66,6 +66,8 @@ class Chat extends Generic
     /**
      * Adds a Chat with emails
      *
+     * @doc-var     (array) emails         - List of emails. Yours is included.
+     *
      * @return mixed
      * @throws \Exception
      */
@@ -76,63 +78,9 @@ class Chat extends Generic
             throw new \Exception('No emails provided.');
         }
 
-        // check just in case
-        if ($chat = \Sys::svc('Chat')->findByEmails($emails))
-        {
-            return $chat;
-        }
+        $emails[] = \Auth::user()->email;
 
-        \DB::begin();
-
-        try
-        {
-            // create chat itself
-            $chat = \Sys::svc('Chat')->create(array
-            (
-                'name'      => null,
-                'count'     => 0,
-                'muted'     => 0,
-                'read'      => 1,
-                'last_ts'   => 0,
-            ));
-
-            $userIds = [];
-            // assure that all the users exist
-            foreach ($emails as $email)
-            {
-                if (!$user = \Sys::svc('User')->findByEmail($email))
-                {
-                    // create a dummy user
-                    $user = \Sys::svc('User')->create(array
-                    (
-                        'email'     => $email,
-                        'ext_id'    => null,
-                        'roles'     => \Auth::USER,
-                        'created'   => time(),
-                        'settings'  => '',
-                    ));
-                }
-
-                $userIds[] = $user->id;
-            }
-
-            // link users into the chat
-            foreach ($userIds as $userId)
-            {
-                $stmt = \DB::prepare('INSERT INTO chat_user (`chat_id`, `user_id`) VALUES (?,?)', [$chat->id, $userId]);
-                $stmt->execute();
-                $stmt->close();
-            }
-
-            \DB::commit();
-        }
-        catch (\Exception $e)
-        {
-            \DB::rollback();
-            throw $e;
-        }
-
-        return $chat;
+        return \Sys::svc('Chat')->init($emails);
     }
 
     /**
