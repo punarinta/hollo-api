@@ -59,6 +59,18 @@ class Chat extends Generic
     }
 
     /**
+     * Returns a Chat.
+     *
+     * @param $id
+     * @param $userId
+     * @return null|\StdClass
+     */
+    public function findByIdAndUserId($id, $userId)
+    {
+        return \DB::row('SELECT * FROM chat WHERE id=? AND user_id=? LIMIT 1', [$id, $userId]);
+    }
+
+    /**
      * Gets 'read' and 'muted' flags for given Chat and User
      *
      * @param $chatId
@@ -82,6 +94,49 @@ class Chat extends Generic
         $stmt = \DB::prepare('UPDATE chat_user SET muted=?, `read`=? WHERE chat_id=? AND user_id=? LIMIT 1', [$flags->muted, $flags->read, $chatId, $userId]);
         $stmt->execute();
         $stmt->close();
+    }
+
+    /**
+     * Counts Users in the Chat
+     *
+     * @param $chatId
+     * @return mixed
+     */
+    public function countUsers($chatId)
+    {
+        $x = \DB::row('SELECT count(0) AS c FROM chat_user WHERE chat_id=?', [$chatId]);
+
+        return $x->c;
+    }
+
+    /**
+     * Drops a User from a Chat and removes the Chat if necessary
+     *
+     * @param $chatId
+     * @param $userId
+     * @return bool
+     */
+    public function dropUser($chatId, $userId)
+    {
+        // remove the specified user first
+        $stmt = \DB::prepare('DELETE FROM chat_user WHERE chat_id=? AND user_id=? LIMIT 1', [$chatId, $userId]);
+        $stmt->execute();
+        $stmt->close();
+
+        if (\Sys::svc('Chat')->countUsers($chatId) < 2)
+        {
+            // there's only one person left, remove that link too
+            $stmt = \DB::prepare('DELETE FROM chat_user WHERE chat_id=? LIMIT 1', [$chatId]);
+            $stmt->execute();
+            $stmt->close();
+
+            // kill the chat
+            \Sys::svc('Chat')->delete($chatId);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
