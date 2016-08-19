@@ -27,72 +27,16 @@ class Message extends Generic
     }
 
     /**
-     * Returns the total count of messages synced for this contact and user
+     * Returns the total count of messages synced for this Chat
      *
-     * @param $email
-     * @param $userId
+     * @param $chatId
      * @return mixed
      */
-    public function countByContactAndUserId($email, $userId)
+    public function countByChatId($chatId)
     {
-        $x = \DB::row('SELECT count(cm.message_id) AS c FROM contact_message AS cm LEFT JOIN contact AS c ON c.id=cm.contact_id WHERE c.email = ? AND c.user_id=?', [$email, $userId]);
+        $x = \DB::row('SELECT count(0) AS c FROM message WHERE chat_id=?', [$chatId]);
+
         return $x->c;
-    }
-
-    /**
-     * Returns messages associated with a contact. May filter by subject.
-     *
-     * @param $contactId
-     * @param null $subject
-     * @param int $offset
-     * @return array
-     */
-    public function findByContactId($contactId, $subject = null, $offset = 0)
-    {
-        $items = [];
-
-        $sql =
-            "SELECT m.*, c2.id AS c2_id, c2.name AS c2_name, c2.email AS c2_email
-             FROM message AS m 
-             LEFT JOIN contact_message AS cm ON m.id=cm.message_id
-             LEFT JOIN contact AS c ON c.id=cm.contact_id
-             LEFT JOIN contact AS c2 ON c2.id=m.from_contact_id
-             WHERE c.id = ?";
-        $params = [$contactId];
-
-        if ($subject)
-        {
-            $sql .= ' AND m.subject LIKE ?';
-            $params[] = '%' . $subject . '%';
-        }
-
-        $sql .= ' ORDER BY ts ASC';
-
-        if ($offset)
-        {
-            $sql .= ' LIMIT 100 OFFSET ?';      // Anyway, 100 is a limit in Context.IO
-            $params[] = $offset;
-        }
-
-        foreach (\DB::rows($sql, $params) as $item)
-        {
-            $items[] = \DB::toObject(array
-            (
-                'id'        => $item->id,
-                'ts'        => $item->ts,
-                'body'      => $item->body,
-                'subject'   => $this->clearSubject($item->subject),
-                'from'      => array
-                (
-                    'id'    => $item->c2_id,
-                    'email' => $item->c2_email,
-                    'name'  => $item->c2_name,
-                ),
-                'files'     => json_decode($item->files, true),
-            ));
-        }
-
-        return $items;
     }
 
     /**
@@ -149,22 +93,22 @@ class Message extends Generic
     }
 
     /**
-     * Fetches new messages, saves them to DB and returns in a normalized view
+     * Gets more messages into the Chat
      *
-     * @param $contact
+     * @param $chat
      * @param $user
      * @return array
      */
-    public function moreByContact($contact, $user)
+    public function moreByChat($chat, $user)
     {
         // count the total amount and sync next N
-        $total = $this->countByContactAndUserId($contact->email, $user->id);
+        $total = $this->countByChatId($chat->id);
 
         // sync, even muted ones
-        $this->syncAll($user, $contact, $total, true, true);
+        $this->syncAll($user, $chat, $total, true, true);
 
         // return with offset from DB
-        $messages = $this->findByContactId($contact->id);
+        $messages = $this->findByChatId($chat->id);
 
         $count = count($messages) - $total;
 
@@ -183,6 +127,8 @@ class Message extends Generic
      */
     public function syncAll($user, $contact, $offset = 0, $fetchAll = false, $force = false)
     {
+        // TODO: all
+
         // don't sync your own message to yourself
         if ($contact->email == $user->email) return 0;
 
