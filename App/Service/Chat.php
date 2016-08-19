@@ -5,6 +5,74 @@ namespace App\Service;
 class Chat extends Generic
 {
     /**
+     * Initializes a new Chat with a specific set of participants
+     *
+     * @param array $emails
+     * @return mixed
+     * @throws \Exception
+     */
+    public function init($emails = [])
+    {
+        $emails = array_unique($emails);
+
+        // check just in case
+        if ($chat = \Sys::svc('Chat')->findByEmails($emails))
+        {
+            return $chat;
+        }
+
+        \DB::begin();
+
+        try
+        {
+            // create chat itself
+            $chat = \Sys::svc('Chat')->create(array
+            (
+                'name'      => null,
+                'count'     => 0,
+                'last_ts'   => 0,
+            ));
+
+            $userIds = [];
+            // assure that all the users exist
+            foreach ($emails as $email)
+            {
+                if (!$user = \Sys::svc('User')->findByEmail($email))
+                {
+                    // create a dummy user
+                    $user = \Sys::svc('User')->create(array
+                    (
+                        'email'     => $email,
+                        'ext_id'    => null,
+                        'roles'     => \Auth::USER,
+                        'created'   => time(),
+                        'settings'  => '',
+                    ));
+                }
+
+                $userIds[] = $user->id;
+            }
+
+            // link users into the chat
+            foreach ($userIds as $userId)
+            {
+                $stmt = \DB::prepare('INSERT INTO chat_user (`chat_id`, `user_id`) VALUES (?,?)', [$chat->id, $userId]);
+                $stmt->execute();
+                $stmt->close();
+            }
+
+            \DB::commit();
+        }
+        catch (\Exception $e)
+        {
+            \DB::rollback();
+            throw $e;
+        }
+
+        return $chat;
+    }
+
+    /**
      * Returns chats associated with the current user account
      *
      * @param $userId
