@@ -127,7 +127,7 @@ class Chat extends Generic
     }
 
     /**
-     * Returns a Chat.
+     * Returns a Chat assuring User access.
      *
      * @param $id
      * @param $userId
@@ -135,7 +135,7 @@ class Chat extends Generic
      */
     public function findByIdAndUserId($id, $userId)
     {
-        return \DB::row('SELECT * FROM chat WHERE id=? AND user_id=? LIMIT 1', [$id, $userId]);
+        return \DB::row('SELECT c.* FROM chat AS c LEFT JOIN chat_user AS cu ON c.id=cu.chat_id WHERE c.id=? AND cu.user_id=? LIMIT 1', [$id, $userId]);
     }
 
     /**
