@@ -159,9 +159,8 @@ class Chat extends Generic
         if ($name = trim(\Input::data('name')))
         {
             $chat->name = $name;
+            \Sys::svc('Chat')->update($chat);
         }
-
-        \Sys::svc('Chat')->update($chat);
     }
 
     /**
