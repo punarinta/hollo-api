@@ -83,7 +83,18 @@ class Chat extends Generic
      */
     public function findAllByUserId($userId, $filters = [], $sortBy = null, $sortMode = null)
     {
-        $sql = 'SELECT * FROM chat AS c LEFT JOIN chat_user AS cu ON cu.chat_id=c.id WHERE cu.user_id=?';
+        $sql = 'SELECT c.* FROM chat AS c LEFT JOIN chat_user AS cu ON cu.chat_id=c.id WHERE cu.user_id=?';
+
+        // TODO: rewrite in a proper way
+        if (@$filters[0]['mode'] == 'email' || @$filters[1]['mode'] == 'email')
+        {
+            $sql = 'SELECT DISTINCT c.id, c.* FROM chat AS c
+                    LEFT JOIN chat_user AS cu ON cu.chat_id = c.id
+                    LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
+                    LEFT JOIN `user` AS u ON cu2.user_id = u.id
+                    WHERE cu.user_id=?';
+        }
+
         $params = [$userId];
 
         foreach ($filters as $filter)
@@ -95,7 +106,12 @@ class Chat extends Generic
                     break;
 
                 case 'muted':
-                    $sql .= ' AND muted=?';
+                    $sql .= ' AND cu.muted=?';
+                    break;
+
+                case 'email':
+                    $sql .= ' AND u.email LIKE ?';
+                    $filter['value'] = '%' . $filter['value'] . '%';
                     break;
             }
 
@@ -106,11 +122,11 @@ class Chat extends Generic
         {
             if ($sortBy == 'name')
             {
-                $sql .= ' ORDER BY `read` ASC, `name`';
+                $sql .= ' ORDER BY cu.read ASC, `name`';
             }
             elseif ($sortBy == 'lastTs')
             {
-                $sql .= ' ORDER BY `read` ASC, last_ts DESC';
+                $sql .= ' ORDER BY cu.read ASC, last_ts DESC';
             }
 
             if ($sortMode == 'desc')
