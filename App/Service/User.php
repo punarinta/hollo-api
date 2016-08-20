@@ -56,7 +56,8 @@ class User extends Generic
     {
         if ($forContacts)
         {
-            return \DB::rows('SELECT id, email, name FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=? AND u.id!=?', [$chatId, \Auth::user()->id]);
+            // skip yourself, feed only basic data
+            return \DB::rows('SELECT id, email, `name` FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=? AND u.id!=?', [$chatId, \Auth::user()->id]);
         }
         else
         {
