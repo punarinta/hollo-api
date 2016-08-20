@@ -25,7 +25,7 @@ class File extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        if (!\Sys::svc('File')->isKnownByEmail($email, \Auth::user()->id))
+        if (!\Sys::svc('User')->isKnownByEmail($email, \Auth::user()->id))
         {
             throw new \Exception('Access denied.', 403);
         }
