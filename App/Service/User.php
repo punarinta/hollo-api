@@ -66,6 +66,23 @@ class User extends Generic
     }
 
     /**
+     * Checks if one User is known by another User
+     *
+     * @param $user1
+     * @param $user2
+     * @return bool
+     */
+    public function isKnownBy($user1, $user2)
+    {
+        $sql = 'SELECT count(0) chat_user AS cu1
+                LEFT JOIN chat AS c ON c.id = cu1.chat_id
+                LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
+                WHERE cu1.user_id = ? AND cu2.user_id = ? LIMIT 1';
+
+        return (bool) \DB::row($sql, [$user1, $user2]);
+    }
+
+    /**
      * Adds an account to a user
      *
      * @param $email
