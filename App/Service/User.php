@@ -74,7 +74,7 @@ class User extends Generic
      */
     public function isKnownBy($user1, $user2)
     {
-        $sql = 'SELECT 1 chat_user AS cu1
+        $sql = 'SELECT 1 FROM chat_user AS cu1
                 LEFT JOIN chat AS c ON c.id = cu1.chat_id
                 LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
                 WHERE cu1.user_id = ? AND cu2.user_id = ? LIMIT 1';
