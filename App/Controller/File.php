@@ -25,7 +25,10 @@ class File extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        // TODO: check if email is among connected people
+        if (!\Sys::svc('File')->isKnownByEmail($email, \Auth::user()->id))
+        {
+            throw new \Exception('Access denied.', 403);
+        }
 
         return \Sys::svc('File')->findByContact($email, \Input::data('withImageUrl'));
     }
