@@ -101,6 +101,10 @@ class Message extends Generic
      */
     public function moreByChat($chat, $user)
     {
+        // TODO: activate after sync functions are done
+
+        return [];
+
         // count the total amount and sync next N
         $total = $this->countByChatId($chat->id);
 
