@@ -25,6 +25,8 @@ class File extends Generic
             throw new \Exception('Email not provided.');
         }
 
+        // TODO: check if email is among connected people
+
         return \Sys::svc('File')->findByContact($email, \Input::data('withImageUrl'));
     }
 
@@ -61,6 +63,8 @@ class File extends Generic
     }
 
     /**
+     * Gets a URL by external file ID
+     *
      * @return mixed
      * @throws \Exception
      */
