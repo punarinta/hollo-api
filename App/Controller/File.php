@@ -57,7 +57,7 @@ class File extends Generic
         $files = [];
         $flag = \Input::data('withImageUrl');
 
-        foreach (\Sys::svc('Chat')->findByChatId($chatId) as $user)
+        foreach (\Sys::svc('User')->findByChatId($chatId) as $user)
         {
             $files = array_merge($files, \Sys::svc('File')->findByContact($user->email, $flag));
         }
