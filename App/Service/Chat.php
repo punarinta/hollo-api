@@ -8,10 +8,11 @@ class Chat extends Generic
      * Initializes a new Chat with a specific set of participants
      *
      * @param array $emails
+     * @param bool $muting
      * @return mixed
      * @throws \Exception
      */
-    public function init($emails = [])
+    public function init($emails = [], $muting = null)
     {
         $emails = array_unique($emails);
 
@@ -53,10 +54,22 @@ class Chat extends Generic
                 $userIds[] = $user->id;
             }
 
+            // check if necessary to mute the chat
+            $muteThis = ($muting && count($emails) == 2 && \Sys::svc('Contact')->isMuted($emails[1]));
+
             // link users into the chat
             foreach ($userIds as $userId)
             {
-                $stmt = \DB::prepare('INSERT INTO chat_user (`chat_id`, `user_id`) VALUES (?,?)', [$chat->id, $userId]);
+                if ($muteThis && $userId == $muting[0])
+                {
+                    // it's the reference person, mute this chat for him by default
+                    $stmt = \DB::prepare('INSERT INTO chat_user (`chat_id`, `user_id`, `muted`) VALUES (?,?,?)', [$chat->id, $userId, 1]);
+                }
+                else
+                {
+                    $stmt = \DB::prepare('INSERT INTO chat_user (`chat_id`, `user_id`) VALUES (?,?)', [$chat->id, $userId]);
+                }
+
                 $stmt->execute();
                 $stmt->close();
             }
