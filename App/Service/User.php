@@ -66,6 +66,23 @@ class User extends Generic
     }
 
     /**
+     * Lists Users known by specified User
+     *
+     * @param $userId
+     * @return array
+     */
+    public function findKnownBy($userId)
+    {
+        $sql = 'SELECT * FROM `user` AS u 
+                LEFT JOIN chat_user AS cu1 ON cu1.user_id = u.id
+                LEFT JOIN chat AS c ON c.id = cu1.chat_id
+                LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
+                WHERE cu2.user_id = ?';
+
+        return \DB::rows($sql, [$userId]);
+    }
+
+    /**
      * Checks if one User is known by another User
      *
      * @param $user1
