@@ -2,122 +2,15 @@
 
 namespace App\Service;
 
+/**
+ * The class is still necessary for Contact abstraction to work with Context.IO
+ *
+ * Class Contact
+ * @package App\Service
+ */
 class Contact extends Generic
 {
-    /**
-     * Returns a contact by its email and owner ID
-     *
-     * @param $email
-     * @param $userId
-     * @return null|\StdClass
-     */
-    public function findByEmailAndUserId($email, $userId)
-    {
-        return \DB::row('SELECT * FROM contact WHERE email=? AND user_id=? LIMIT 1', [$email, $userId]);
-    }
-
-    /**
-     * Returns a contact by its email and owner ExtID
-     *
-     * @param $email
-     * @param $account
-     * @return null|\StdClass
-     */
-    public function findByEmailAndAccountId($email, $account)
-    {
-        return \DB::row('SELECT * FROM contact AS c LEFT JOIN user AS u ON c.user_id=u.id WHERE c.email=? AND u.ext_id=?', [$email, $account]);
-    }
-
-    /**
-     * Returns a contact by t.b.d.
-     *
-     * @param $id
-     * @param $userId
-     * @return null|\StdClass
-     */
-    public function findByIdAndUserId($id, $userId)
-    {
-        return \DB::row('SELECT * FROM contact WHERE id=? AND user_id=? LIMIT 1', [$id, $userId]);
-    }
-
-    /**
-     * Returns contacts associated with the current user account
-     *
-     * @param $userId
-     * @param array $filters
-     * @param null $sortBy
-     * @param null $sortMode
-     * @return array
-     */
-    public function findAllByUserId($userId, $filters = [], $sortBy = null, $sortMode = null)
-    {
-        $sql = 'SELECT * FROM contact WHERE user_id=?';
-        $params = [$userId];
-        
-        foreach ($filters as $filter)
-        {
-            switch ($filter['mode'])
-            {
-                case 'name':
-                    $sql .= ' AND `name` LIKE ?';
-                    break;
-
-                case 'email':
-                    $sql .= " AND email LIKE ?";
-                    $filter['value'] = '%' . $filter['value'] . '%';
-                    break;
-
-                case 'muted':
-                    $sql .= ' AND muted=?';
-                    break;
-            }
-
-            $params[] = $filter['value'];
-        }
-
-        if ($sortBy)
-        {
-            if ($sortBy == 'name')
-            {
-                $sql .= ' ORDER BY `read` ASC, `name`';
-            }
-            elseif ($sortBy == 'email')
-            {
-                $sql .= ' ORDER BY `read` ASC, email';
-            }
-            elseif ($sortBy == 'lastTs')
-            {
-                $sql .= ' ORDER BY `read` ASC, last_ts DESC';
-            }
-
-            if ($sortMode == 'desc')
-            {
-                $sql .= ' DESC';
-            }
-        }
-        else
-        {
-            $sql .= ' ORDER BY `read` ASC, email ASC';
-        }
-
-        return \DB::rows($sql, $params);
-    }
-
-    /**
-     * Separately counts unread muted and unmuted contacts
-     *
-     * @param $userId
-     * @return array
-     */
-    public function countUnreadByUserId($userId)
-    {
-        // unmuted count goes first
-        $r = \DB::rows('SELECT muted, count(0) AS x FROM `contact` WHERE `read`=0 AND user_id=? GROUP BY muted ORDER BY muted', [$userId]);
-
-        return [$r[0]->x, $r[1]->x];
-    }
-
-    /**
+     /**
      * Checks if it's necessary to sync any contact and performs that sync
      *
      * @param null $userId
@@ -283,6 +176,8 @@ class Contact extends Generic
     }
 
     /**
+     * Checks if contact list is empty
+     *
      * @return bool|int
      */
     public function isListEmpty()
@@ -392,19 +287,5 @@ class Contact extends Generic
         if (intval($email[0]) > 0) return true;
 
         return false;
-    }
-
-    /**
-     * @param $array
-     * @return \StdClass
-     */
-    public function create($array)
-    {
-        if ($this->isMuted($array['email']))
-        {
-            $array['muted'] = 1;
-        }
-
-        return parent::create($array);
     }
 }
