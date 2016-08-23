@@ -56,7 +56,6 @@ class Chat extends Generic
                 'name'      => $chat->name,
                 'muted'     => $flags->muted,
                 'read'      => $flags->read,
-                'count'     => $chat->count,
                 'lastTs'    => $chat->last_ts,
                 'lastMsg'   => $lastMsg,
                 'users'     => \Sys::svc('User')->findByChatId($chat->id, true),
