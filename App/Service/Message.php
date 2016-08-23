@@ -51,10 +51,7 @@ class Message extends Generic
     {
         $items = [];
 
-        $sql = "SELECT m.*, u.id AS u_id, u.name AS u_name, u.email AS u_email
-             FROM message AS m 
-             LEFT JOIN `user` AS u ON u.id=m.user_id
-             WHERE chat_id = ?";
+        $sql = 'SELECT m.*, u.id AS u_id, u.name AS u_name, u.email AS u_email FROM message AS m LEFT JOIN `user` AS u ON u.id=m.user_id WHERE chat_id = ?';
         $params = [$contactId];
 
         if ($subject)
