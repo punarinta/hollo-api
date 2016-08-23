@@ -12,9 +12,9 @@ class Cron
     {
         $count = 0;
 
-        foreach (\Sys::svc('Contact')->findAll() as $contact)
+        foreach (\Sys::svc('Chat')->findAll() as $chat)
         {
-            $count += \Sys::svc('Message')->removeOld($contact->id);
+            $count += \Sys::svc('Message')->removeOld($chat->id);
         }
 
         return "Messaged purged: $count\n";
