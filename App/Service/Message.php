@@ -120,16 +120,15 @@ class Message extends Generic
     }
 
     /**
-     * Performs initial message sync for a specified contact
+     * Performs initial message sync for a specified User
      *
      * @param $user
-     * @param $contact
      * @param int $offset
      * @param bool $fetchAll
      * @param bool $force
      * @return int
      */
-    public function syncAll($user, $contact, $offset = 0, $fetchAll = false, $force = false)
+    public function syncAll($user, $offset = 0, $fetchAll = false, $force = false)
     {
         // TODO: all
 
@@ -175,7 +174,7 @@ class Message extends Generic
     }
 
     /**
-     * Sync a single message
+     * Syncs a single message
      *
      * @param $accountId
      * @param $messageExtId
@@ -197,39 +196,27 @@ class Message extends Generic
 
         $data = $data->getData();
 
-        if (!$contact = \Sys::svc('Contact')->findByEmailAndAccountId($data['addresses']['from']['email'], $accountId))
-        {
-            if ($data['addresses']['from']['email'] == $user->email)
-            {
-                // don't sync your own message to yourself
-                return false;
-            }
+        // collect emails from the message
+        $emails = [$data['addresses']['from']['email']];
+        foreach ($data['addresses']['to'] as $to) $emails = $to['email'];
+        foreach ($data['addresses']['cc'] as $cc) $emails = $cc['email'];
 
-            // no contact exist -> create it
-            $contact = \Sys::svc('Contact')->create(array
-            (
-                'user_id'   => $user->id,
-                'email'     => $data['addresses']['from']['email'],
-                'name'      => $data['addresses']['from']['name'],
-                'count'     => 1,
-                'muted'     => 0,
-                'read'      => 0,
-                'last_ts'   => $data['date'],
-            ));
-        }
-        else
+        // we don't need duplicates
+        $emails = array_unique($emails);
+
+        // chat may not exist -> init and mute if necessary
+        if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
         {
-            // update contact's count
-            $contactData = $this->conn->getContact($accountId, ['email' => $contact->email])->getData();
-            $contact->count = $contactData['count'];
+            $chat = \Sys::svc('Chat')->init($emails, [$user->id]);
         }
 
-        if ($this->processMessageSync($user, $data, $contact))
+        if ($this->processMessageSync($user, $data, $chat))
         {
-            // there was a new message
-            $contact->read = 0;
-            $contact->last_ts = $data['date'];
-            \Sys::svc('Contact')->update($contact);
+            $chat->last_ts = $data['date'];
+            \Sys::svc('Contact')->update($chat);
+
+            // there were one or more new messages -> reset 'read' flag
+            \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
         }
 
         return true;
@@ -272,31 +259,21 @@ class Message extends Generic
     }
 
     /**
-     * Removes excessive messages
+     * Removes excessive messages from a Chat
      *
-     * @param $contactId
+     * @param $chatId
      * @return int
      * @throws \Exception
      */
-    public function removeOld($contactId)
+    public function removeOld($chatId)
     {
-        $messages = $this->findByContactId($contactId, null, 0);
+        $messages = $this->findByChatId($chatId, null, 0);
         $messages = array_reverse($messages);
         $messages = array_slice($messages, \Sys::cfg('sys.sync_depth'));
 
         foreach ($messages as $message)
         {
-            // remove message link for this contact
-            $stmt = \DB::prepare('DELETE FROM contact_message WHERE message_id=? AND contact_id=?', [$message->id, $contactId]);
-            $stmt->execute();
-            $stmt->close();
-
-            // if the message became orphan, remove it too
-            $x = \DB::row('SELECT count(0) AS c FROM contact_message WHERE message_id=?', [$message->id]);
-            if (!$x->c)
-            {
-                $this->delete($message);
-            }
+            $this->delete($message);
         }
 
         return count($messages);
