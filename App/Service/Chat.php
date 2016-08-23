@@ -30,7 +30,6 @@ class Chat extends Generic
             $chat = \Sys::svc('Chat')->create(array
             (
                 'name'      => null,
-                'count'     => 0,
                 'last_ts'   => 0,
             ));
 
