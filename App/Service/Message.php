@@ -96,16 +96,16 @@ class Message extends Generic
      * Gets more messages into the Chat
      *
      * @param $chat
-     * @param $user
      * @return array
      */
-    public function moreByChat($chat, $user)
+    public function moreByChat($chat)
     {
         // count the total amount and sync next N
         $total = $this->countByChatId($chat->id);
 
-        // sync, even muted ones
-        // $this->syncAll($user, $chat, $total, true, true);
+        // get more messages for this chat starting from $total
+
+        // TODO: above
 
         // return with offset from DB
         $messages = $this->findByChatId($chat->id);
@@ -116,48 +116,69 @@ class Message extends Generic
     }
 
     /**
-     * Syncs all the messages for a User
+     * Syncs all messages for the User
      *
-     * @param $user
-     * @param int $offset
-     * @param bool $fetchAll
-     * @param bool $force
+     * @param $userId
+     * @param bool $fetchMuted      - fetch muted too
+     * @param bool $fetchAll        - fetch all messages for that user
      * @return int
+     * @throws \Exception
      */
-    public function syncAll($user, $offset = 0, $fetchAll = false, $force = false)
+    public function syncAllByUserId($userId, $fetchMuted = false, $fetchAll = false)
     {
+        $offset = 0;
+        $limit = 100;
+
+        if (!$user = \Sys::svc('User')->findById($userId))
+        {
+            throw new \Exception('User does not exist');
+        }
+
         $params =
         [
             'include_body'  => 1,
-            'limit'         => \Sys::cfg('sys.sync_depth'),     // max limit = 100
-            'date_after'    => ($user->last_sync_ts && !$force) ? abs($user->last_sync_ts - 86400) : 1,
+            'limit'         => $limit,
+            'date_after'    => ($user->last_sync_ts && !$fetchAll) ? abs($user->last_sync_ts - 86400) : 1,
             'sort_order'    => 'desc',
-            'offset'        => $offset,
         ];
 
-        $attempt = 0;
-
-        while ($attempt < 10)
+        while (1)
         {
-            if ($data = $this->conn->listMessages($user->ext_id, $params))
-            {
-                // TODO: here a connection drop was once detected
-                $rows = $data->getData();
+            $rows = [];
+            $attempt = 0;
+            $params['offset'] = $offset;
 
-                foreach ($rows as $row)
+            while ($attempt < 10)
+            {
+                if ($data = $this->conn->listMessages($user->ext_id, $params))
                 {
-                    $this->processMessageSync($user, $row, $contact, $fetchAll);
+                    // TODO: here a connection drop was once detected
+                    $rows = $data->getData();
+
+                    foreach ($rows as $row)
+                    {
+                        $this->processMessageSync($user, $row, $fetchMuted);
+                    }
+
+                    break;
+                }
+                else
+                {
+                    ++$attempt;
+                    echo "Sync error, attempt #$attempt in 5 seconds\n";
+                    sleep(5);
+                    print_r($params);
                 }
 
-                return count($rows);
+                usleep(600000);
             }
-            else
+
+            if (count($rows) < $limit)
             {
-                ++$attempt;
-                echo "Error syncing '{$contact->email}', attempt #$attempt in 5 seconds\n";
-                sleep(5);
-                print_r($params);
+                return $offset + count($rows);
             }
+
+            $offset += $limit;
         }
 
         return 0;
@@ -184,30 +205,7 @@ class Message extends Generic
             throw new \Exception('User does not exist.');
         }
 
-        $data = $data->getData();
-
-        // collect emails from the message
-        $emails = [$data['addresses']['from']['email']];
-        foreach ($data['addresses']['to'] as $to) $emails = $to['email'];
-        foreach ($data['addresses']['cc'] as $cc) $emails = $cc['email'];
-
-        // we don't need duplicates
-        $emails = array_unique($emails);
-
-        // chat may not exist -> init and mute if necessary
-        if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
-        {
-            $chat = \Sys::svc('Chat')->init($emails, [$user->id]);
-        }
-
-        if ($this->processMessageSync($user, $data, $chat))
-        {
-            $chat->last_ts = $data['date'];
-            \Sys::svc('Contact')->update($chat);
-
-            // there were one or more new messages -> reset 'read' flag
-            \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
-        }
+        $this->processMessageSync($user, $data->getData());
 
         return true;
     }
@@ -274,25 +272,38 @@ class Message extends Generic
     // ============================
 
     /**
-     * @param $user
+     * @param $user                 -- recipient user
      * @param $messageData
-     * @param $chat
-     * @param bool $fetchAll
+     * @param bool $fetchMuted
      * @return bool
      * @throws \Exception
      */
-    protected function processMessageSync($user, $messageData, $chat, $fetchAll = false)
+    protected function processMessageSync($user, $messageData, $fetchMuted = false)
     {
-        if (!$fetchAll)
+        if (!$fetchMuted)
         {
             // TODO: check if this is a 2-person chat with one of the participants being muted
         }
 
-        // check if message is present and sync if necessary
+        // message must not exist
         $extId = $messageData['message_id'];
 
-        if (!$message = \Sys::svc('Message')->findByExtId($extId))
+        if (!\Sys::svc('Message')->findByExtId($extId))
         {
+            // collect emails from the message
+            $emails = [$messageData['addresses']['from']['email']];
+            foreach ($messageData['addresses']['to'] as $to) $emails = $to['email'];
+            foreach ($messageData['addresses']['cc'] as $cc) $emails = $cc['email'];
+
+            // we don't need duplicates
+            $emails = array_unique($emails);
+
+            // chat may not exist -> init and mute if necessary
+            if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
+            {
+                $chat = \Sys::svc('Chat')->init($emails, [$user->id]);
+            }
+
             $files = [];
 
             if (isset ($messageData['files']))
@@ -336,6 +347,13 @@ class Message extends Generic
                 'files'     => empty ($files) ? '' : json_encode($files),
                 'ts'        => $messageData['date'],
              ));
+
+            // message received, update chat
+            $chat->last_ts = $messageData['date'];
+            \Sys::svc('Contact')->update($chat);
+
+            // there were one or more new messages -> reset 'read' flag
+            \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
         }
 
         return true;
