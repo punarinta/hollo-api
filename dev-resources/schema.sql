@@ -23,7 +23,6 @@ SET time_zone = "+00:00";
 CREATE TABLE IF NOT EXISTS `chat` (
   `id` bigint(20) unsigned NOT NULL,
   `name` varchar(64) DEFAULT NULL,
-  `count` int(10) unsigned NOT NULL DEFAULT '0',
   `last_ts` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
