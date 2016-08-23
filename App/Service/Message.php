@@ -256,7 +256,7 @@ class Message extends Generic
      */
     public function removeOld($chatId)
     {
-        $messages = $this->findByChatId($chatId, null, 0);
+        $messages = $this->findByChatId($chatId);
         $messages = array_reverse($messages);
         $messages = array_slice($messages, \Sys::cfg('sys.sync_depth'));
 
