@@ -101,15 +101,11 @@ class Message extends Generic
      */
     public function moreByChat($chat, $user)
     {
-        // TODO: activate after sync functions are done
-
-        return [];
-
         // count the total amount and sync next N
         $total = $this->countByChatId($chat->id);
 
         // sync, even muted ones
-        $this->syncAll($user, $chat, $total, true, true);
+        // $this->syncAll($user, $chat, $total, true, true);
 
         // return with offset from DB
         $messages = $this->findByChatId($chat->id);
@@ -120,7 +116,7 @@ class Message extends Generic
     }
 
     /**
-     * Performs initial message sync for a specified User
+     * Syncs all the messages for a User
      *
      * @param $user
      * @param int $offset
@@ -130,16 +126,10 @@ class Message extends Generic
      */
     public function syncAll($user, $offset = 0, $fetchAll = false, $force = false)
     {
-        // TODO: all
-
-        // don't sync your own message to yourself
-        if ($contact->email == $user->email) return 0;
-
         $params =
         [
             'include_body'  => 1,
             'limit'         => \Sys::cfg('sys.sync_depth'),     // max limit = 100
-            'email'         => $contact->email,
             'date_after'    => ($user->last_sync_ts && !$force) ? abs($user->last_sync_ts - 86400) : 1,
             'sort_order'    => 'desc',
             'offset'        => $offset,
@@ -183,9 +173,9 @@ class Message extends Generic
      */
     public function sync($accountId, $messageExtId)
     {
-        // temporary fall back to sync all
         if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageExtId, 'include_body' => 1]))
         {
+            // no data -> skip this sync
             return false;
         }
 
@@ -252,7 +242,7 @@ class Message extends Generic
 
         // echo replace4byte($data['body'][$bodyId]['content']);
 
-        $message->body = $this->clearContent($data['body'][$bodyId]['type'], $data['body'][$bodyId]['content'], $data['addresses']['from']['email']);
+        $message->body = $this->clearContent($data['body'][$bodyId]['type'], $data['body'][$bodyId]['content']);
         \Sys::svc('Message')->update($message);
 
         return true;
@@ -279,22 +269,23 @@ class Message extends Generic
         return count($messages);
     }
 
-    // === internal functions ===
+    // ============================
+    // ===  internal functions  ===
+    // ============================
 
     /**
      * @param $user
      * @param $messageData
-     * @param $contact
+     * @param $chat
      * @param bool $fetchAll
      * @return bool
      * @throws \Exception
      */
-    protected function processMessageSync($user, $messageData, $contact, $fetchAll = false)
+    protected function processMessageSync($user, $messageData, $chat, $fetchAll = false)
     {
-        // check if muted
-        if (!$fetchAll && $contact->muted)
+        if (!$fetchAll)
         {
-            return false;
+            // TODO: check if this is a 2-person chat with one of the participants being muted
         }
 
         // check if message is present and sync if necessary
@@ -324,25 +315,28 @@ class Message extends Generic
                 return false;
             }
 
-            if ($messageData['addresses']['from']['email'] == $user->email) $senderId = 0;
+            if ($messageData['addresses']['from']['email'] == $user->email)
+            {
+                // the head user is the author
+                $senderId = $user->id;
+            }
             else
             {
-                $sender = \Sys::svc('Contact')->findByEmailAndUserId($messageData['addresses']['from']['email'], $contact->user_id);
+                $sender = \Sys::svc('User')->findByEmail($messageData['addresses']['from']['email']);
                 $senderId = $sender->id;
             }
 
-            $message = \Sys::svc('Message')->create(array
+            \Sys::svc('Message')->create(array
             (
-                'ts'                => $messageData['date'],
-                'body'              => iconv('UTF-8', 'ISO-8859-1', $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content'], $contact->email)),
-                'from_contact_id'   => $senderId,
-                'subject'           => iconv('UTF-8', 'ISO-8859-1', $messageData['subject']),
-                'ext_id'            => $extId,
-                'files'             => empty($files) ? '' : json_encode($files),
-            ));
+                'ext_id'    => $extId,
+                'user_id'   => $senderId,
+                'chat_id'   => $chat->id,
+                'subject'   => iconv('UTF-8', 'ISO-8859-1', $messageData['subject']),
+                'body'      => iconv('UTF-8', 'ISO-8859-1', $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content'])),
+                'files'     => empty ($files) ? '' : json_encode($files),
+                'ts'        => $messageData['date'],
+             ));
         }
-
-        \DB::prepare('REPLACE INTO contact_message (contact_id, message_id) VALUES (?,?)', [$contact->id, $message->id])->execute();
 
         return true;
     }
@@ -366,10 +360,9 @@ class Message extends Generic
     /**
      * @param $type
      * @param $content
-     * @param $email        — sender
      * @return null
      */
-    protected function clearContent($type, $content, $email)
+    protected function clearContent($type, $content)
     {
         /*
 
@@ -400,15 +393,7 @@ class Message extends Generic
             $content = html_entity_decode($content);
         }
 
-
-        // remove email
-        $email = str_replace('.', '\.', $email);
-        if (preg_match("/^.*(<$email\s*>).*$/s", $content, $matches))
-        {
-            $content = str_replace($matches[1], '', $content);
-        }
-
-        // Remove quoted lines (lines that begin with '>').
+        // Remove quoted lines (lines that begin with '>') and 1 line before that
         $content = preg_replace("/(^\w.+:\n)?(^>.*(\n|$))+/mi", '', $content);
 
         $quoteHeadersRegex = array
