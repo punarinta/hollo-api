@@ -169,8 +169,6 @@ class Message extends Generic
                     sleep(5);
                     print_r($params);
                 }
-
-                usleep(600000);
             }
 
             if (count($rows) < $limit)
@@ -179,6 +177,9 @@ class Message extends Generic
             }
 
             $offset += $limit;
+
+            // sleep a bit to prevent API request queue growth
+            usleep(600000);
         }
 
         return 0;
