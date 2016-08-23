@@ -278,11 +278,6 @@ class Message extends Generic
      */
     protected function processMessageSync($user, $messageData, $fetchMuted = false)
     {
-        if (!$fetchMuted)
-        {
-            // TODO: check if this is a 2-person chat with one of the participants being muted
-        }
-
         // message must not exist
         $extId = $messageData['message_id'];
 
@@ -300,6 +295,18 @@ class Message extends Generic
             if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
             {
                 $chat = \Sys::svc('Chat')->init($emails, [$user->id]);
+            }
+
+            if (!$fetchMuted && count($emails) == 2)
+            {
+                // check that you want any messages in this chat
+                // message sync on behalf of a bot will not happen
+                $flags = \Sys::svc('Chat')->getFlags($chat->id, $user->id);
+
+                if ($flags->muted)
+                {
+                    return false;
+                }
             }
 
             $files = [];
