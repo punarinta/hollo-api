@@ -33,7 +33,7 @@ class SyncContacts extends Generic
         }
 
         // use force when syncing for the first time
-        \Sys::svc('Contact')->syncAll($user->id, true, $user->last_sync_ts == 1);
+        \Sys::svc('Message')->syncAllByUserId($user->id, false, $user->last_sync_ts == 1);
 
         return true;
     }

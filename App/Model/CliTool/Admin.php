@@ -9,12 +9,11 @@ use App\Model\Bcrypt;
  */
 class Admin
 {
-    public function sync($userId, $force = false)
+    public function sync($userId, $fetchMuted = false, $fetchAll = false)
     {
-        $r = \Sys::svc('Contact')->syncAll($userId, true, $force);
+        $x = \Sys::svc('Message')->syncAllByUserId($userId, $fetchMuted, $fetchAll);
 
-        echo "Contacts synced: {$r['contacts']}\n";
-        echo "Messages synced: {$r['messages']}\n";
+        echo "Messages synced: $x\n";
 
         return "\n";
     }
