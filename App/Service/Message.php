@@ -299,6 +299,11 @@ class Message extends Generic
                 $chat = \Sys::svc('Chat')->init($emails, [$user->id]);
             }
 
+            if (!$chat)
+            {
+                throw new \Exception('Chat does not exist');
+            }
+
             if (!$fetchMuted && count($emails) == 2)
             {
                 // check that you want any messages in this chat
