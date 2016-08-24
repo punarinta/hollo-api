@@ -15,9 +15,9 @@ class Achtung
      */
     public function initialState()
     {
-        $this->justRun('TRUNCATE table contact');
+        $this->justRun('TRUNCATE table chat');
         $this->justRun('TRUNCATE table message');
-        $this->justRun('TRUNCATE table contact_message');
+        $this->justRun('TRUNCATE table chat_user');
         $this->justRun('UPDATE `user` SET last_sync_ts=1');
 
         return "\n";
