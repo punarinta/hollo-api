@@ -54,7 +54,14 @@ class Chat extends Generic
             }
 
             // check if necessary to mute the chat
-            $muteThis = ($muting && count($emails) == 2 && (\Sys::svc('Contact')->isMuted($emails[0]) || \Sys::svc('Contact')->isMuted($emails[1])));
+            $muteThis = false;
+            if ($muting && isset ($emails[0]) && isset ($emails[1]))
+            {
+                if (\Sys::svc('Contact')->isMuted($emails[0]) || \Sys::svc('Contact')->isMuted($emails[1]))
+                {
+                    $muteThis = true;
+                }
+            }
 
             // link users into the chat
             foreach ($userIds as $userId)
