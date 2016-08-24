@@ -36,13 +36,18 @@ class Chat extends Generic
                 throw new \Exception('Chat is not set up. That should not be so.');
             }
 
+            $lastMsg = null;
+
             if ($lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id))
             {
-                $lastMsg = $lastMsg->body;
-            }
-            else
-            {
-                $lastMsg = null;
+                if ($lastMsg->body)
+                {
+                    $lastMsg = $lastMsg->body;
+                }
+                elseif ($lastMsg->files)
+                {
+                    $lastMsg = '📎';
+                }
             }
 
             if (mb_strlen($lastMsg) > 25)
