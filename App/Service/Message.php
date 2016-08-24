@@ -145,6 +145,8 @@ class Message extends Generic
             $attempt = 0;
             $params['offset'] = $offset;
 
+            echo "User {$user->email}, offset = $offset\n";
+
             while ($attempt < 10)
             {
                 if ($data = $this->conn->listMessages($user->ext_id, $params))
@@ -285,8 +287,8 @@ class Message extends Generic
         {
             // collect emails from the message
             $emails = [$messageData['addresses']['from']['email']];
-            foreach ($messageData['addresses']['to'] as $to) $emails = $to['email'];
-            foreach ($messageData['addresses']['cc'] as $cc) $emails = $cc['email'];
+            foreach ($messageData['addresses']['to'] as $to) $emails[] = $to['email'];
+            if (isset ($messageData['addresses']['cc'])) foreach ($messageData['addresses']['cc'] as $cc) $emails[] = $cc['email'];
 
             // we don't need duplicates
             $emails = array_unique($emails);
@@ -355,7 +357,7 @@ class Message extends Generic
 
             // message received, update chat
             $chat->last_ts = $messageData['date'];
-            \Sys::svc('Contact')->update($chat);
+            \Sys::svc('Chat')->update($chat);
 
             // there were one or more new messages -> reset 'read' flag
             \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
