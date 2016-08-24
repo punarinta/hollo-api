@@ -283,7 +283,7 @@ class Chat extends Generic
      */
     public function findByEmails($emails = [])
     {
-        $sql = 'SELECT * FROM chat AS c';
+        $sql = 'SELECT c.* FROM chat AS c';
         $params = [];
         $where = ' WHERE 1=1';
         $counter = 0;
@@ -296,8 +296,8 @@ class Chat extends Generic
                 return false;
             }
 
-            $sql .= " LEFT JOIN chat_user AS cu$counter ON cu$counter.chat_id=c.id";
-            $where .= ' AND cu$counter.user_id=?';
+            $sql .= " LEFT JOIN chat_user AS cu{$counter} ON cu{$counter}.chat_id=c.id";
+            $where .= " AND cu{$counter}.user_id=?";
             $params[] = $user->id;
 
             ++$counter;
