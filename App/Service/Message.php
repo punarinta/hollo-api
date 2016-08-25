@@ -357,13 +357,15 @@ class Message extends Generic
                 $senderId = $sender->id;
             }
 
+            $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1';
+
             \Sys::svc('Message')->create(array
             (
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,
                 'chat_id'   => $chat->id,
-                'subject'   => @iconv('UTF-8', 'ISO-8859-1', $messageData['subject']),
-                'body'      => @iconv('UTF-8', 'ISO-8859-1', $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content'])),
+                'subject'   => iconv('UTF-8', $charset, $messageData['subject']),
+                'body'      => iconv('UTF-8', $charset, $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content'])),
                 'files'     => empty ($files) ? '' : json_encode($files),
                 'ts'        => $messageData['date'],
              ));
