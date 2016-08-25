@@ -189,10 +189,11 @@ class Message extends Generic
      *
      * @param $accountId
      * @param $messageExtId
+     * @param bool $verbose
      * @return bool
      * @throws \Exception
      */
-    public function sync($accountId, $messageExtId)
+    public function sync($accountId, $messageExtId, $verbose = false)
     {
         if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageExtId, 'include_body' => 1]))
         {
@@ -205,7 +206,14 @@ class Message extends Generic
             throw new \Exception('User does not exist.');
         }
 
-        $this->processMessageSync($user, $data->getData());
+        $data = $data->getData();
+
+        if ($verbose)
+        {
+            print_r($data);
+        }
+
+        $this->processMessageSync($user, $data);
 
         return true;
     }

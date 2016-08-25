@@ -13,9 +13,12 @@ class Admin
     {
         $x = \Sys::svc('Message')->syncAllByUserId($userId, $fetchMuted, $fetchAll);
 
-        echo "Messages synced: $x\n";
+        return "Messages synced: $x\n\n";
+    }
 
-        return "\n";
+    public function syncMessage($accountId, $messageExtId)
+    {
+        \Sys::svc('Message')->sync($accountId, $messageExtId, true);
     }
     
     public function hashpass($password = null)
