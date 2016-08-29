@@ -93,21 +93,81 @@ class Message extends Generic
      * Gets more messages into the Chat
      *
      * @param $chat
+     * @param $user         -- current user
      * @return array
      */
-    public function moreByChat($chat)
+    public function moreByChat($chat, $user)
     {
-        // count the total amount and sync next N
-        $total = $this->countByChatId($chat->id);
+        $offset = 0;
+        $synced = 0;
+        $limit = 100;
 
-        // get more messages for this chat starting from $total
+        $oldCount = $this->countByChatId($chat->id);
 
-        // TODO: above
+        // get more messages for this chat starting from chat's last sync
+        foreach (\Sys::svc('User')->findByChatId($chat->id) as $participant)
+        {
+            $params =
+            [
+                'include_body'  => 1,
+                'limit'         => $limit,
+                'date_after'    => abs($chat->last_ts - 86400),
+                'sort_order'    => 'desc',
+                'email'         => $participant->email,
+            ];
+
+            while (1)
+            {
+                $rows = [];
+                $attempt = 0;
+                $params['offset'] = $offset;
+
+                while ($attempt < 10)
+                {
+                    if ($data = $this->conn->listMessages($user->ext_id, $params))
+                    {
+                        $rows = $data->getData();
+
+                        foreach ($rows as $row)
+                        {
+                            // fetch even muted, as the user has explicitly instructed us
+                            $synced += 1 * $this->processMessageSync($user, $row, true, $chat->id);
+                        }
+
+                        if ($synced >= \Sys::cfg('sys.sync_depth'))
+                        {
+                            goto enough;
+                        }
+
+                        break;
+                    }
+                    else
+                    {
+                        ++$attempt;
+                        echo "Sync error, attempt #$attempt in 5 seconds\n";
+                        sleep(5);
+                        print_r($params);
+                    }
+                }
+
+                if (count($rows) < $limit)
+                {
+                    break;
+                }
+
+                $offset += $limit;
+
+                // sleep a bit to prevent API request queue growth
+                usleep(600000);
+            }
+        }
+
+        enough:;
 
         // return with offset from DB
         $messages = $this->findByChatId($chat->id);
 
-        $count = count($messages) - $total;
+        $count = count($messages) - $oldCount;
 
         return $count > 0 ? array_slice($messages, 0, $count) : [];
     }
@@ -283,10 +343,11 @@ class Message extends Generic
      * @param $user                 -- recipient user
      * @param $messageData
      * @param bool $fetchMuted
+     * @param int $limitToChatId
      * @return bool
      * @throws \Exception
      */
-    protected function processMessageSync($user, $messageData, $fetchMuted = false)
+    protected function processMessageSync($user, $messageData, $fetchMuted = false, $limitToChatId = 0)
     {
         // message must not exist
         $extId = $messageData['message_id'];
@@ -304,7 +365,21 @@ class Message extends Generic
             // chat may not exist -> init and mute if necessary
             if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
             {
+                if ($limitToChatId)
+                {
+                    // chat does not exist while ID restriction is imposed -> leave
+                    return false;
+                }
+
                 $chat = \Sys::svc('Chat')->init($emails, [$user->id]);
+            }
+            else
+            {
+                if ($limitToChatId && $chat->id != $limitToChatId)
+                {
+                    // chat exists, but does not fulfill the ID requirement
+                    return false;
+                }
             }
 
             if (!$chat)
