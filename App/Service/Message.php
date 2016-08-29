@@ -357,7 +357,7 @@ class Message extends Generic
                 $senderId = $sender->id;
             }
 
-            // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1';
+            // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
 
             \Sys::svc('Message')->create(array
             (
