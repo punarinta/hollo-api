@@ -45,7 +45,6 @@ class Chat extends Generic
                         'email'     => $email,
                         'ext_id'    => null,
                         'roles'     => \Auth::USER,
-                        'created'   => time(),
                         'settings'  => '',
                     ));
                 }

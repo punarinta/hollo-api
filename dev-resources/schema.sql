@@ -95,8 +95,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `ext_id` char(24) DEFAULT NULL,
   `last_sync_ts` int(10) unsigned NOT NULL DEFAULT '1',
   `is_syncing` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `settings` text,
-  `created` bigint(20) unsigned NOT NULL DEFAULT '0'
+  `settings` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --

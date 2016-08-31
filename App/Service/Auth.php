@@ -135,7 +135,6 @@ class Auth
                 'email'     => $email,
                 'ext_id'    => null,
                 'roles'     => \Auth::USER,
-                'created'   => time(),
                 'settings'  => json_encode($settings),
             ));
 
@@ -270,7 +269,6 @@ class Auth
                     'email'     => $email,
                     'ext_id'    => null,
                     'roles'     => \Auth::USER,
-                    'created'   => time(),
                     'settings'  => json_encode($settings),
                 ));
 
