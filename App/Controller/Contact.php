@@ -10,7 +10,7 @@ namespace App\Controller;
 class Contact extends Generic
 {
     /**
-     * Extracts contacts from your chats
+     * Lists all your contacts
      *
      * @return array
      */
@@ -26,9 +26,9 @@ class Contact extends Generic
 
             $users[$user->id] = array
             (
-                'id'        => $user->id,
-                'email'     => $user->email,
-                'name'      => $user->name,
+                'id'    => $user->id,
+                'email' => $user->email,
+                'name'  => $user->name,
             );
         }
 
