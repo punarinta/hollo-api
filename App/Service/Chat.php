@@ -17,7 +17,7 @@ class Chat extends Generic
         $emails = array_unique($emails);
 
         // check just in case
-        if ($chat = \Sys::svc('Chat')->findByEmails($emails))
+        if ($chat = $this->findByEmails($emails))
         {
             return $chat;
         }
