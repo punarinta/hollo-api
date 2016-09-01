@@ -27,7 +27,7 @@ class Chat extends Generic
         try
         {
             // create chat itself
-            $chat = \Sys::svc('Chat')->create(array
+            $chat = $this->create(array
             (
                 'name'      => null,
                 'last_ts'   => 0,
@@ -265,7 +265,7 @@ class Chat extends Generic
         $stmt->execute();
         $stmt->close();
 
-        if (\Sys::svc('Chat')->countUsers($chatId) < 2)
+        if ($this->countUsers($chatId) < 2)
         {
             // there's only one person left, remove that link too
             $stmt = \DB::prepare('DELETE FROM chat_user WHERE chat_id=? LIMIT 1', [$chatId]);
@@ -273,7 +273,7 @@ class Chat extends Generic
             $stmt->close();
 
             // kill the chat
-            \Sys::svc('Chat')->delete($chatId);
+            $this->delete($chatId);
 
             return false;
         }

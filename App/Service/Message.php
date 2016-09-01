@@ -288,7 +288,7 @@ class Message extends Generic
      */
     public function switchBody($messageId, $bodyId)
     {
-        if (!$message = \Sys::svc('Message')->findById($messageId))
+        if (!$message = $this->findById($messageId))
         {
             throw new \Exception('Message does not exist');
         }
@@ -309,7 +309,7 @@ class Message extends Generic
         // echo replace4byte($data['body'][$bodyId]['content']);
 
         $message->body = $this->clearContent($data['body'][$bodyId]['type'], $data['body'][$bodyId]['content']);
-        \Sys::svc('Message')->update($message);
+        $this->update($message);
 
         return true;
     }
@@ -352,7 +352,7 @@ class Message extends Generic
         // message must not exist
         $extId = $messageData['message_id'];
 
-        if (!\Sys::svc('Message')->findByExtId($extId))
+        if (!$this->findByExtId($extId))
         {
             // collect emails from the message
             $emails = [$messageData['addresses']['from']['email']];
@@ -434,7 +434,7 @@ class Message extends Generic
 
             // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
 
-            \Sys::svc('Message')->create(array
+            $this->create(array
             (
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,

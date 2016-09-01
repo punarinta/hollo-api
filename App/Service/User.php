@@ -145,7 +145,7 @@ class User extends Generic
      */
     public function syncNames($userId)
     {
-        $user = \Sys::svc('User')->findById($userId);
+        $user = $this->findById($userId);
         $settings = json_decode($user->settings);
 
         if (!$user || !$user->ext_id)
@@ -171,7 +171,7 @@ class User extends Generic
     {
         if (!is_object($user))
         {
-            $user = \Sys::svc('User')->findById($user);
+            $user = $this->findById($user);
         }
 
         if (!$user || !$user->ext_id)
