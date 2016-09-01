@@ -293,6 +293,7 @@ class Chat extends Generic
         $params = [];
         $where = ' WHERE 1=1';
         $counter = 0;
+        $emailCount = count($emails);
 
         foreach ($emails as $email)
         {
@@ -313,7 +314,7 @@ class Chat extends Generic
         {
             foreach (\DB::rows($sql . $where, $params) as $chat)
             {
-                if ($this->countUsers($chat->id) == count($emails))
+                if ($this->countUsers($chat->id) == $emailCount)
                 {
                     return $chat;
                 }
