@@ -285,7 +285,7 @@ class Chat extends Generic
      * Finds a Chat by emails of all its participants
      *
      * @param array $emails
-     * @return bool|null|\StdClass
+     * @return bool|null
      */
     public function findByEmails($emails = [])
     {
@@ -309,6 +309,17 @@ class Chat extends Generic
             ++$counter;
         }
 
-        return $counter ? \DB::row($sql . $where, $params) : false;
+        if ($counter)
+        {
+            foreach (\DB::rows($sql . $where, $params) as $chat)
+            {
+                if ($this->countUsers($chat->id) == count($emails))
+                {
+                    return $chat;
+                }
+            }
+        }
+
+        return null;
     }
 }
