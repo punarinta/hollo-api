@@ -371,6 +371,12 @@ class Message extends Generic
                     return false;
                 }
 
+                if (count($emails) < 2)
+                {
+                    // the cannot be less than 2 people in chat
+                    return false;
+                }
+
                 $chat = \Sys::svc('Chat')->init($emails, [$user->id]);
             }
             else
