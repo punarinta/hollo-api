@@ -527,22 +527,22 @@ class Message extends Generic
 
         $content = str_replace("\r\n", "\n", $content);
 
-        // Remove quoted lines (lines that begin with '>') and 1 line before that
-        $content = preg_replace("/(^\w.+:\n+)?(^>.*(\n|$)){2,}/mi", '', $content);
-
         $quoteHeadersRegex = array
         (
             '/^(On\s.+?wrote:).*$/ms',
             '/^(Den\s.+?skrev:).*$/ms',
         );
 
+        // Remove lines like '--- On ... wrote:' (some other clients).
         foreach ($quoteHeadersRegex as $regex)
         {
             $content = preg_replace($regex, '', $content);
         }
 
+        // Remove quoted lines (lines that begin with '>') and 1 line before that
+        $content = preg_replace("/(^\w.+:\n+)?(^>.*(\n|$)){2,}/mi", '', $content);
+
         // Remove lines like '----- Original Message -----' (some other clients).
-        // Also remove lines like '--- On ... wrote:' (some other clients).
         $content = preg_replace("/^---.*$/mi", '', $content);
 
         // remove zero-width space
