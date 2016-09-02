@@ -8,11 +8,12 @@ class Chat extends Generic
      * Initializes a new Chat with a specific set of participants
      *
      * @param array $emails
-     * @param bool $muting
-     * @return mixed
+     * @param null $muting
+     * @param array $names
+     * @return bool|null|\StdClass
      * @throws \Exception
      */
-    public function init($emails = [], $muting = null)
+    public function init($emails = [], $muting = null, $names = [])
     {
         $emails = array_unique($emails);
 
@@ -44,6 +45,7 @@ class Chat extends Generic
                     $user = \Sys::svc('User')->create(array
                     (
                         'email'     => $email,
+                        'name'      => isset ($names[$email]) ? $names[$email] : null,
                         'ext_id'    => null,
                         'roles'     => \Auth::USER,
                         'settings'  => '',
