@@ -34,7 +34,8 @@ class Chat extends Generic
             ));
 
             $userIds = [];
-            // assure that all the users exist
+
+            // assure that all users exist
             foreach ($emails as $email)
             {
                 if (!$user = \Sys::svc('User')->findByEmail($email))
