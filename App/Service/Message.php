@@ -354,10 +354,21 @@ class Message extends Generic
 
         if (!$this->findByExtId($extId))
         {
-            // collect emails from the message
+            // collect emails and names from the message
             $emails = [$messageData['addresses']['from']['email']];
-            foreach ($messageData['addresses']['to'] as $to) $emails[] = $to['email'];
-            if (isset ($messageData['addresses']['cc'])) foreach ($messageData['addresses']['cc'] as $cc) $emails[] = $cc['email'];
+            $names = [$messageData['addresses']['from']['email'] => $messageData['addresses']['from']['name']];
+
+            foreach ($messageData['addresses']['to'] as $to)
+            {
+                $emails[] = $to['email'];
+                $names[$to['email']] = @$to['name'];
+            }
+
+            if (isset ($messageData['addresses']['cc'])) foreach ($messageData['addresses']['cc'] as $cc)
+            {
+                $emails[] = $cc['email'];
+                $names[$cc['email']] = @$cc['name'];
+            }
 
             // we don't need duplicates
             $emails = array_unique($emails);
@@ -377,7 +388,7 @@ class Message extends Generic
                     return false;
                 }
 
-                $chat = \Sys::svc('Chat')->init($emails, [$user->id]);
+                $chat = \Sys::svc('Chat')->init($emails, [$user->id], $names);
             }
             else
             {
