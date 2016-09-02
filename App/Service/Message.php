@@ -356,7 +356,7 @@ class Message extends Generic
         {
             // collect emails and names from the message
             $emails = [$messageData['addresses']['from']['email']];
-            $names = [$messageData['addresses']['from']['email'] => $messageData['addresses']['from']['name']];
+            $names = [$messageData['addresses']['from']['email'] => @$messageData['addresses']['from']['name']];
 
             foreach ($messageData['addresses']['to'] as $to)
             {
