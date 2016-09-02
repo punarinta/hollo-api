@@ -11,14 +11,21 @@ class Achtung
     /**
      * Cleans up all the messages, chats and their links
      *
+     * @param int $withUsers
      * @return string
      */
-    public function initialState()
+    public function initialState($withUsers = 0)
     {
         $this->justRun('TRUNCATE table chat');
         $this->justRun('TRUNCATE table message');
         $this->justRun('TRUNCATE table chat_user');
         $this->justRun('UPDATE `user` SET last_sync_ts=1');
+
+        if ($withUsers)
+        {
+            $this->justRun('DELETE FROM `user` WHERE ext_id IS NULL', []);
+            $this->justRun('ALTER TABLE `user` AUTO_INCREMENT = 1', []);
+        }
 
         return "\n";
     }
