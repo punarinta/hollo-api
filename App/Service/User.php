@@ -27,11 +27,19 @@ class User extends Generic
      * Gets a User by its email
      *
      * @param $email
-     * @return array
+     * @param bool $realOnly
+     * @return null|\StdClass
      */
-    public function findByEmail($email)
+    public function findByEmail($email, $realOnly = false)
     {
-        return \DB::row('SELECT * FROM user WHERE email = ? LIMIT 1', [$email]);
+        if ($realOnly)
+        {
+            return \DB::row('SELECT * FROM `user` WHERE email=? AND ext_id IS NOT NULL LIMIT 1', [$email]);
+        }
+        else
+        {
+            return \DB::row('SELECT * FROM `user` WHERE email=? LIMIT 1', [$email]);
+        }
     }
 
     /**
