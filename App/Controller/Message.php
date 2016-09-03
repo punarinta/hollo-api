@@ -103,22 +103,17 @@ class Message extends Generic
             throw new \Exception('Neither body provided, nor files.');
         }
 
-        $to = \Input::data('to') ?: [];
-
-        if (!$messageId = \Input::data('messageId'))
+        if (!$to = \Input::data('to'))
         {
-            if (!$to)
-            {
-                throw new \Exception('Neither message ID nor recipient list is provided.');
-            }
+            throw new \Exception('Recipient list is not provided.');
         }
 
-        \Sys::svc('Smtp')->setupThread(\Auth::user()->id, $messageId);
+        \Sys::svc('Smtp')->setupThread(\Auth::user()->id, \Input::data('messageId'));
         $res = \Sys::svc('Smtp')->send($to, $body, \Input::data('subject'), $files);
 
         // force Context.IO sync after mail is sent
         \Sys::svc('User')->syncExt(\Auth::user());
 
-        return true; // $res;
+        return $res;
     }
 }

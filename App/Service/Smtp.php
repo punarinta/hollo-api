@@ -31,7 +31,6 @@ class Smtp
      * @param null $messageId
      * @return bool
      * @throws \Exception
-     * @throws \phpmailerException
      */
     public function setupThread($userId, $messageId = null)
     {
@@ -104,31 +103,6 @@ class Smtp
                 $ts = date('r', $data['date']);
                 $name = explode('@', $data['addresses']['from']['email']);
                 $this->mail->Body = "\nOn {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
-
-                if (isset ($data['addresses']['from']))
-                {
-                    // reply back to sender
-                    $this->mail->addAddress($data['addresses']['from']['email'], @$data['addresses']['from']['name']);
-                }
-
-                if (isset ($data['addresses']['cc']))
-                {
-                    foreach ($data['addresses']['cc'] as $from)
-                    {
-                        $this->mail->addCC($from['email'], @$from['name']);
-                    }
-                }
-
-                if (isset ($data['addresses']['to']))
-                {
-                    foreach ($data['addresses']['to'] as $from)
-                    {
-                        if ($from['email'] != $user->email)
-                        {
-                            $this->mail->addCC($from['email'], @$from['name']);
-                        }
-                    }
-                }
             }
         }
 
@@ -148,7 +122,7 @@ class Smtp
      * @param $body
      * @param null $subject
      * @param array $attachments
-     * @return bool|null|\PHPMailer
+     * @return array
      * @throws \Exception
      * @throws \phpmailerException
      */
@@ -158,7 +132,7 @@ class Smtp
 
         if (!$this->setup)
         {
-            throw new \Exception('Send not setup');
+            throw new \Exception('Sending was not setup');
         }
 
         if ($body)
@@ -175,6 +149,15 @@ class Smtp
         foreach ($to as $toAtom)
         {
             $this->mail->addAddress($toAtom['email'], @$toAtom['name']);
+
+        /*    foreach ($to as $toAtom2)
+            {
+                // everyone must be CCed in the mail sent to another recipient
+                if ($toAtom != $toAtom2)
+                {
+                    $this->mail->addCC($toAtom2['email'], @$toAtom2['name']);
+                }
+            }*/
         }
 
         foreach ($attachments as $file)
