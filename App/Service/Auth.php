@@ -56,7 +56,6 @@ class Auth
      *
      * @param $user
      * @param $password
-     * @return mixed
      * @throws \Exception
      */
     public function loginImap($user, $password)
@@ -129,14 +128,27 @@ class Auth
         
         try
         {
-            // create Hollo account
-            $user = \Sys::svc('User')->create(array
-            (
-                'email'     => $email,
-                'ext_id'    => null,
-                'roles'     => \Auth::USER,
-                'settings'  => json_encode($settings),
-            ));
+            // create Hollo account or use an existing dummy one
+            if (!$user = \Sys::svc('User')->findByEmail($email))
+            {
+                $user = \Sys::svc('User')->create(array
+                (
+                    'email'     => $email,
+                    'ext_id'    => null,
+                    'roles'     => \Auth::USER,
+                    'settings'  => json_encode($settings),
+                ));
+            }
+            else
+            {
+                // user exists and it's real, not good
+                if ($user->ext_id)
+                {
+                    throw new \Exception('Cannot add user');
+                }
+                $user->settings = json_encode($settings);
+                $user->roles = \Auth::USER;
+            }
 
             if (!$user->id)
             {
@@ -254,7 +266,9 @@ class Auth
         $mailService = \Sys::svc('MailService')->findByEmail($email);
         $in = \Sys::svc('MailService')->getCfg($mailService);
 
-        if (!$user = \Sys::svc('User')->findByEmail($email))
+        $user = \Sys::svc('User')->findByEmail($email);
+
+        if (!$user || !$user->ext_id)
         {
             // no user -> register
             $settings = ['svc' => (int) $mailService->id];
@@ -263,14 +277,22 @@ class Auth
 
             try
             {
-                // create Hollo account
-                $user = \Sys::svc('User')->create(array
-                (
-                    'email'     => $email,
-                    'ext_id'    => null,
-                    'roles'     => \Auth::USER,
-                    'settings'  => json_encode($settings),
-                ));
+                if (!$user)
+                {
+                    // create Hollo account
+                    $user = \Sys::svc('User')->create(array
+                    (
+                        'email'     => $email,
+                        'ext_id'    => null,
+                        'roles'     => \Auth::USER,
+                        'settings'  => json_encode($settings),
+                    ));
+                }
+                else
+                {
+                    $user->roles = \Auth::USER;
+                    $user->settings = json_encode($settings);
+                }
 
                 if (!$user->id)
                 {
