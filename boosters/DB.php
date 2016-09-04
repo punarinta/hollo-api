@@ -98,11 +98,11 @@ class DB
 
     /**
      * @param $array
-     * @return \StdClass
+     * @return stdClass
      */
     static function toObject($array)
     {
-        $obj = new \StdClass();
+        $obj = new \stdClass();
 
         foreach ($array as $k => $v) $obj->{$k} = $v;
 

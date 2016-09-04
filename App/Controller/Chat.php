@@ -124,7 +124,7 @@ class Chat extends Generic
         // a bit more logic here may save some DB requests in the future
         if (\Input::data('muted') !== null && \Input::data('read') !== null)
         {
-            $flags = new \StdClass();
+            $flags = new \stdClass();
             $flags->read = \Input::data('read');
             $flags->muted = \Input::data('muted');
             \Sys::svc('Chat')->setFlags($id, $userId, $flags);
