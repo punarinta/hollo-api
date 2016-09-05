@@ -114,10 +114,9 @@ class Chat extends Generic
             throw new \Exception('Chat not found.');
         }
 
-        // prevent from setting an empty name
-        if ($name = trim(\Input::data('name')))
+        if (($name = \Input::data('name')) !== null)
         {
-            $chat->name = $name;
+            $chat->name = trim($name);
             \Sys::svc('Chat')->update($chat);
         }
 
