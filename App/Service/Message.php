@@ -184,7 +184,7 @@ class Message extends Generic
     public function syncAllByUserId($userId, $fetchMuted = false, $fetchAll = false)
     {
         $offset = 0;
-        $limit = 100;
+        $limit = 25;
 
         if (!$user = \Sys::svc('User')->findById($userId))
         {
