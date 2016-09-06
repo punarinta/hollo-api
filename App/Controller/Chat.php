@@ -30,6 +30,8 @@ class Chat extends Generic
 
         foreach (\Sys::svc('Chat')->findAllByUserId(\Auth::user()->id, \Input::data('filters') ?:[], \Input::data('sortBy'), \Input::data('sortMode')) as $chat)
         {
+            \DB::$pageStart = null;
+
             // get flags
             if (!$flags = \Sys::svc('Chat')->getFlags($chat->id, \Auth::user()->id))
             {
