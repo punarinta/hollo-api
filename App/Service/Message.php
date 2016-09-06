@@ -109,7 +109,6 @@ class Message extends Generic
         {
             $params =
             [
-                'include_body'  => 1,
                 'limit'         => $limit,
                 'date_after'    => abs($chat->last_ts - 86400),
                 'sort_order'    => 'desc',
@@ -184,7 +183,7 @@ class Message extends Generic
     public function syncAllByUserId($userId, $fetchMuted = false, $fetchAll = false)
     {
         $offset = 0;
-        $limit = 25;
+        $limit = 100;
 
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -193,7 +192,6 @@ class Message extends Generic
 
         $params =
         [
-            'include_body'  => 1,
             'limit'         => $limit,
             'date_after'    => ($user->last_sync_ts && !$fetchAll) ? abs($user->last_sync_ts - 86400) : 1,
             'sort_order'    => 'desc',
@@ -294,12 +292,10 @@ class Message extends Generic
         }
 
         // '571f73e9920d7f18098b4567'
-        if (!$data = $this->conn->getMessage(\Auth::user()->ext_id, ['message_id' => $message->ext_id, 'include_body' => 1]))
+        if (!$data = $this->getDataByExtId(\Auth::user()->ext_id, $message->ext_id))
         {
             return false;
         }
-
-        $data = $data->getData();
 
         if (!isset ($data['body'][$bodyId]['content']))
         {
@@ -312,6 +308,38 @@ class Message extends Generic
         $this->update($message);
 
         return true;
+    }
+
+    /**
+     * Gets message data from external provider
+     *
+     * @param $userExtId
+     * @param $extId
+     * @param bool $retry
+     * @return null
+     */
+    public function getDataByExtId($userExtId, $extId, $retry = true)
+    {
+        $attempt = 0;
+        $params = ['message_id' => $extId, 'include_body' => 1];
+
+        while ($attempt < 10)
+        {
+            if ($data = $this->conn->getMessage($userExtId, $params))
+            {
+                return $data->getData();
+            }
+            elseif ($retry)
+            {
+                ++$attempt;
+                echo "Sync error, attempt #$attempt in 5 seconds\n";
+                sleep(5);
+                print_r($params);
+            }
+            else break;
+        }
+
+        return null;
     }
 
     /**
@@ -404,7 +432,7 @@ class Message extends Generic
                 throw new \Exception('Chat does not exist');
             }
 
-            if (!$fetchMuted && count($emails) == 2)
+            if (!$fetchMuted /*&& count($emails) == 2*/)
             {
                 // check that you want any messages in this chat
                 // message sync on behalf of a bot will not happen
@@ -415,6 +443,14 @@ class Message extends Generic
                     return false;
                 }
             }
+
+            // check after muting is tested
+            if (!isset ($messageData['body']))
+            {
+                echo "Body extraction. Ext ID = {$extId}\n";
+                $messageData = $this->getDataByExtId($user->ext_id, $extId);
+            }
+
 
             $files = [];
 

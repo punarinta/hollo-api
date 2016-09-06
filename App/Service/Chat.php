@@ -8,7 +8,7 @@ class Chat extends Generic
      * Initializes a new Chat with a specific set of participants
      *
      * @param array $emails
-     * @param null $muting
+     * @param null $muting      - array of participating user IDs
      * @param array $names
      * @return bool|null|\StdClass
      * @throws \Exception
@@ -35,6 +35,7 @@ class Chat extends Generic
             ));
 
             $userIds = [];
+            $muteThis = false;
 
             // assure that all users exist
             foreach ($emails as $email)
@@ -53,17 +54,22 @@ class Chat extends Generic
                 }
 
                 $userIds[] = $user->id;
+
+                if (\Sys::svc('Contact')->isMuted($email))
+                {
+                    $muteThis = true;
+                }
             }
 
             // check if necessary to mute the chat
-            $muteThis = false;
-            if ($muting && isset ($emails[0]) && isset ($emails[1]))
+
+        /*    if ($muting && isset ($emails[0]) && isset ($emails[1]))
             {
                 if (\Sys::svc('Contact')->isMuted($emails[0]) || \Sys::svc('Contact')->isMuted($emails[1]))
                 {
                     $muteThis = true;
                 }
-            }
+            }*/
 
             // link users into the chat
             foreach ($userIds as $userId)
