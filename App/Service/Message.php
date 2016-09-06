@@ -452,6 +452,8 @@ class Message extends Generic
             }
 
 
+            // === process the message content ===
+
             $files = [];
 
             if (isset ($messageData['files']))
