@@ -410,7 +410,7 @@ class Message extends Generic
                 // message sync on behalf of a bot will not happen
                 $flags = \Sys::svc('Chat')->getFlags($chat->id, $user->id);
 
-                if ($flags->muted)
+                if ($flags && $flags->muted)
                 {
                     return false;
                 }
