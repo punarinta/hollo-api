@@ -10,11 +10,13 @@ class Chat extends Generic
      * @param array $emails
      * @param null $muting      - array of participating user IDs
      * @param array $names
+     * @param bool $muteThis
      * @return bool|null|\StdClass
      * @throws \Exception
      */
-    public function init($emails = [], $muting = null, $names = [])
+    public function init($emails = [], $muting = null, $names = [], &$muteThis)
     {
+        $muteThis = false;
         $emails = array_unique($emails);
 
         // check just in case
@@ -35,7 +37,6 @@ class Chat extends Generic
             ));
 
             $userIds = [];
-            $muteThis = false;
 
             // assure that all users exist
             foreach ($emails as $email)
