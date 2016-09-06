@@ -422,7 +422,7 @@ class Message extends Generic
             {
                 if ($limitToChatId && $chat->id != $limitToChatId)
                 {
-                    // chat exists, but does not fulfill the ID requirement
+                    // chat exists, but does not fulfill the ID requirement, used by moreByChatId
                     return false;
                 }
             }
@@ -436,7 +436,9 @@ class Message extends Generic
             {
                 // check that you want any messages in this chat
                 // message sync on behalf of a bot will not happen
-                $flags = \Sys::svc('Chat')->getFlags($chat->id, $user->id);
+
+                $recipient = \Sys::svc('User')->findByEmail(@$messageData['addresses']['to'][0]['email']);
+                $flags = \Sys::svc('Chat')->getFlags($chat->id, @$recipient->id);
 
                 if ($flags && $flags->muted)
                 {

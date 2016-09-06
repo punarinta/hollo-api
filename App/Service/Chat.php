@@ -10,13 +10,11 @@ class Chat extends Generic
      * @param array $emails
      * @param null $muting      - array of participating user IDs
      * @param array $names
-     * @param bool $muteThis
      * @return bool|null|\StdClass
      * @throws \Exception
      */
-    public function init($emails = [], $muting = null, $names = [], &$muteThis)
+    public function init($emails = [], $muting = null, $names = [])
     {
-        $muteThis = false;
         $emails = array_unique($emails);
 
         // check just in case
@@ -37,6 +35,7 @@ class Chat extends Generic
             ));
 
             $userIds = [];
+            $muteThis = false;
 
             // assure that all users exist
             foreach ($emails as $email)
@@ -66,7 +65,7 @@ class Chat extends Generic
             // link users into the chat
             foreach ($userIds as $userId)
             {
-                if ($muteThis && $userId == $muting[0])
+                if ($muteThis)
                 {
                     // it's the reference person, mute this chat for him by default
                     $stmt = \DB::prepare('INSERT INTO chat_user (`chat_id`, `user_id`, `muted`) VALUES (?,?,?)', [$chat->id, $userId, 1]);
