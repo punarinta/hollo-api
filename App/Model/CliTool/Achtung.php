@@ -38,8 +38,25 @@ class Achtung
      */
     public function clearUser($userId)
     {
+        // memorize all the chats the user was member in
+        $chats = \Sys::svc('Chat')->findAllByUserId($userId);
+
         $this->justRun('DELETE FROM chat_user WHERE user_id=?', [$userId]);
         $this->justRun('UPDATE `user` SET last_sync_ts=1 WHERE id=?', [$userId]);
+
+        foreach ($chats as $chat)
+        {
+            if (\Sys::svc('Chat')->countUsers($chat->id) < 2)
+            {
+                // there's only one person left, remove that link too
+                $stmt = \DB::prepare('DELETE FROM chat_user WHERE chat_id=? LIMIT 1', [$chat->id]);
+                $stmt->execute();
+                $stmt->close();
+
+                // kill the chat
+                \Sys::svc('Chat')->delete($chat);
+            }
+        }
 
         return "Deleted.\n";
     }
