@@ -358,7 +358,7 @@ class Message extends Generic
             $emails = [$messageData['addresses']['from']['email']];
             $names = [$messageData['addresses']['from']['email'] => @$messageData['addresses']['from']['name']];
 
-            foreach ($messageData['addresses']['to'] as $to)
+            if (isset ($messageData['addresses']['to'])) foreach ($messageData['addresses']['to'] as $to)
             {
                 $emails[] = $to['email'];
                 $names[$to['email']] = @$to['name'];
