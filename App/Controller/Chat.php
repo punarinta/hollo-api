@@ -48,6 +48,10 @@ class Chat extends Generic
                 {
                     $lastMsg = '📎';
                 }
+                else
+                {
+                    $lastMsg = '';
+                }
             }
 
             if (mb_strlen($lastMsg) > 25)
