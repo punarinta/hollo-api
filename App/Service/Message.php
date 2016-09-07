@@ -489,6 +489,13 @@ class Message extends Generic
                 $senderId = $sender->id;
             }
 
+
+            // avoid duplicating by user_id-chat_id-ts key
+            if (!$this->isUnique($senderId, $chat->id, $messageData['date']))
+            {
+                return false;
+            }
+
             // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
 
             $this->create(array
@@ -511,6 +518,19 @@ class Message extends Generic
         }
 
         return true;
+    }
+
+    /**
+     * Assures there are no duplicates by user-chat-ts
+     *
+     * @param $userId
+     * @param $chatId
+     * @param $ts
+     * @return bool
+     */
+    protected function isUnique($userId, $chatId, $ts)
+    {
+        return !\DB::row('SELECT id FROM message WHERE user_id=? AND chat_id=? AND ts=? LIMIT 1', [$userId, $chatId, $ts]);
     }
 
     protected function clearSubject($subject)
