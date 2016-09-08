@@ -16,9 +16,9 @@ class Admin
         return "Messages synced: $x\n\n";
     }
 
-    public function syncMessage($accountId, $messageExtId)
+    public function syncMessage($accountId, $messageExtId, $verbose = true)
     {
-        \Sys::svc('Message')->sync($accountId, $messageExtId, true);
+        \Sys::svc('Message')->sync($accountId, $messageExtId, $verbose);
     }
     
     public function hashpass($password = null)
