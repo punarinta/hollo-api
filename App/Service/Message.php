@@ -472,7 +472,7 @@ class Message extends Generic
                 }
             }
 
-            if (!isset ($messageData['body'][0]))
+            if (!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]))
             {
                 // no body?
                 return false;
