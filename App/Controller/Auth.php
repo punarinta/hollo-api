@@ -123,7 +123,7 @@ class Auth extends Generic
     {
         if (!\Auth::amI(\Auth::ADMIN))
         {
-            throw new \Exception('Access denied.', 403);
+            throw new \Exception('Method \'incarnate\' does not exist.', 404);
         }
 
         if (!$userId = \Input::data('userId'))
