@@ -38,6 +38,8 @@ class Generic
         \DB::$pageStart  = \Input::json('pageStart');
         \DB::$pageLength = \Input::json('pageLength');
 
+    //    $_SESSION['-AUTH']['user']->id = 1;
+
         return forward_static_call([get_called_class(), $method]);
     }
 }
