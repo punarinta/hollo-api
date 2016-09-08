@@ -46,7 +46,7 @@ class Chat extends Generic
                     $user = \Sys::svc('User')->create(array
                     (
                         'email'     => $email,
-                        'name'      => isset ($names[$email]) ? $names[$email] : null,
+                        'name'      => (isset ($names[$email]) && $names[$email] != $email) ? $names[$email] : null,
                         'ext_id'    => null,
                         'roles'     => \Auth::USER,
                         'settings'  => '',
