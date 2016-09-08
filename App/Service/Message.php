@@ -498,13 +498,21 @@ class Message extends Generic
 
             // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
 
+            $content = iconv('UTF-8', 'ISO-8859-1//IGNORE', $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content']));
+
+            if (!mb_strlen($content))
+            {
+                // avoid empty replies
+                return false;
+            }
+
             $this->create(array
             (
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,
                 'chat_id'   => $chat->id,
                 'subject'   => iconv('UTF-8', 'ISO-8859-1//IGNORE', $messageData['subject']),
-                'body'      => iconv('UTF-8', 'ISO-8859-1//IGNORE', $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content'])),
+                'body'      => $content,
                 'files'     => empty ($files) ? '' : json_encode($files),
                 'ts'        => $messageData['date'],
              ));
