@@ -310,15 +310,22 @@ class Chat extends Generic
             ++$counter;
         }
 
-        if ($counter)
+        try
         {
-            foreach (\DB::rows($sql . $where, $params) as $chat)
+            if ($counter)
             {
-                if ($this->countUsers($chat->id) == $emailCount)
+                foreach (\DB::rows($sql . $where, $params) as $chat)
                 {
-                    return $chat;
+                    if ($this->countUsers($chat->id) == $emailCount)
+                    {
+                        return $chat;
+                    }
                 }
             }
+        }
+        catch (\Exception $e)
+        {
+            echo "Strange things happen: " . $e->getMessage();
         }
 
         return null;
