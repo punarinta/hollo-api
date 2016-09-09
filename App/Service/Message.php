@@ -142,10 +142,7 @@ class Message extends Generic
                     }
                     else
                     {
-                        ++$attempt;
-                        echo "Sync error, attempt #$attempt in 5 seconds\n";
-                        sleep(5);
-                        print_r($params);
+                        $this->retryVerbose($params, ++$attempt);
                     }
                 }
 
@@ -221,11 +218,7 @@ class Message extends Generic
                 }
                 else
                 {
-                    ++$attempt;
-                    $timeout = (int)(5 + $attempt/3);
-                    echo "Sync error, attempt #$attempt in $timeout seconds\n";
-                    sleep($timeout);
-                    print_r($params);
+                    $this->retryVerbose($params, ++$attempt);
                 }
             }
 
@@ -332,10 +325,7 @@ class Message extends Generic
             }
             elseif ($retry)
             {
-                ++$attempt;
-                echo "Sync error, attempt #$attempt in 5 seconds\n";
-                sleep(5);
-                print_r($params);
+                $this->retryVerbose($params, ++$attempt);
             }
             else break;
         }
@@ -621,5 +611,19 @@ class Message extends Generic
         if (!strlen(trim($content))) return null;
 
         return trim($content);
+    }
+
+    /**
+     * A service function to report and wait
+     *
+     * @param $params
+     * @param $attempt
+     */
+    protected function retryVerbose($params, $attempt)
+    {
+        $timeout = (int)(5 + $attempt/3);
+        echo "Sync error, attempt #$attempt in $timeout seconds\n";
+        sleep($timeout);
+        print_r($params);
     }
 }
