@@ -501,27 +501,6 @@ class Message extends Generic
 
             // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
 
-        /*    $str1 = iconv('UTF-8', 'ISO-8859-1//IGNORE', $content);
-
-            if (mb_strlen($str1) < mb_strlen($content))
-            {
-                // $content = $str1 . mb_substr($content, mb_strlen($str1));
-
-                print_r(array
-                (
-                    $content,
-                    $str1,
-                    mb_strlen($str1),
-                    mb_strlen($content),
-                    $str1 . mb_substr($content, mb_strlen($str1)),
-                ));
-            }
-            else
-            {
-                echo "2222";
-                // $content = $str1;
-            }*/
-
             if (!mb_strlen($content))
             {
                 // avoid empty replies
@@ -533,8 +512,8 @@ class Message extends Generic
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,
                 'chat_id'   => $chat->id,
-                'subject'   => /*iconv('UTF-8', 'ISO-8859-1//IGNORE', */$messageData['subject']/*)*/,
-                'body'      => $content,
+                'subject'   => mb_convert_encoding($messageData['subject'], 'UTF-8'),
+                'body'      => mb_convert_encoding($content, 'UTF-8'),
                 'files'     => empty ($files) ? '' : json_encode($files),
                 'ts'        => $messageData['date'],
              ));

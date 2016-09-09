@@ -65,6 +65,7 @@ class Smtp
         $this->mail->SMTPAuth = true;
     //    $this->mail->SMTPDebug = 4;
         $this->mail->isSMTP();
+        $this->mail->CharSet = 'UTF-8';
 
         $this->mail->Subject = '';
         
@@ -92,7 +93,7 @@ class Smtp
 
                 $this->mail->Subject = 'Re: ' . $data['subject'];
 
-                $content = /*iconv('UTF-8', 'ISO-8859-1', */$data['body'][0]['content']/*)*/;
+                $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
 
                 $body = [];
                 foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
