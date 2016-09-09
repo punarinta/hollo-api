@@ -222,8 +222,9 @@ class Message extends Generic
                 else
                 {
                     ++$attempt;
-                    echo "Sync error, attempt #$attempt in 5 seconds\n";
-                    sleep(5);
+                    $timeout = (int)(5 + $attempt/3);
+                    echo "Sync error, attempt #$attempt in $timeout seconds\n";
+                    sleep($timeout);
                     print_r($params);
                 }
             }
@@ -472,7 +473,7 @@ class Message extends Generic
                 }
             }
 
-            if (!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]))
+            if (!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]['content']))
             {
                 // no body?
                 return false;
@@ -496,9 +497,30 @@ class Message extends Generic
                 return false;
             }
 
+            $content = $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content']);
+
             // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
 
-            $content = iconv('UTF-8', 'ISO-8859-1//IGNORE', $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content']));
+        /*    $str1 = iconv('UTF-8', 'ISO-8859-1//IGNORE', $content);
+
+            if (mb_strlen($str1) < mb_strlen($content))
+            {
+                // $content = $str1 . mb_substr($content, mb_strlen($str1));
+
+                print_r(array
+                (
+                    $content,
+                    $str1,
+                    mb_strlen($str1),
+                    mb_strlen($content),
+                    $str1 . mb_substr($content, mb_strlen($str1)),
+                ));
+            }
+            else
+            {
+                echo "2222";
+                // $content = $str1;
+            }*/
 
             if (!mb_strlen($content))
             {
@@ -511,7 +533,7 @@ class Message extends Generic
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,
                 'chat_id'   => $chat->id,
-                'subject'   => iconv('UTF-8', 'ISO-8859-1//IGNORE', $messageData['subject']),
+                'subject'   => /*iconv('UTF-8', 'ISO-8859-1//IGNORE', */$messageData['subject']/*)*/,
                 'body'      => $content,
                 'files'     => empty ($files) ? '' : json_encode($files),
                 'ts'        => $messageData['date'],
