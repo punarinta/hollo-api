@@ -491,7 +491,7 @@ class Message extends Generic
 
             // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
 
-            if (!mb_strlen($content))
+            if (!mb_strlen($content) && !isset ($messageData['files']))
             {
                 // avoid empty replies
                 return false;
