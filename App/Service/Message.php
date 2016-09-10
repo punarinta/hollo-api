@@ -555,14 +555,6 @@ class Message extends Generic
      */
     protected function clearContent($type, $content)
     {
-        /*
-
-        samples:
-
-        -- Please reply above this line --
-
-         */
-
         if ($type == 'text/html')
         {
             // do not let HTML spam in
@@ -588,8 +580,8 @@ class Message extends Generic
 
         $quoteHeadersRegex = array
         (
-            '/^(On\s.+?wrote:).*$/ms',
-            '/^(Den\s.+?skrev:).*$/ms',
+            '/^(On).*(wrote:).*$/sm',
+            '/^(Den).*(skrev:).*$/sm',
         );
 
         // Remove lines like '--- On ... wrote:' (some other clients).
@@ -601,8 +593,25 @@ class Message extends Generic
         // Remove quoted lines (lines that begin with '>') and 1 line before that
         $content = preg_replace("/(^\w.+:\n+)?(^>.*(\n|$)){2,}/mi", '', $content);
 
-        // Remove lines like '----- Original Message -----' (some other clients).
+        // Remove lines like '----- Original Message -----'
         $content = preg_replace("/^---.*$/mi", '', $content);
+
+        // Remove lines like '____________'
+        $content = preg_replace("/^____________.*$/mi", '', $content);
+
+        // Remove blocks of text with formats like:
+        //   - 'From: Sent: To: Subject:'
+        //   - 'From: To: Sent: Subject:'
+        //   - 'From: Date: To: Reply-to: Subject:'
+        $quoteHeadersRegex = array
+        (
+            '/From:.*^(To:).*^(Subject:).*/sm',
+            '/Från:.*^(Till:).*^(Ämne:).*/sm',
+        );
+        foreach ($quoteHeadersRegex as $regex)
+        {
+            $content = preg_replace($regex, '', $content);
+        }
 
         // remove zero-width space
         $content = str_replace("\xE2\x80\x8B", '', $content);
