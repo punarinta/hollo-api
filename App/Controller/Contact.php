@@ -16,14 +16,10 @@ class Contact extends Generic
      */
     static public function find()
     {
-        // TODO: add pagination
-
         $users = [];
 
-        foreach (\Sys::svc('User')->findKnownBy(\Auth::user()->id) as $user)
+        foreach (\Sys::svc('User')->findKnownBy(\Auth::user()->id, \Input::data('filters') ?: []) as $user)
         {
-            // TODO: check if manual distinct is necessary
-
             $users[$user->id] = array
             (
                 'id'    => $user->id,

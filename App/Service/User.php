@@ -77,9 +77,10 @@ class User extends Generic
      * Lists Users known by specified User
      *
      * @param $userId
+     * @param array $filters
      * @return array
      */
-    public function findKnownBy($userId)
+    public function findKnownBy($userId, $filters = [])
     {
         $sql = 'SELECT DISTINCT u.id, u.email, u.name FROM `user` AS u 
                 LEFT JOIN chat_user AS cu1 ON cu1.user_id = u.id
@@ -87,7 +88,24 @@ class User extends Generic
                 LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
                 WHERE cu2.user_id = ?';
 
-        return \DB::rows($sql, [$userId]);
+        $params = [$userId];
+
+        foreach ($filters as $filter)
+        {
+            switch ($filter['mode'])
+            {
+                case 'email':
+                    $sql .= ' AND u.email LIKE ?';
+                    $filter['value'] = '%' . $filter['value'] . '%';
+                    break;
+            }
+
+            $params[] = $filter['value'];
+        }
+
+        $sql .= ' ORDER BY u.email';
+
+        return \DB::rows($sql, $params);
     }
 
     /**
