@@ -491,7 +491,7 @@ class Message extends Generic
 
             // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
 
-            if (!mb_strlen($content) && !isset ($messageData['files']))
+            if (!mb_strlen($content) && empty ($messageData['files']))
             {
                 // avoid empty replies
                 return false;
@@ -502,7 +502,7 @@ class Message extends Generic
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,
                 'chat_id'   => $chat->id,
-                'subject'   => mb_convert_encoding($messageData['subject'], 'UTF-8'),
+                'subject'   => mb_convert_encoding($this->clearSubject($messageData['subject']), 'UTF-8'),
                 'body'      => mb_convert_encoding($content, 'UTF-8'),
                 'files'     => empty ($files) ? '' : json_encode($files),
                 'ts'        => $messageData['date'],
@@ -534,10 +534,11 @@ class Message extends Generic
 
     protected function clearSubject($subject)
     {
-        $items = ['Re:', 'Fwd:', 'Fw:'];
+        $items = ['RE','FWD','FW','VS','VB','SV'];
 
         foreach ($items as $item)
         {
+            $item .= ':';
             if (strpos($subject, $item, 0) === 0)
             {
                 $subject = str_ireplace($item, '', $subject);
