@@ -606,7 +606,9 @@ class Message extends Generic
         $quoteHeadersRegex = array
         (
             '/From:.*^(To:).*^(Subject:).*/sm',
+            '/From:.*^(Subject:).*^(To:).*/sm',
             '/Från:.*^(Till:).*^(Ämne:).*/sm',
+            '/Från:.*^(Ämne:).*^(Till:).*/sm',
         );
         foreach ($quoteHeadersRegex as $regex)
         {
