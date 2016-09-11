@@ -530,8 +530,8 @@ class Message extends Generic
                 'ts'        => $messageData['date'],
              ));
 
-            // message received, update chat
-            $chat->last_ts = $messageData['date'];
+            // message received, update chat if it's a new one
+            $chat->last_ts = max($messageData['date'], $chat->last_ts);
             \Sys::svc('Chat')->update($chat);
 
             // there were one or more new messages -> reset 'read' flag
@@ -622,8 +622,8 @@ class Message extends Generic
         // Remove quoted lines (lines that begin with '>') and 1 line before that
         $content = preg_replace("/(^\w.+:\n+)?(^>.*(\n|$)){2,}/mi", '', $content);
 
-        // remove separators containing 5 or more dashes and everything below
-        $content = preg_replace("/^[^\n]*-{5,}.*$/ms", '', $content);
+        // remove separators containing 10 or more dashes or equals (dirty position) and everything below
+        $content = preg_replace("/^[^\n]*(-{5,}|={5,}).*$/ms", '', $content);
 
         // signatures starting with '--' in a lone position
         $content = preg_replace("/^-{2}\s*$.*/ms", '', $content);
@@ -649,6 +649,7 @@ class Message extends Generic
                 '/' . $lang['from'] . ':.*^(' . $lang['to'] . ':).*^(' . $lang['subject'] . ':).*/sm',
                 '/' . $lang['from'] . ':.*^(' . $lang['sent'] . ':).*^(' . $lang['to'] . ':).*/sm',
                 '/' . $lang['from'] . ':.*^(' . $lang['subject'] . ':).*^(' . $lang['to'] . ':).*/sm',
+                '/' . $lang['subject'] . ':.*^(' . $lang['from'] . ':).*^(' . $lang['to'] . ':).*/sm',
                 '/\*' . $lang['from'] . ':\*.*^(\*' . $lang['to'] . ':\*).*^(\*' . $lang['subject'] . ':\*).*/sm',
                 '/\*' . $lang['from'] . ':\*.*^(\*' . $lang['sent'] . ':\*).*^(\*' . $lang['to'] . ':\*).*/sm',
                 '/\*' . $lang['from'] . ':\*.*^(\*' . $lang['subject'] . ':\*).*^(\*' . $lang['to'] . ':\*).*/sm',
