@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `mail_service` (
 
 CREATE TABLE IF NOT EXISTS `message` (
   `id` bigint(20) unsigned NOT NULL,
-  `ext_id` varchar(24) NOT NULL,
+  `ext_id` char(24) NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `chat_id` bigint(20) unsigned NOT NULL,
   `subject` varchar(256) DEFAULT NULL,
@@ -91,10 +91,10 @@ CREATE TABLE IF NOT EXISTS `user` (
   `id` bigint(20) unsigned NOT NULL,
   `email` varchar(256) NOT NULL,
   `name` varchar(64) DEFAULT NULL,
-  `roles` int(10) unsigned NOT NULL DEFAULT '0',
-  `ext_id` char(24) DEFAULT NULL,
+  `roles` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `ext_id` varchar(24) DEFAULT NULL,
   `last_sync_ts` int(10) unsigned NOT NULL DEFAULT '1',
-  `is_syncing` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `is_syncing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `settings` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
