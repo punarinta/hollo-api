@@ -540,12 +540,12 @@ class Message extends Generic
         $items = ['RE','FWD','FW','VS','VB','SV'];
 
         // remove things in brackets
-        $subject = trim(preg_replace('/\[[^]]+\]/g', '', $subject));
+        $subject = trim(preg_replace('/\[[^]]+\]/', '', $subject));
 
         foreach ($items as $item)
         {
             $item .= ':';
-            if (strpos($subject, $item, 0) === 0)
+            if (stripos($subject, $item, 0) === 0)
             {
                 $subject = str_ireplace($item, '', $subject);
                 break;
@@ -587,9 +587,9 @@ class Message extends Generic
 
         $quoteHeadersRegex = array
         (
-            '/^([^\n]+On).*(wrote:).*$/sm',
-            '/^([^\n]+Den).*(skrev:).*$/sm',
-            '/^[^\n]+(<.+@.+>).*(skrev:).*$/sm',
+            '/^([^\n]*On).*(wrote:).*$/sm',
+            '/^([^\n]*Den).*(skrev:).*$/sm',
+            '/^[^\n]*(<.+@.+>).*(skrev:).*$/sm',
         );
 
         // Remove lines like '--- On ... wrote:' (some other clients).
