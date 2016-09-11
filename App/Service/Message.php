@@ -587,8 +587,9 @@ class Message extends Generic
 
         $quoteHeadersRegex = array
         (
-            '/^(On).*(wrote:).*$/sm',
-            '/^(Den).*(skrev:).*$/sm',
+            '/^([^\n]+On).*(wrote:).*$/sm',
+            '/^([^\n]+Den).*(skrev:).*$/sm',
+            '/^[^\n]+(<.+@.+>).*(skrev:).*$/sm',
         );
 
         // Remove lines like '--- On ... wrote:' (some other clients).
