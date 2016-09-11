@@ -590,6 +590,7 @@ class Message extends Generic
             '/^([^\n]*On).*(wrote:).*$/sm',
             '/^([^\n]*Den).*(skrev:).*$/sm',
             '/^[^\n]*(<.+@.+>).*(skrev:).*$/sm',
+            '/^[^\n]*(skrev).*(<.+@.+>:).*$/sm',
         );
 
         // Remove lines like '--- On ... wrote:' (some other clients).
@@ -645,6 +646,9 @@ class Message extends Generic
                 $content = preg_replace($regex, '', $content);
             }
         }
+
+        // remove inline images like [image:***]
+        $content = preg_replace('/\[image:[^]]+\]/', '', $content);
 
         // remove zero-width space
         $content = str_replace("\xE2\x80\x8B", '', $content);
