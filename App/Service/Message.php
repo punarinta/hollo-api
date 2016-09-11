@@ -241,7 +241,7 @@ class Message extends Generic
      * @param $accountId
      * @param $messageExtId
      * @param bool $verbose
-     * @return bool
+     * @return bool|\StdClass
      * @throws \Exception
      */
     public function sync($accountId, $messageExtId, $verbose = false)
@@ -264,9 +264,7 @@ class Message extends Generic
             print_r($data);
         }
 
-        $this->processMessageSync($user, $data);
-
-        return true;
+        return $this->processMessageSync($user, $data);
     }
 
     /**
@@ -381,7 +379,7 @@ class Message extends Generic
      * @param $messageData
      * @param bool $fetchMuted
      * @param int $limitToChatId
-     * @return bool
+     * @return bool|\StdClass
      * @throws \Exception
      */
     protected function processMessageSync($user, $messageData, $fetchMuted = false, $limitToChatId = 0)
@@ -389,7 +387,7 @@ class Message extends Generic
         // message must not exist
         $extId = $messageData['message_id'];
 
-        if (!$this->findByExtId($extId))
+        if (!$message = $this->findByExtId($extId))
         {
             // collect emails and names from the message
             $emails = [$messageData['addresses']['from']['email']];
@@ -519,7 +517,7 @@ class Message extends Generic
                 return false;
             }
 
-            $this->create(array
+            $message = $this->create(array
             (
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,
@@ -538,7 +536,7 @@ class Message extends Generic
             \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
         }
 
-        return true;
+        return $message;
     }
 
     /**
