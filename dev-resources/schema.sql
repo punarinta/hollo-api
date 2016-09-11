@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `message` (
   `subject` varchar(256) DEFAULT NULL,
   `body` mediumtext CHARACTER SET utf8mb4,
   `files` mediumtext,
-  `ts` bigint(20) unsigned NOT NULL
+  `ts` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
