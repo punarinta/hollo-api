@@ -16,9 +16,15 @@ class Admin
         return "Messages synced: $x\n\n";
     }
 
-    public function syncMessage($accountId, $messageExtId, $verbose = true)
+    public function syncMessage($userId, $messageExtId, $verbose = true)
     {
-        \Sys::svc('Message')->sync($accountId, $messageExtId, $verbose);
+        if (!$user = \Sys::svc('User')->findById($userId))
+        {
+            return "User not found: $userId\n";
+        }
+        \Sys::svc('Message')->sync($user->ext_id, $messageExtId, $verbose);
+
+        return '';
     }
     
     public function hashpass($password = null)
