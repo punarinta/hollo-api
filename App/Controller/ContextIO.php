@@ -28,7 +28,10 @@ class ContextIO
         }
         
         // sync message
-        \Sys::svc('Message')->sync(\Input::json('account_id'), $messageExtId);
+        /*$message = */\Sys::svc('Message')->sync(\Input::json('account_id'), $messageExtId);
+
+        // remove old messages for this chat
+        // \Sys::svc('Message')->removeOld($message->chat_id);
 
         return true;
     }
