@@ -610,23 +610,43 @@ class Message extends Generic
         //   - 'From: Sent: To: Subject:'
         //   - 'From: To: Sent: Subject:'
         //   - 'From: Date: To: Reply-to: Subject:'
-        $quoteHeadersRegex = array
+        $langs = array
         (
-            '/From:.*^(To:).*^(Subject:).*/sm',
-            '/From:.*^(Subject:).*^(To:).*/sm',
-            '/Från:.*^(Till:).*^(Ämne:).*/sm',
-            '/Från:.*^(Ämne:).*^(Till:).*/sm',
+            'en' =>
+            [
+                'from' => 'From',
+                'to' => 'To',
+                'subject' => 'Subject',
+                'sent' => 'Sent',
+            ],
+            'sv' =>
+            [
+                'from' => 'Från',
+                'to' => 'Till',
+                'subject' => 'Ämne',
+                'sent' => 'Skickat',
+            ],
         );
-        foreach ($quoteHeadersRegex as $regex)
+
+        foreach ($langs as $lang)
         {
-            $content = preg_replace($regex, '', $content);
+            $quoteHeadersRegex = array
+            (
+                '/' . $lang['from'] . ':.*^(' . $lang['to'] . ':).*^(' . $lang['subject'] . ':).*/sm',
+                '/' . $lang['from'] . ':.*^(' . $lang['sent'] . ':).*^(' . $lang['to'] . ':).*/sm',
+                '/' . $lang['from'] . ':.*^(' . $lang['subject'] . ':).*^(' . $lang['to'] . ':).*/sm',
+                '/\*' . $lang['from'] . ':\*.*^(\*' . $lang['to'] . ':\*).*^(\*' . $lang['subject'] . ':\*).*/sm',
+                '/\*' . $lang['from'] . ':\*.*^(\*' . $lang['sent'] . ':\*).*^(\*' . $lang['to'] . ':\*).*/sm',
+                '/\*' . $lang['from'] . ':\*.*^(\*' . $lang['subject'] . ':\*).*^(\*' . $lang['to'] . ':\*).*/sm',
+            );
+            foreach ($quoteHeadersRegex as $regex)
+            {
+                $content = preg_replace($regex, '', $content);
+            }
         }
 
         // remove zero-width space
         $content = str_replace("\xE2\x80\x8B", '', $content);
-
-        // most probably that was HTML
-    //    if (!strlen(trim($content))) return null;
 
         return trim($content);
     }
