@@ -513,7 +513,7 @@ class Message extends Generic
                 $content .= "[sys:fwd]";
             }
 
-            if (!mb_strlen($content) && empty ($messageData['files']))
+            if (!mb_strlen($content) && empty ($files))
             {
                 // avoid empty replies
                 return false;
@@ -661,6 +661,7 @@ class Message extends Generic
 
         // remove inline images
         $content = preg_replace('/\[image:[^]]+\]/', '', $content);
+        $content = preg_replace('/\[cid:[^]]+\]/', '', $content);
         $content = preg_replace('/\[inline image\]/i', '', $content);
 
         // remove zero-width space
