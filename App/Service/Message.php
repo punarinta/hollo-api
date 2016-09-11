@@ -206,7 +206,6 @@ class Message extends Generic
             {
                 if ($data = $this->conn->listMessages($user->ext_id, $params))
                 {
-                    // TODO: here a connection drop was once detected
                     $rows = $data->getData();
 
                     foreach ($rows as $row)
@@ -489,7 +488,11 @@ class Message extends Generic
 
             $content = $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content']);
 
-            // $charset = isset ($messageData['body'][0]['charset']) ? $messageData['body'][0]['charset'] : 'ISO-8859-1//IGNORE';
+            // check for forwarded messages
+            if (stripos($messageData['subject'], 'FWD:', 0) === 0)
+            {
+                $content .= "[sys:fwd]";
+            }
 
             if (!mb_strlen($content) && empty ($messageData['files']))
             {
@@ -535,6 +538,9 @@ class Message extends Generic
     protected function clearSubject($subject)
     {
         $items = ['RE','FWD','FW','VS','VB','SV'];
+
+        // remove things in brackets
+        $subject = trim(preg_replace('/\[[^]]+\]/g', '', $subject));
 
         foreach ($items as $item)
         {
@@ -620,7 +626,7 @@ class Message extends Generic
         $content = str_replace("\xE2\x80\x8B", '', $content);
 
         // most probably that was HTML
-        if (!strlen(trim($content))) return null;
+    //    if (!strlen(trim($content))) return null;
 
         return trim($content);
     }
