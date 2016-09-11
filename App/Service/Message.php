@@ -353,6 +353,25 @@ class Message extends Generic
         return count($messages);
     }
 
+    /**
+     * @param $message
+     * @return bool
+     */
+    public function reClean($message)
+    {
+        $oldLen = mb_strlen($message->body);
+        $newStr = $this->clearContent(null, $message->body);
+
+        if ($oldLen > mb_strlen($newStr))
+        {
+            $message->body = $newStr;
+            $this->update($message);
+            return true;
+        }
+
+        return false;
+    }
+
     // ============================
     // ===  internal functions  ===
     // ============================
@@ -584,6 +603,7 @@ class Message extends Generic
         }
 
         $content = str_replace("\r\n", "\n", $content);
+        $content = preg_replace('/\n{3,}/', "\n\n", $content);
 
         $quoteHeadersRegex = array
         (
@@ -602,8 +622,11 @@ class Message extends Generic
         // Remove quoted lines (lines that begin with '>') and 1 line before that
         $content = preg_replace("/(^\w.+:\n+)?(^>.*(\n|$)){2,}/mi", '', $content);
 
-        // Remove lines like '----- Original Message -----'
-        $content = preg_replace("/^---.*$/mi", '', $content);
+        // remove separators containing 5 or more dashes and everything below
+        $content = preg_replace("/^[^\n]*-{5,}.*$/ms", '', $content);
+
+        // signatures starting with '--' in a lone position
+        $content = preg_replace("/^-{2}\s*$.*/ms", '', $content);
 
         // Remove lines like '____________'
         $content = preg_replace("/^____________.*$/mi", '', $content);
@@ -614,20 +637,9 @@ class Message extends Generic
         //   - 'From: Date: To: Reply-to: Subject:'
         $langs = array
         (
-            'en' =>
-            [
-                'from' => 'From',
-                'to' => 'To',
-                'subject' => 'Subject',
-                'sent' => 'Sent',
-            ],
-            'sv' =>
-            [
-                'from' => 'Från',
-                'to' => 'Till',
-                'subject' => 'Ämne',
-                'sent' => 'Skickat',
-            ],
+            'en' => ['from' => 'From', 'to' => 'To', 'subject' => 'Subject', 'sent' => 'Sent'],
+            'sv' => ['from' => 'Från', 'to' => 'Till', 'subject' => 'Ämne', 'sent' => 'Skickat'],
+            'no' => ['from' => 'Fra', 'to' => 'Til', 'subject' => 'Emne', 'sent' => 'Sendt'],
         );
 
         foreach ($langs as $lang)
@@ -647,8 +659,9 @@ class Message extends Generic
             }
         }
 
-        // remove inline images like [image:***]
+        // remove inline images
         $content = preg_replace('/\[image:[^]]+\]/', '', $content);
+        $content = preg_replace('/\[inline image\]/i', '', $content);
 
         // remove zero-width space
         $content = str_replace("\xE2\x80\x8B", '', $content);

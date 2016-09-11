@@ -95,4 +95,16 @@ class Test
 
         return "\n";
     }
+
+    public function reClean()
+    {
+        $count = 0;
+
+        foreach (\Sys::svc('Message')->findAll() as $message)
+        {
+            $count += 1 * \Sys::svc('Message')->reClean($message);
+        }
+
+        return "$count messages affected\n\n";
+    }
 }
