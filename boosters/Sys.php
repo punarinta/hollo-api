@@ -11,8 +11,6 @@ class Sys
      */
     static function run($config)
     {
-        $GLOBALS['-CFG'] = $config;
-
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token');
 
@@ -21,6 +19,8 @@ class Sys
             header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
             return null;
         }
+
+        $GLOBALS['-CFG'] = $config;
 
         // usual request starts
 
