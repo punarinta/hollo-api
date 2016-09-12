@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 /**
- * Class Generic_Job
+ * Class Generic
  */
 class Generic
 {
