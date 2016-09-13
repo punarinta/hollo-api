@@ -27,17 +27,6 @@ class Sys
         header('Content-Type: application/json;charset=UTF-8');
         DB::connect();
 
-        // check network connection if running on local
-        if (!$config['release'])
-        {
-            if (!is_resource($conn = @fsockopen('api.hollo.email', 443, $a, $b, 5)))
-            {
-                throw new \Exception('Sorry, no internet connection.');
-            }
-
-            fclose($conn);
-        }
-
         if (isset ($_SERVER['HTTP_TOKEN']) && $_SERVER['HTTP_TOKEN'] !== 'null')
         {
             session_id($_SERVER['HTTP_TOKEN']);
