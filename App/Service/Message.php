@@ -453,6 +453,15 @@ class Message extends Generic
                 }
             }
 
+            // assure the message is not a draft
+            if (isset ($messageData['folders'])) foreach ($messageData['folders'] as $folder)
+            {
+                if (stripos($folder, 'draft') !== false)
+                {
+                    return false;
+                }
+            }
+
             // check after muting is tested
             if (!isset ($messageData['body']))
             {
