@@ -116,4 +116,28 @@ class Message extends Generic
 
         return true; // $res;
     }
+
+    /**
+     * Finds a message with given text within a specified Chat
+     *
+     * @doc-var     (int) chatId        - Chat ID.
+     * @doc-var     (string) text       - Text extract to find by.
+     *
+     * @throws \Exception
+     */
+    static public function findByText()
+    {
+        if (!$chatId = \Input::data('chatId'))
+        {
+            throw new \Exception('Chat ID not provided.');
+        }
+        if (!$text = \Input::data('text'))
+        {
+            throw new \Exception('Text is not provided.');
+        }
+
+        $text = '%' . $text . '%';
+
+        return \DB::rows('SELECT * FROM message WHERE chat_id=? AND body LIKE ?', [$chatId, $text]);
+    }
 }

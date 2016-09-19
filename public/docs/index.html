@@ -439,7 +439,7 @@
     <div class="title">
         <a class="toggle-method" href="#"><span class="name">find()</span></a>
         —
-        <span class="description">Extracts contacts from your chats</span>
+        <span class="description">Lists all your contacts</span>
     </div>
 
     <form class="api-form togglable">
@@ -858,6 +858,43 @@
     <td class="parameter"><input class="form-control value " value="" /></td>
     <td class="type">string</td>
     <td class="description"><p>Base64 file data.</p></td>
+</tr>
+
+            </tbody>
+        </table>
+        <button class="btn btn-default">Test</button>
+        <pre class="api-result hidden"></pre>
+    </form>
+</li>
+<li class="procedure api-data-method" data-method="findByText">
+    <div class="title">
+        <a class="toggle-method" href="#"><span class="name">findByText()</span></a>
+        —
+        <span class="description">Finds a message with given text within a specified Chat</span>
+    </div>
+
+    <form class="api-form togglable">
+        <table class="table table-bordered parameters ">
+            <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="">
+    <td class="name">chatId</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">int</td>
+    <td class="description"><p>Chat ID.</p></td>
+</tr>
+<tr class="">
+    <td class="name">text</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Text extract to find by.</p></td>
 </tr>
 
             </tbody>
