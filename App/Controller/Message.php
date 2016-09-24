@@ -111,6 +111,7 @@ class Message extends Generic
      * @doc-var     (int) messageId         - Hollo's message ID to reply to.
      * @doc-var     (array) to              - Array of extra recipient emails. Required if no messageId given.
      * @doc-var     (string) subject        - Message subject.
+     * @doc-var     (int) chatId            - Chat ID, used for temporary message referencing.
      * @doc-var     (array) files           - Message attachments.
      * @doc-var     (string) file[].name    - File name.
      * @doc-var     (string) file[].type    - File MIME type.
@@ -136,7 +137,34 @@ class Message extends Generic
             throw new \Exception('Recipient list is not provided.');
         }
 
-        \Sys::svc('Smtp')->setupThread(\Auth::user()->id, \Input::data('messageId'));
+        // create a temporary message in the DB
+        // message will be kept until the real one arrives
+
+        $dbFiles = [];
+
+        // sorry, we cannot store files in the DB
+        foreach ($files as $file)
+        {
+            $dbFiles[] = array
+            (
+                'name'  => $file['name'],
+                'type'  => $file['type'],
+                'size'  => $file['size'],
+            );
+        }
+
+        $message = \Sys::svc('Message')->create(array
+        (
+            'ext_id'    => '',
+            'user_id'   => \Auth::user()->id,
+            'chat_id'   => \Input::data('chatId'),
+            'subject'   => \Input::data('subject'),
+            'body'      => $body,
+            'files'     => empty ($dbFiles) ? '' : json_encode($dbFiles),
+            'ts'        => time(),
+        ));
+
+        \Sys::svc('Smtp')->setupThread(\Auth::user()->id, \Input::data('messageId'), $message->id);
         $res = \Sys::svc('Smtp')->send($to, $body, \Input::data('subject'), $files);
 
         // force Context.IO sync after mail is sent
