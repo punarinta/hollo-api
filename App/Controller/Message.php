@@ -12,7 +12,7 @@ class Message extends Generic
     /**
      * Returns messages within a Chat
      *
-     * @doc-var     (int) chatId        - Chat's ID.
+     * @doc-var     (int) chatId        - Chat ID.
      * @doc-var     (string) subject    - Filter by subject.
      * @doc-var     (bool) ninja        - Ninja mode, set 'true' to keep messages unread.
      *
@@ -56,7 +56,7 @@ class Message extends Generic
     /**
      * Returns N more messages for a Chat
      *
-     * @doc-var     (int) chatId!        - Chat's ID
+     * @doc-var     (int) chatId!        - Chat ID
      *
      * @return mixed
      * @throws \Exception
@@ -74,6 +74,34 @@ class Message extends Generic
         }
 
         return \Sys::svc('Message')->moreByChat($chat, \Auth::user());
+    }
+
+    /**
+     * Show the original message
+     *
+     * @doc-var     (int) id!       - Message ID
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    static public function showOriginal()
+    {
+        if (!$id = \Input::data('id'))
+        {
+            throw new \Exception('Message ID not provided.');
+        }
+
+        if (!$message = \Sys::svc('Message')->findById($id))
+        {
+            throw new \Exception('Message does not exist');
+        }
+
+        if (!$data = \Sys::svc('Message')->getDataByExtId(\Auth::user()->ext_id, $message->ext_id))
+        {
+            return false;
+        }
+
+        return $data['body'][0]['content'];
     }
 
     /**
