@@ -389,6 +389,16 @@ class Message extends Generic
 
         if (!$message = $this->findByExtId($extId))
         {
+            // check if this email refers to a temporary message and kill the latter with file
+            // TODO: change this to correct field on arrival
+            if ($tempMessageId = @$messageData['headers']['Temporary-Message-ID'])
+            {
+                if ($tempMessage = $this->findById($tempMessageId))
+                {
+                    $this->delete($tempMessage);
+                }
+            }
+
             // collect emails and names from the message
             $emails = [$messageData['addresses']['from']['email']];
             $names = [$messageData['addresses']['from']['email'] => @$messageData['addresses']['from']['name']];
