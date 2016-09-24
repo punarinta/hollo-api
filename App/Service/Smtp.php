@@ -3,9 +3,6 @@
 namespace App\Service;
 use App\Model\ContextIO\ContextIO;
 
-/*include_once 'vendor/phpmailer/phpmailer/class.phpmailer.php';
-include_once 'vendor/phpmailer/phpmailer/class.phpmaileroauth.php';
-include_once 'vendor/phpmailer/phpmailer/class.phpmaileroauthgoogle.php';*/
 require_once 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
 require_once 'vendor/guzzlehttp/promises/src/functions_include.php';
 require_once 'vendor/guzzlehttp/psr7/src/functions_include.php';
@@ -29,10 +26,11 @@ class Smtp
      *
      * @param $userId
      * @param null $messageId
+     * @param null $tempMsgId
      * @return bool
      * @throws \Exception
      */
-    public function setupThread($userId, $messageId = null)
+    public function setupThread($userId, $messageId = null, $tempMsgId = null)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -68,6 +66,11 @@ class Smtp
         $this->mail->CharSet = 'UTF-8';
 
         $this->mail->Subject = '';
+
+        if ($tempMsgId)
+        {
+            $this->mail->addCustomHeader('Temporary-Message-ID: ' . $tempMsgId);
+        }
         
         if ($messageId)
         {
@@ -77,33 +80,37 @@ class Smtp
                 throw new \Exception('Message does not exist');
             }
 
-            // get original message data
-            $data = $this->conn->getMessage($user->ext_id, ['message_id' => $message->ext_id, 'include_body' => 1]);
-
-            if ($data)
+            // temporary messages do not have external IDs
+            if ($message->ext_id)
             {
-                $data = $data->getData();
+                // get original message data
+                $data = $this->conn->getMessage($user->ext_id, ['message_id' => $message->ext_id, 'include_body' => 1]);
 
-                $refs = $data['references'];
-                array_push($refs, $data['email_message_id']);
-
-                $this->mail->addCustomHeader('Message-ID: ' . \Text::GUID_v4() . '@' . \Sys::cfg('mailless.this_server'));
-                $this->mail->addCustomHeader('In-Reply-To: ' . $data['email_message_id']);
-                $this->mail->addCustomHeader('References: ' . implode(' ', $refs));
-
-                $this->mail->Subject = 'Re: ' . $data['subject'];
-
-                $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
-
-                $body = [];
-                foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
+                if ($data)
                 {
-                    $body[] = '> ' . $line;
-                }
+                    $data = $data->getData();
 
-                $ts = date('r', $data['date']);
-                $name = explode('@', $data['addresses']['from']['email']);
-                $this->mail->Body = "\nOn {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
+                    $refs = $data['references'];
+                    array_push($refs, $data['email_message_id']);
+
+                    $this->mail->addCustomHeader('Message-ID: ' . \Text::GUID_v4() . '@' . \Sys::cfg('mailless.this_server'));
+                    $this->mail->addCustomHeader('In-Reply-To: ' . $data['email_message_id']);
+                    $this->mail->addCustomHeader('References: ' . implode(' ', $refs));
+
+                    $this->mail->Subject = 'Re: ' . $data['subject'];
+
+                    $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
+
+                    $body = [];
+                    foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
+                    {
+                        $body[] = '> ' . $line;
+                    }
+
+                    $ts = date('r', $data['date']);
+                    $name = explode('@', $data['addresses']['from']['email']);
+                    $this->mail->Body = "\nOn {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
+                }
             }
         }
 
