@@ -549,7 +549,7 @@ class Message extends Generic
     }
 
     /**
-     * Assures there are no duplicates by user-chat-ts
+     * Assures there are no duplicates by user-chat-ts among the real messages
      *
      * @param $userId
      * @param $chatId
@@ -558,9 +558,13 @@ class Message extends Generic
      */
     protected function isUnique($userId, $chatId, $ts)
     {
-        return !\DB::row('SELECT id FROM message WHERE user_id=? AND chat_id=? AND ts=? LIMIT 1', [$userId, $chatId, $ts]);
+        return !\DB::row('SELECT id FROM message WHERE user_id=? AND chat_id=? AND ts=? AND ext_id IS NOT NULL LIMIT 1', [$userId, $chatId, $ts]);
     }
 
+    /**
+     * @param $subject
+     * @return string
+     */
     protected function clearSubject($subject)
     {
         $items = ['RE','FWD','FW','VS','VB','SV'];
