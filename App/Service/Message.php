@@ -246,7 +246,7 @@ class Message extends Generic
      */
     public function sync($accountId, $messageExtId, $verbose = false)
     {
-        if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageExtId, 'include_body' => 1]))
+        if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageExtId, 'include_body' => 1, 'include_headers' => 1]))
         {
             // no data -> skip this sync
             return false;
@@ -527,7 +527,7 @@ class Message extends Generic
             }
 
             // check if this email refers to a temporary message and kill the latter with file
-            if ($tempMessageId = @$messageData['facebook_headers']['x-facebook-temp'])
+            if ($tempMessageId = @$messageData['headers']['X-Temporary-ID'][0])
             {
                 if ($tempMessage = $this->findById($tempMessageId))
                 {

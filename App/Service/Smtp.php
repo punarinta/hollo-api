@@ -69,7 +69,7 @@ class Smtp
 
         if ($tempMsgId)
         {
-            $this->mail->addCustomHeader('X-Facebook-Temp: ' . $tempMsgId);
+            $this->mail->addCustomHeader('X-Temporary-ID: ' . $tempMsgId);
         }
         
         if ($messageId)
