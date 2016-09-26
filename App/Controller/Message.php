@@ -77,6 +77,40 @@ class Message extends Generic
     }
 
     /**
+     * Returns last message in the Chat
+     *
+     * @doc-var     (int) chatId!       - Chat ID
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    static function getLastChatMessage()
+    {
+        if (!$chatId = \Input::data('chatId'))
+        {
+            throw new \Exception('Email not provided.');
+        }
+
+        $message = \Sys::svc('Message')->getLastByChatId($chatId);
+        $user = \Sys::svc('User')->findById($message->user_id);
+
+        return array
+        (
+            'id'        => $message->id,
+            'ts'        => $message->ts,
+            'body'      => $message->body,
+            'subject'   => \Sys::svc('Message')->clearSubject($message->subject),
+            'from'      => array
+            (
+                'id'    => $user->id,
+                'email' => $user->email,
+                'name'  => $user->name,
+            ),
+            'files'     => json_decode($message->files, true),
+        );
+    }
+
+    /**
      * Show the original message
      *
      * @doc-var     (int) id!       - Message ID
