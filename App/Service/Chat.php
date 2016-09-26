@@ -221,7 +221,19 @@ class Chat extends Generic
      */
     public function setReadFlag($chatId, $userId, $read)
     {
-        $stmt = \DB::prepare('UPDATE chat_user SET `read`=? WHERE chat_id=? AND user_id=? LIMIT 1', [$read, $chatId, $userId]);
+        if ($userId > 0)
+        {
+            $stmt = \DB::prepare('UPDATE chat_user SET `read`=? WHERE chat_id=? AND user_id=? LIMIT 1', [$read, $chatId, $userId]);
+        }
+        else if ($userId < 0)
+        {
+            $stmt = \DB::prepare('UPDATE chat_user SET `read`=? WHERE chat_id=? AND user_id!=?', [$read, $chatId, -$userId]);
+        }
+        else
+        {
+            $stmt = \DB::prepare('UPDATE chat_user SET `read`=? WHERE chat_id=?', [$read, $chatId]);
+        }
+
         $stmt->execute();
         $stmt->close();
     }

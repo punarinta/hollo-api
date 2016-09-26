@@ -163,6 +163,9 @@ class Message extends Generic
             'ts'        => time(),
         ));
 
+        // mark chat as read for everyone except you
+        \Sys::svc('Chat')->setReadFlag($chatId, -\Auth::user()->id, 0);
+
         \Sys::svc('Smtp')->setupThread(\Auth::user()->id, \Input::data('messageId'), $message->id);
         $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
 
