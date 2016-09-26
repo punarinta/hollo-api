@@ -15,6 +15,12 @@ return array
         'pass'      => '',
         'database'  => '',
     ),
+    'notifier' => array
+    (
+        'host'   => '127.0.0.1',
+        'port'   => 1488,
+        'origin' => 'http://localhost',
+    ),
     'mailless' => array
     (
         'api_domain'        => 'api.hollo.dev',
