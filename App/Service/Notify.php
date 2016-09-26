@@ -19,7 +19,7 @@ class Notify extends Generic
         {
             $cfg = \Sys::cfg('notifier');
             $this->client = new WebSocketClient;
-            $this->client->connect($cfg['host'], $cfg['port'], '/', $cfg['origin']);
+            $this->client->connect($cfg['host'], $cfg['port'], '/', $cfg['origin'], $cfg['ssl']);
         }
 
         $this->client->sendData(json_encode($data));

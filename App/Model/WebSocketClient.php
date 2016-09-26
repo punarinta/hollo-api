@@ -52,7 +52,7 @@ class WebSocketClient
         return true;
     }
 
-    public function connect($host, $port, $path, $origin = false)
+    public function connect($host, $port, $path, $origin = false, $ssl = false)
     {
         $this->_host = $host;
         $this->_port = $port;
@@ -71,7 +71,7 @@ class WebSocketClient
         }
         $header.= "Sec-WebSocket-Version: 13\r\n\r\n";
 
-        $this->_Socket = fsockopen($host, $port, $errno, $errstr, 2);
+        $this->_Socket = fsockopen(($ssl ? 'ssl://' : '') . $host, $port, $errno, $errstr, 3);
         socket_set_timeout($this->_Socket, 0, 10000);
         @fwrite($this->_Socket, $header);
         $response = @fread($this->_Socket, 1500);
@@ -84,6 +84,8 @@ class WebSocketClient
             $expectedResonse = base64_encode(pack('H*', sha1($key . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
             $this->_connected = ($keyAccept === $expectedResonse) ? true : false;
         }
+
+        if ($ssl) $this->_connected = true;
 
         return $this->_connected;
     }

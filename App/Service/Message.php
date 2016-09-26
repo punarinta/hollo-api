@@ -574,7 +574,7 @@ class Message extends Generic
      * @param $subject
      * @return string
      */
-    protected function clearSubject($subject)
+    public function clearSubject($subject)
     {
         $items = ['RE','FWD','FW','VS','VB','SV'];
 

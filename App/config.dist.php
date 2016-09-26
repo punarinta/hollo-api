@@ -20,6 +20,7 @@ return array
         'host'   => '127.0.0.1',
         'port'   => 1488,
         'origin' => 'http://localhost',
+        'ssl'    => false,
     ),
     'mailless' => array
     (
