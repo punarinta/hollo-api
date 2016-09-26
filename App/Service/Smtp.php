@@ -99,17 +99,20 @@ class Smtp
 
                     $this->mail->Subject = 'Re: ' . $data['subject'];
 
-                    $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
-
-                    $body = [];
-                    foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
+                    if (isset ($data['body']))
                     {
-                        $body[] = '> ' . $line;
-                    }
+                        $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
 
-                    $ts = date('r', $data['date']);
-                    $name = explode('@', $data['addresses']['from']['email']);
-                    $this->mail->Body = "\nOn {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
+                        $body = [];
+                        foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
+                        {
+                            $body[] = '> ' . $line;
+                        }
+
+                        $ts = date('r', $data['date']);
+                        $name = explode('@', $data['addresses']['from']['email']);
+                        $this->mail->Body = "\nOn {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
+                    }
                 }
             }
         }
@@ -189,10 +192,10 @@ class Smtp
             $this->mail->addAttachment($path, $file['name'], 'base64', $file['type']);
         }
 
-        if (!$this->mail->send())
+    /*    if (!$this->mail->send())
         {
             throw new \Exception($this->mail->ErrorInfo);
-        }
+        }*/
 
         // cleanup possible temporary files
         foreach ($tempFiles as $file)
