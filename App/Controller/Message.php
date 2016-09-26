@@ -166,6 +166,11 @@ class Message extends Generic
         // mark chat as read for everyone except you
         \Sys::svc('Chat')->setReadFlag($chatId, -\Auth::user()->id, 0);
 
+        // mark chat as just updated
+        $chat = \Sys::svc('Chat')->findById($chatId);
+        $chat->last_ts = time();
+        \Sys::svc('Chat')->update($chat);
+
         \Sys::svc('Smtp')->setupThread(\Auth::user()->id, \Input::data('messageId'), $message->id);
         $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
 
