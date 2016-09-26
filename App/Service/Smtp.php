@@ -126,15 +126,14 @@ class Smtp
     /**
      * Sends a message, can add more recipients
      *
-     * @param array $to
+     * @param $chatId
      * @param $body
      * @param null $subject
      * @param array $attachments
      * @return array
      * @throws \Exception
-     * @throws \phpmailerException
      */
-    public function send($to = [], $body, $subject = null, $attachments = [])
+    public function send($chatId, $body, $subject = null, $attachments = [])
     {
         $tempFiles = [];
 
@@ -154,9 +153,11 @@ class Smtp
             $this->mail->Subject = $subject;
         }
 
-        foreach ($to as $toAtom)
+        $userIds = [];
+
+        foreach (\Sys::svc('User')->findByChatId($chatId, true) as $user)
         {
-            $this->mail->addAddress($toAtom['email'], @$toAtom['name']);
+            $this->mail->addAddress($user->email, $user->name);
 
         /*    foreach ($to as $toAtom2)
             {
@@ -166,7 +167,12 @@ class Smtp
                     $this->mail->addCC($toAtom2['email'], @$toAtom2['name']);
                 }
             }*/
+
+            // collect user IDs for IM notification
+            $userIds[] = $user->id;
         }
+
+        \Sys::svc('Notify')->send(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chatId]);
 
         foreach ($attachments as $file)
         {

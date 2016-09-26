@@ -108,10 +108,9 @@ class Message extends Generic
      * Reply to a message or compose a new one
      *
      * @doc-var     (string) body!          - Message body.
+     * @doc-var     (int) chatId!           - Chat ID, used for temporary message referencing and notifications.
      * @doc-var     (int) messageId         - Hollo's message ID to reply to.
-     * @doc-var     (array) to              - Array of extra recipient emails. Required if no messageId given.
      * @doc-var     (string) subject        - Message subject.
-     * @doc-var     (int) chatId            - Chat ID, used for temporary message referencing.
      * @doc-var     (array) files           - Message attachments.
      * @doc-var     (string) file[].name    - File name.
      * @doc-var     (string) file[].type    - File MIME type.
@@ -132,7 +131,7 @@ class Message extends Generic
             throw new \Exception('Neither body provided, nor files.');
         }
 
-        if (!$to = \Input::data('to'))
+        if (!$chatId = \Input::data('chatId'))
         {
             throw new \Exception('Recipient list is not provided.');
         }
@@ -157,7 +156,7 @@ class Message extends Generic
         (
             'ext_id'    => '',
             'user_id'   => \Auth::user()->id,
-            'chat_id'   => \Input::data('chatId'),
+            'chat_id'   => $chatId,
             'subject'   => \Input::data('subject'),
             'body'      => $body,
             'files'     => empty ($dbFiles) ? '' : json_encode($dbFiles),
@@ -165,7 +164,7 @@ class Message extends Generic
         ));
 
         \Sys::svc('Smtp')->setupThread(\Auth::user()->id, \Input::data('messageId'), $message->id);
-        $res = \Sys::svc('Smtp')->send($to, $body, \Input::data('subject'), $files);
+        $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
 
         // force Context.IO sync after mail is sent
         \Sys::svc('User')->syncExt(\Auth::user());
