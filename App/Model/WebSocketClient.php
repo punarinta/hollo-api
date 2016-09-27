@@ -24,12 +24,12 @@ class WebSocketClient
     {
         if ($this->_connected === false)
         {
-            trigger_error("Not connected", E_USER_WARNING);
+            // trigger_error("Not connected", E_USER_WARNING);
             return false;
         }
         if (!is_string($data))
         {
-            trigger_error("Not a string data was given.", E_USER_WARNING);
+            // trigger_error("Not a string data was given.", E_USER_WARNING);
             return false;
         }
         if (strlen($data) == 0)
@@ -71,7 +71,13 @@ class WebSocketClient
         }
         $header.= "Sec-WebSocket-Version: 13\r\n\r\n";
 
-        $this->_Socket = fsockopen(($ssl ? 'ssl://' : '') . $host, $port, $errno, $errstr, 3);
+        $this->_Socket = @fsockopen(($ssl ? 'ssl://' : '') . $host, $port, $errno, $errstr, 3);
+
+        if (!$this->_Socket)
+        {
+            return $this->_connected = false;
+        }
+
         socket_set_timeout($this->_Socket, 0, 10000);
         @fwrite($this->_Socket, $header);
         $response = @fread($this->_Socket, 1500);
