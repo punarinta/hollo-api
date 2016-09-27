@@ -26,3 +26,5 @@ vendor/*examples/
 vendor/*test/
 vendor/*tests/
 nodeploy*
+config.dist.php
+index.src.php
