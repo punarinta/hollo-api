@@ -26,6 +26,11 @@ class Message extends Generic
             throw new \Exception('Chat ID not provided.');
         }
 
+        if (!\Sys::svc('Chat')->hasAccess($chatId, \Auth::user()->id))
+        {
+            throw new \Exception('Access denied.', 403);
+        }
+
         if (!$chat = \Sys::svc('Chat')->findById($chatId))
         {
             throw new \Exception('Chat does not exist.');
@@ -66,6 +71,11 @@ class Message extends Generic
         if (!$chatId = \Input::data('chatId'))
         {
             throw new \Exception('Email not provided.');
+        }
+
+        if (!\Sys::svc('Chat')->hasAccess($chatId, \Auth::user()->id))
+        {
+            throw new \Exception('Access denied.', 403);
         }
 
         if (!$chat = \Sys::svc('Chat')->findById($chatId))
