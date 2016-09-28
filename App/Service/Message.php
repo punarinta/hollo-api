@@ -130,7 +130,7 @@ class Message extends Generic
                         foreach ($rows as $row)
                         {
                             // fetch even muted, as the user has explicitly instructed us
-                            $synced += 1 * $this->processMessageSync($user, $row, true, $chat->id);
+                            $synced += 1 * is_object($this->processMessageSync($user, $row, true, $chat->id));
                         }
 
                         if ($synced >= \Sys::cfg('sys.sync_depth'))
@@ -264,7 +264,7 @@ class Message extends Generic
             print_r($data);
         }
 
-        return $this->processMessageSync($user, $data);
+        return $this->processMessageSync($user, $data, false, 0, true);
     }
 
     /**
@@ -379,10 +379,11 @@ class Message extends Generic
      * @param $messageData
      * @param bool $fetchMuted
      * @param int $limitToChatId
-     * @return bool|\StdClass
+     * @param bool $verbose
+     * @return bool|null|\StdClass
      * @throws \Exception
      */
-    protected function processMessageSync($user, $messageData, $fetchMuted = false, $limitToChatId = 0)
+    protected function processMessageSync($user, $messageData, $fetchMuted = false, $limitToChatId = 0, $verbose = false)
     {
         // message must not exist
         $extId = $messageData['message_id'];
@@ -465,7 +466,7 @@ class Message extends Generic
             // check after muting is tested
             if (!isset ($messageData['body']))
             {
-                echo "Body extraction. Ext ID = {$extId}\n";
+                if ($verbose) echo "Body extraction. Ext ID = {$extId}\n";
                 $messageData = $this->getDataByExtId($user->ext_id, $extId);
             }
 
