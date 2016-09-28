@@ -550,8 +550,11 @@ class Message extends Generic
             $chat->last_ts = max($messageData['date'], $chat->last_ts);
             \Sys::svc('Chat')->update($chat);
 
-            // there were one or more new messages -> reset 'read' flag
-            \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
+            if ($senderId != $user->id)
+            {
+                // there were one or more new foreign messages -> reset 'read' flag
+                \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
+            }
         }
 
         return $message;
