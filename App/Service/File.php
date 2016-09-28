@@ -19,7 +19,7 @@ class File extends Generic
         {
             foreach (json_decode($row->files, true) ?: [] as $file)
             {
-                $url = ($withImageUrl && \Mime::isImage($file['type']) && @$file['userId']) ? $this->getProcessorLink($file['userId'], $file['extId']) : null;
+                $url = ($withImageUrl && \Mime::isImage($file['type']) && @$file['refId']) ? $this->getProcessorLink($file['refId'], $file['extId']) : null;
 
                 $items[] = array
                 (
@@ -28,6 +28,7 @@ class File extends Generic
                     'type'  => $file['type'],
                     'url'   => $url,
                     'refId' => @$file['refId'],
+                    'extId' => $file['extId'],
                 );
             }
         }
