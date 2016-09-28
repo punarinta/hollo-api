@@ -5,38 +5,29 @@ namespace App\Service;
 class File extends Generic
 {
     /**
-     * Returns files associated with a contact
+     * Returns files from Chat messages
      *
-     * @param $email
+     * @param $chatId
      * @param bool $withImageUrl
      * @return array
      */
-    public function findByContact($email, $withImageUrl = false)
+    public function findByChatId($chatId, $withImageUrl = false)
     {
         $items = [];
 
-        if ($data = $this->conn->listContactFiles(\Auth::user()->ext_id, ['email' => $email, 'limit' => 10]))
+        foreach (\DB::rows('SELECT files FROM message WHERE chat_id=?', [$chatId]) as $row)
         {
-            foreach ($data->getData() as $row)
+            foreach (json_decode($row->files, true) ?: [] as $file)
             {
-                if ($withImageUrl && \Mime::isImage($row['type']))
-                {
-                    $url = $this->getProcessorLink($row['file_id']);
-                }
-                else
-                {
-                    $url = null;
-                }
+                $url = ($withImageUrl && \Mime::isImage($file['type']) && @$file['userId']) ? $this->getProcessorLink($file['userId'], $file['extId']) : null;
 
                 $items[] = array
                 (
-                    'messageId'     => $row['message_id'],
-                    'fileId'        => $row['file_id'],
-                    'name'          => $row['file_name_structure'][0][0],
-                    'ext'           => strtolower(@$row['file_name_structure'][1][0]),
-                    'size'          => $row['size'],
-                    'type'          => $row['type'],
-                    'url'           => $url,
+                    'name'  => $file['name'],
+                    'size'  => $file['size'],
+                    'type'  => $file['type'],
+                    'url'   => $url,
+                    'refId' => @$file['refId'],
                 );
             }
         }
@@ -47,27 +38,27 @@ class File extends Generic
     /**
      * Returns the contents of a file via processor
      *
-     * @param $procFileId
+     * @param $userExtId
+     * @param $fileExtId
      * @return mixed
-     * @throws \Exception
      */
-    public function getProcessorContent($procFileId)
+    public function getProcessorContent($userExtId, $fileExtId)
     {
-        return $this->conn->getFileContent(\Auth::user()->ext_id, ['file_id' => $procFileId]);
+        return $this->conn->getFileContent($userExtId, ['file_id' => $fileExtId]);
     }
 
     /**
      * Returns the link to a file via processor
      *
-     * @param $procFileId
+     * @param $userExtId
+     * @param $fileExtId
      * @return mixed
-     * @throws \Exception
      */
-    public function getProcessorLink($procFileId)
+    public function getProcessorLink($userExtId, $fileExtId)
     {
-        return $this->conn->getFileContent(\Auth::user()->ext_id,
+        return $this->conn->getFileContent($userExtId,
         [
-            'file_id' => $procFileId,
+            'file_id' => $fileExtId,
             'as_link' => 1,
         ]);
     }

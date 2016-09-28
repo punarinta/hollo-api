@@ -485,6 +485,7 @@ class Message extends Generic
                         'type'  => $file['type'],
                         'size'  => $file['size'],
                         'extId' => $file['file_id'],
+                        'refId' => $user->id,
                     );
                 }
             }

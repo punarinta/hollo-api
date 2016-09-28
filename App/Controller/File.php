@@ -9,30 +9,6 @@ namespace App\Controller;
  */
 class File extends Generic
 {
-    /**
-     * Finds contact's files
-     *
-     * @doc-var     (string) email          - Contact email.
-     * @doc-var     (bool) withImageUrl     - Whether to extract image URL or not.
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    static public function findByEmail()
-    {
-        if (!$email = \Input::data('email'))
-        {
-            throw new \Exception('Email not provided.');
-        }
-
-        if (!\Sys::svc('User')->isKnownByEmail($email, \Auth::user()->id))
-        {
-            throw new \Exception('Access denied.', 403);
-        }
-
-        return \Sys::svc('File')->findByContact($email, \Input::data('withImageUrl'));
-    }
-
    /**
      * Finds files related to this chat
      *
@@ -54,30 +30,32 @@ class File extends Generic
             throw new \Exception('Access denied.', 403);
         }
 
-        $files = [];
-        $flag = \Input::data('withImageUrl');
-
-        foreach (\Sys::svc('User')->findByChatId($chatId) as $user)
-        {
-            $files = array_merge($files, \Sys::svc('File')->findByContact($user->email, $flag));
-        }
-
-        return $files;
+        return \Sys::svc('File')->findByChatId($chatId, \Input::data('withImageUrl'));
     }
 
     /**
-     * Gets a URL by external file ID
+     * Gets a URL by external file ID and external user ID
+     *
+     * @doc-var     (int) extId     - External file ID.
+     * @doc-var     (int) refId     - User reference ID.
      *
      * @return mixed
      * @throws \Exception
      */
     static public function getFileUrl()
     {
-        if (!$extId = \Input::data('extId'))
+        if (!$extFileId = \Input::data('extId'))
         {
             throw new \Exception('External ID not provided.');
         }
-        
-        return \Sys::svc('File')->getProcessorLink($extId);
+
+        $refId = \Input::data('refId');
+
+        if ($refId && $user = \Sys::svc('User')->findById($refId))
+        {
+            return \Sys::svc('File')->getProcessorLink($user->ext_id, $extFileId);
+        }
+
+        return null;
     }
 }
