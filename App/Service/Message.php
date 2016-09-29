@@ -200,7 +200,10 @@ class Message extends Generic
             $attempt = 0;
             $params['offset'] = $offset;
 
-            echo "User {$user->email}, offset = $offset\n";
+            if (@$GLOBALS['-SYS-VERBOSE'])
+            {
+                echo "User {$user->email}, offset = $offset\n";
+            }
 
             while ($attempt < 10)
             {
@@ -714,11 +717,17 @@ class Message extends Generic
     protected function retry($params, $attempt)
     {
         $timeout = (int)(5 + $attempt/3);
+
         if (@$GLOBALS['-SYS-VERBOSE'])
         {
             echo "Sync error, attempt #$attempt in $timeout seconds\n";
         }
+
         sleep($timeout);
-        print_r($params);
+
+        if (@$GLOBALS['-SYS-VERBOSE'])
+        {
+            print_r($params);
+        }
     }
 }
