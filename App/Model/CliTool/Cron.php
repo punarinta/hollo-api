@@ -12,6 +12,9 @@ class Cron
     {
         $count = 0;
 
+        // This call is too heavy!
+        // We must not run this in production
+
         foreach (\Sys::svc('Chat')->findAll() as $chat)
         {
             $count += \Sys::svc('Message')->removeOld($chat->id);
