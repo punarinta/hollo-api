@@ -350,6 +350,7 @@ class Message extends Generic
     {
         $messages = $this->findByChatId($chatId);
         $count = count($messages);
+        $startCount = $count;
 
         if ($byCount)
         {
@@ -377,7 +378,7 @@ class Message extends Generic
             }
         }
 
-        return $count;
+        return $startCount - $count;
     }
 
     /**
