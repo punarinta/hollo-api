@@ -25,6 +25,8 @@ class Generic
 
         \DB::connect();
 
+        $GLOBALS['-SYS-VERBOSE'] = true;
+
         // Setup and authenticate redis for child-job
         \Resque::setBackend('redis://user:' . $redisConfig['pass'] . '@' . $redisConfig['host'] . ':' . $redisConfig['port']);
     }

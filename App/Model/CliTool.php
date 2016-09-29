@@ -45,6 +45,8 @@ class CliTool
             return "Unknown command '" . implode(' ', $argv) . "'. No method found: '$method'.";
         }
 
+        $GLOBALS['-SYS-VERBOSE'] = true;
+
         return call_user_func_array([$tool, $method], array_splice($argv, 3));
     }
 }

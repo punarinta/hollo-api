@@ -110,7 +110,7 @@ class Message extends Generic
             $params =
             [
                 'limit'         => $limit,
-                'date_after'    => abs($chat->last_ts - 86400),
+                'date_before'   => abs($chat->last_ts + 43200),     // + half a day offset
                 'sort_order'    => 'desc',
                 'email'         => $participant->email,
             ];
@@ -142,7 +142,7 @@ class Message extends Generic
                     }
                     else
                     {
-                        $this->retryVerbose($params, ++$attempt);
+                        $this->retry($params, ++$attempt);
                     }
                 }
 
@@ -217,7 +217,7 @@ class Message extends Generic
                 }
                 else
                 {
-                    $this->retryVerbose($params, ++$attempt);
+                    $this->retry($params, ++$attempt);
                 }
             }
 
@@ -240,11 +240,10 @@ class Message extends Generic
      *
      * @param $accountId
      * @param $messageExtId
-     * @param bool $verbose
      * @return bool|\StdClass
      * @throws \Exception
      */
-    public function sync($accountId, $messageExtId, $verbose = false)
+    public function sync($accountId, $messageExtId)
     {
         if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageExtId, 'include_body' => 1, 'include_headers' => 1]))
         {
@@ -259,12 +258,12 @@ class Message extends Generic
 
         $data = $data->getData();
 
-        if ($verbose)
+        if (@$GLOBALS['-SYS-VERBOSE'])
         {
             print_r($data);
         }
 
-        return $this->processMessageSync($user, $data, ['fetchMuted' => false, 'limitToChatId' => 0, 'verbose'=> $verbose]);
+        return $this->processMessageSync($user, $data, ['fetchMuted' => false, 'limitToChatId' => 0]);
     }
 
     /**
@@ -322,7 +321,7 @@ class Message extends Generic
             }
             elseif ($retry)
             {
-                $this->retryVerbose($params, ++$attempt);
+                $this->retry($params, ++$attempt);
             }
             else break;
         }
@@ -388,7 +387,6 @@ class Message extends Generic
 
         $fetchMuted = isset ($options['fetchMuted']) ? $options['fetchMuted'] : false;
         $limitToChatId = isset ($options['limitToChatId']) ? $options['limitToChatId'] : 0;
-        $verbose = isset ($options['verbose']) ? $options['verbose'] : false;
         $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : 31536000;
 
         if (!$message = $this->findByExtId($extId))
@@ -474,7 +472,10 @@ class Message extends Generic
             // check after muting is tested
             if (!isset ($messageData['body']))
             {
-                if ($verbose) echo "Body extraction. Ext ID = {$extId}\n";
+                if (@$GLOBALS['-SYS-VERBOSE'])
+                {
+                    echo "Body extraction. Ext ID = {$extId}\n";
+                }
                 $messageData = $this->getDataByExtId($user->ext_id, $extId);
             }
 
@@ -710,10 +711,13 @@ class Message extends Generic
      * @param $params
      * @param $attempt
      */
-    protected function retryVerbose($params, $attempt)
+    protected function retry($params, $attempt)
     {
         $timeout = (int)(5 + $attempt/3);
-        echo "Sync error, attempt #$attempt in $timeout seconds\n";
+        if (@$GLOBALS['-SYS-VERBOSE'])
+        {
+            echo "Sync error, attempt #$attempt in $timeout seconds\n";
+        }
         sleep($timeout);
         print_r($params);
     }

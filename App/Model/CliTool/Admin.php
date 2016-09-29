@@ -16,13 +16,13 @@ class Admin
         return "Messages synced: $x\n\n";
     }
 
-    public function syncMessage($userId, $messageExtId, $verbose = true)
+    public function syncMessage($userId, $messageExtId)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
             return "User not found: $userId\n";
         }
-        \Sys::svc('Message')->sync($user->ext_id, $messageExtId, $verbose);
+        \Sys::svc('Message')->sync($user->ext_id, $messageExtId);
 
         return '';
     }
