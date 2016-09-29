@@ -9,9 +9,9 @@ use App\Model\Bcrypt;
  */
 class Admin
 {
-    public function sync($userId, $fetchMuted = false, $fetchAll = false)
+    public function sync($userId, $fetchMuted = false)
     {
-        $x = \Sys::svc('Message')->syncAllByUserId($userId, $fetchMuted, $fetchAll);
+        $x = \Sys::svc('Message')->syncAllByUserId($userId, $fetchMuted);
 
         return "Messages synced: $x\n\n";
     }

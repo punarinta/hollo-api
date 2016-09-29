@@ -19,7 +19,6 @@ class Achtung
         $this->justRun('TRUNCATE table chat');
         $this->justRun('TRUNCATE table message');
         $this->justRun('TRUNCATE table chat_user');
-        $this->justRun('UPDATE `user` SET last_sync_ts=1');
 
         if ($withUsers)
         {
@@ -42,7 +41,6 @@ class Achtung
         $chats = \Sys::svc('Chat')->findAllByUserId($userId);
 
         $this->justRun('DELETE FROM chat_user WHERE user_id=?', [$userId]);
-        $this->justRun('UPDATE `user` SET last_sync_ts=1 WHERE id=?', [$userId]);
 
         foreach ($chats as $chat)
         {

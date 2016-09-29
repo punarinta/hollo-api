@@ -2,6 +2,12 @@
 
 namespace App\Jobs;
 
+/**
+ * This is basically called only one time -- when user is connected to Context
+ *
+ * Class SyncContacts
+ * @package App\Jobs
+ */
 class SyncContacts extends Generic
 {
     public function testSetup()
@@ -20,12 +26,6 @@ class SyncContacts extends Generic
             return false;
         }
 
-        if ($user->is_syncing)
-        {
-            // just skip this run
-            return true;
-        }
-
         if (!$user->ext_id)
         {
             echo "No account connected. User ID = {$user->id}\n";
@@ -33,7 +33,7 @@ class SyncContacts extends Generic
         }
 
         // use force when syncing for the first time
-        \Sys::svc('Message')->syncAllByUserId($user->id, false, $user->last_sync_ts == 1);
+        \Sys::svc('Message')->syncAllByUserId($user->id);
 
         return true;
     }

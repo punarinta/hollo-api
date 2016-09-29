@@ -93,8 +93,6 @@ CREATE TABLE IF NOT EXISTS `user` (
   `name` varchar(64) DEFAULT NULL,
   `roles` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `ext_id` varchar(24) CHARACTER SET latin1 COLLATE latin1_general_ci DEFAULT NULL,
-  `last_sync_ts` int(10) unsigned NOT NULL DEFAULT '1',
-  `is_syncing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `settings` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

@@ -179,11 +179,10 @@ class Message extends Generic
      *
      * @param $userId
      * @param bool $fetchMuted      - fetch muted too
-     * @param bool $fetchAll        - fetch all messages for that user
      * @return int
      * @throws \Exception
      */
-    public function syncAllByUserId($userId, $fetchMuted = false, $fetchAll = false)
+    public function syncAllByUserId($userId, $fetchMuted = false)
     {
         $offset = 0;
         $limit = 100;
@@ -196,7 +195,6 @@ class Message extends Generic
         $params =
         [
             'limit'         => $limit,
-            'date_after'    => ($user->last_sync_ts && !$fetchAll) ? abs($user->last_sync_ts - 86400) : 1,
             'sort_order'    => 'desc',
         ];
 
@@ -219,7 +217,7 @@ class Message extends Generic
 
                     foreach ($rows as $row)
                     {
-                        $this->processMessageSync($user, $row, ['fetchMuted' => $fetchMuted]);
+                        $this->processMessageSync($user, $row, ['fetchMuted' => $fetchMuted, 'fetchAll' => true]);
                     }
 
                     break;
@@ -271,6 +269,8 @@ class Message extends Generic
         {
             print_r($data);
         }
+
+        // TODO: send a signal to notifier
 
         return $this->processMessageSync($user, $data, ['fetchMuted' => false, 'limitToChatId' => 0]);
     }
@@ -349,15 +349,18 @@ class Message extends Generic
     public function removeOld($chatId, $byTime = true, $byCount = false)
     {
         $messages = $this->findByChatId($chatId);
+        $count = count($messages);
 
         if ($byCount)
         {
+
             $messages = array_reverse($messages);
             $messages = array_slice($messages, \Sys::cfg('sys.sync_depth'));
 
             foreach ($messages as $message)
             {
                 $this->delete($message);
+                --$count;
             }
         }
 
@@ -369,13 +372,12 @@ class Message extends Generic
                 {
                     $this->delete($message);
                     unset ($messages[$k]);
+                    --$count;
                 }
             }
-
-            $messages = array_values($messages);
         }
 
-        return count($messages);
+        return $count;
     }
 
     /**
@@ -414,6 +416,7 @@ class Message extends Generic
         $extId = $messageData['message_id'];
 
         $fetchMuted = isset ($options['fetchMuted']) ? $options['fetchMuted'] : false;
+        $fetchAll = isset ($options['fetchAll']) ? $options['fetchAll'] : false;
         $limitToChatId = isset ($options['limitToChatId']) ? $options['limitToChatId'] : 0;
         $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : 31536000;
         $keepOld = isset ($options['keepOld']) ? $options['keepOld'] : false;
@@ -590,16 +593,16 @@ class Message extends Generic
             $chat->last_ts = max($messageData['date'], $chat->last_ts);
             \Sys::svc('Chat')->update($chat);
 
-            if ($senderId != $user->id)
+            if ($senderId != $user->id && !$fetchAll)
             {
-                // there were one or more new foreign messages -> reset 'read' flag
+                // there were one or more new foreign messages and this is not a FetchAll mode -> reset 'read' flag
                 \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
             }
 
             // remove old messages if not explicitly instructed
             if (!$keepOld)
             {
-                \Sys::svc('Message')->removeOld($chat->id);
+                $this->removeOld($chat->id);
             }
         }
 
