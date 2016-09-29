@@ -129,8 +129,8 @@ class Message extends Generic
 
                         foreach ($rows as $row)
                         {
-                            // fetch even muted, as the user has explicitly instructed us
-                            $synced += 1 * is_object($this->processMessageSync($user, $row, ['fetchMuted' => true, 'limitToChatId' => $chat->id]));
+                            // fetch from all times and even muted, as the user has explicitly told us to do so
+                            $synced += 1 * is_object($this->processMessageSync($user, $row, ['fetchMuted' => true, 'limitToChatId' => $chat->id, 'maxTimeBack' => -1]));
                         }
 
                         if ($synced >= \Sys::cfg('sys.sync_depth'))
