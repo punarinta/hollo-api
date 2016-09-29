@@ -56,11 +56,6 @@ class Chat extends Generic
                 }
             }
 
-            if (mb_strlen($lastMsg) > 25)
-            {
-                $lastMsg = mb_substr($lastMsg, 0, 25) . '…';
-            }
-
             $items[] = array
             (
                 'id'        => $chat->id,
