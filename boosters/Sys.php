@@ -14,12 +14,6 @@ class Sys
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token');
 
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS')
-        {
-            header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-            return null;
-        }
-
         $GLOBALS['-CFG'] = $config;
 
         // usual request starts
