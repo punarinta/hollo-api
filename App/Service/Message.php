@@ -100,7 +100,7 @@ class Message extends Generic
     {
         $offset = 0;
         $synced = 0;
-        $limit = 100;
+        $limit = 20;
 
         $oldCount = $this->countByChatId($chat->id);
 
@@ -136,6 +136,7 @@ class Message extends Generic
                                 'limitToChatId' => $chat->id,
                                 'maxTimeBack'   => -1,
                                 'keepOld'       => true,
+                                'notify'        => false,
                             ]));
                         }
 
@@ -423,6 +424,7 @@ class Message extends Generic
         $limitToChatId = isset ($options['limitToChatId']) ? $options['limitToChatId'] : 0;
         $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : \Sys::cfg('sys.sync_period');
         $keepOld = isset ($options['keepOld']) ? $options['keepOld'] : false;
+        $notify = isset ($options['notify']) ? $options['notify'] : true;
 
         if (!$message = $this->findByExtId($extId))
         {
@@ -610,7 +612,7 @@ class Message extends Generic
                 \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
             }
 
-            if (!$temporaryMessageExisted)
+            if (!$temporaryMessageExisted && $notify)
             {
                 \Sys::svc('Notify')->send(['cmd' => 'notify', 'userIds' => [$user->id], 'chatId' => $chat->id]);
             }
