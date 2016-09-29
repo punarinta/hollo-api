@@ -32,7 +32,8 @@ class SyncContacts extends Generic
             return false;
         }
 
-        // use force when syncing for the first time
+        sleep(5);
+
         \Sys::svc('Message')->syncAllByUserId($user->id);
 
         return true;
