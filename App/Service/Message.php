@@ -412,6 +412,8 @@ class Message extends Generic
      */
     protected function processMessageSync($user, $messageData, $options = [])
     {
+        $temporaryMessageExisted = false;
+
         // message must not exist
         $extId = $messageData['message_id'];
 
@@ -423,11 +425,6 @@ class Message extends Generic
 
         if (!$message = $this->findByExtId($extId))
         {
-            if ($maxTimeBack > 0 && $messageData['date'] < time() - $maxTimeBack)
-            {
-                return false;
-            }
-
             // collect emails and names from the message
             $emails = [$messageData['addresses']['from']['email']];
             $names = [$messageData['addresses']['from']['email'] => @$messageData['addresses']['from']['name']];
@@ -446,6 +443,12 @@ class Message extends Generic
 
             // we don't need duplicates
             $emails = array_unique($emails);
+
+            // sometimes it may happen that Context.IO user is not in the chat (e.g. stolen message), check this
+            if (!in_array($user->email, $emails))
+            {
+                return false;
+            }
 
             // chat may not exist -> init and mute if necessary
             if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
@@ -476,6 +479,12 @@ class Message extends Generic
             if (!$chat)
             {
                 throw new \Exception('Chat does not exist');
+            }
+
+            // thus, allow a chat to be created first
+            if ($maxTimeBack > 0 && $messageData['date'] < time() - $maxTimeBack)
+            {
+                return false;
             }
 
             if (!$fetchMuted /*&& count($emails) == 2*/)
@@ -575,6 +584,7 @@ class Message extends Generic
                 if ($tempMessage = $this->findById($tempMessageId))
                 {
                     $this->delete($tempMessage);
+                    $temporaryMessageExisted = true;
                 }
             }
 
@@ -597,6 +607,11 @@ class Message extends Generic
             {
                 // there were one or more new foreign messages and this is not a FetchAll mode -> reset 'read' flag
                 \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
+            }
+
+            if (!$temporaryMessageExisted)
+            {
+                \Sys::svc('Notify')->send(['cmd' => 'notify', 'userIds' => [$user->id], 'chatId' => $chat->id]);
             }
 
             // remove old messages if not explicitly instructed
