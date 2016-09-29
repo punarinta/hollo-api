@@ -8,7 +8,7 @@ namespace App\Model\CliTool;
  */
 class Cron
 {
-    public function removeOldMessages()
+    public function removeOldMessages($byTime = true, $byCount = false)
     {
         $count = 0;
 
@@ -17,7 +17,7 @@ class Cron
 
         foreach (\Sys::svc('Chat')->findAll() as $chat)
         {
-            $count += \Sys::svc('Message')->removeOld($chat->id);
+            $count += \Sys::svc('Message')->removeOld($chat->id, $byTime, $byCount);
         }
 
         return "Messaged purged: $count\n";
