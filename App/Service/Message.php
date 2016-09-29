@@ -740,7 +740,7 @@ class Message extends Generic
         // remove zero-width space
         $content = str_replace("\xE2\x80\x8B", '', $content);
 
-        return trim($content);
+        return mb_ereg_replace('^[[:space:]]*([\s\S]*?)[[:space:]]*$', '\1', $content);
     }
 
     /**
