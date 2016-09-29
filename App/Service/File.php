@@ -19,7 +19,10 @@ class File extends Generic
         {
             foreach (json_decode($row->files, true) ?: [] as $file)
             {
-                $url = ($withImageUrl && \Mime::isImage($file['type']) && @$file['refId']) ? $this->getProcessorLink($file['refId'], $file['extId']) : null;
+                $user = \Sys::svc('User')->findById(@$file['refId']);
+                $userExtId = $user ? $user->ext_id : null;
+
+                $url = ($withImageUrl && \Mime::isImage($file['type']) && $userExtId) ? $this->getProcessorLink($userExtId, $file['extId']) : null;
 
                 $items[] = array
                 (
@@ -27,7 +30,7 @@ class File extends Generic
                     'size'  => $file['size'],
                     'type'  => $file['type'],
                     'url'   => $url,
-                    'refId' => @$file['refId'],
+                    'refId' => $userExtId,
                     'extId' => @$file['extId'], // temporary files do not have extIds
                 );
             }
