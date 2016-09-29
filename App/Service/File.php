@@ -28,7 +28,7 @@ class File extends Generic
                     'type'  => $file['type'],
                     'url'   => $url,
                     'refId' => @$file['refId'],
-                    'extId' => $file['extId'],
+                    'extId' => @$file['extId'], // temporary files do not have extIds
                 );
             }
         }
