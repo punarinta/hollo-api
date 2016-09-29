@@ -368,7 +368,7 @@ class Message extends Generic
         {
             foreach ($messages as $k => $message)
             {
-                if ($message->ts < time() - 31536000)
+                if ($message->ts < time() - \Sys::cfg('sys.sync_period'))
                 {
                     $this->delete($message);
                     unset ($messages[$k]);
@@ -420,7 +420,7 @@ class Message extends Generic
         $fetchMuted = isset ($options['fetchMuted']) ? $options['fetchMuted'] : false;
         $fetchAll = isset ($options['fetchAll']) ? $options['fetchAll'] : false;
         $limitToChatId = isset ($options['limitToChatId']) ? $options['limitToChatId'] : 0;
-        $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : 31536000;
+        $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : \Sys::cfg('sys.sync_period');
         $keepOld = isset ($options['keepOld']) ? $options['keepOld'] : false;
 
         if (!$message = $this->findByExtId($extId))
