@@ -130,7 +130,7 @@ class Message extends Generic
                         foreach ($rows as $row)
                         {
                             // fetch even muted, as the user has explicitly instructed us
-                            $synced += 1 * is_object($this->processMessageSync($user, $row, true, $chat->id));
+                            $synced += 1 * is_object($this->processMessageSync($user, $row, ['fetchMuted' => true, 'limitToChatId' => $chat->id]));
                         }
 
                         if ($synced >= \Sys::cfg('sys.sync_depth'))
@@ -210,7 +210,7 @@ class Message extends Generic
 
                     foreach ($rows as $row)
                     {
-                        $this->processMessageSync($user, $row, $fetchMuted);
+                        $this->processMessageSync($user, $row, ['fetchMuted' => $fetchMuted]);
                     }
 
                     break;
@@ -264,7 +264,7 @@ class Message extends Generic
             print_r($data);
         }
 
-        return $this->processMessageSync($user, $data, false, 0, true);
+        return $this->processMessageSync($user, $data, ['fetchMuted' => false, 'limitToChatId' => 0, 'verbose'=> $verbose]);
     }
 
     /**
@@ -377,16 +377,19 @@ class Message extends Generic
     /**
      * @param $user                 -- recipient user
      * @param $messageData
-     * @param bool $fetchMuted
-     * @param int $limitToChatId
-     * @param bool $verbose
+     * @param array $options
      * @return bool|null|\StdClass
      * @throws \Exception
      */
-    protected function processMessageSync($user, $messageData, $fetchMuted = false, $limitToChatId = 0, $verbose = false)
+    protected function processMessageSync($user, $messageData, $options = [])
     {
         // message must not exist
         $extId = $messageData['message_id'];
+
+        $fetchMuted = isset ($options['fetchMuted']) ? $options['fetchMuted'] : false;
+        $limitToChatId = isset ($options['limitToChatId']) ? $options['limitToChatId'] : 0;
+        $verbose = isset ($options['verbose']) ? $options['verbose'] : false;
+        $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : 31536000;
 
         if (!$message = $this->findByExtId($extId))
         {
