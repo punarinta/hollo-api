@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\FileParse\Model\Calendar;
+
 class Message extends Generic
 {
     /**
@@ -591,13 +593,34 @@ class Message extends Generic
                 }
             }
 
+            $subject = mb_convert_encoding($this->clearSubject($messageData['subject']), 'UTF-8');
+            $body = mb_convert_encoding($content, 'UTF-8');
+
+            // check other bodies if they contain anything useful
+            foreach ($messageData['body'] as $item)
+            {
+                if ($item['type'] == 'text/calendar')
+                {
+                    // calendar found => remove all the attachments, adjust body and subject
+                    $files = null;
+                    $calendar = Calendar::parse($item);
+                    $body = json_encode(array
+                    (
+                        'class'     => 'widget',
+                        'type'      => 'ics',
+                        'widget'    => $calendar,
+                    ));
+                    $subject = '';
+                }
+            }
+
             $message = $this->create(array
             (
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,
                 'chat_id'   => $chat->id,
-                'subject'   => mb_convert_encoding($this->clearSubject($messageData['subject']), 'UTF-8'),
-                'body'      => mb_convert_encoding($content, 'UTF-8'),
+                'subject'   => $subject,
+                'body'      => $body,
                 'files'     => empty ($files) ? '' : json_encode($files),
                 'ts'        => $messageData['date'],
              ));
