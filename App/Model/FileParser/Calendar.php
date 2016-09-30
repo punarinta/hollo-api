@@ -65,11 +65,11 @@ class Calendar
                     switch ($split[0])
                     {
                         case 'ORGANIZER':
-                            $organizer = self::getEmail($split[1]);
+                            $organizer = self::getPerson($split[1]);
                             break;
 
                         case 'ATTENDEE':
-                            $attendees[] = self::getEmail($split[1]);
+                            $attendees[] = self::getPerson($split[1]);
                             break;
 
                     }
@@ -93,19 +93,36 @@ class Calendar
      * @param $line
      * @return bool|mixed
      */
-    static public function getEmail($line)
+    static public function getPerson($line)
     {
-        $items = explode(':', $line);
+        $email = '';
+        $name = '';
+        $keys = [];
 
-        foreach ($items as $item)
+        $items1 = explode(';', $line);
+        foreach ($items1 as $item1)
         {
-            if ($item == 'mailto')
+            $items2 = explode(':', $item1);
+            foreach ($items2 as $item2)
             {
-                next($items);
-                return next($items);
+                $keys[] = $item2;
             }
         }
 
-        return false;
+        foreach ($keys as $k => $v)
+        {
+            if (strpos($v, 'CN=') !== false)
+            {
+                $name = explode('=', $v);
+                $name = trim(@$name[1]);
+            }
+
+            if ($v == 'mailto')
+            {
+                $email = $keys[$k+1];
+            }
+        }
+
+        return [$email, $name];
     }
 }
