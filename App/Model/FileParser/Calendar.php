@@ -23,6 +23,8 @@ class Calendar
         $title = '';
         $timeEnd = 0;
         $timeStart = 0;
+        $organizer = '';
+        $attendees = [];
         $description = '';
 
         $text = str_replace("\n ", '', $text);
@@ -63,7 +65,11 @@ class Calendar
                     switch ($split[0])
                     {
                         case 'ORGANIZER':
-                            $timeStart = $split[1];
+                            $organizer = self::getEmail($split[1]);
+                            break;
+
+                        case 'ATTENDEE':
+                            $attendees[] = self::getEmail($split[1]);
                             break;
 
                     }
@@ -78,6 +84,28 @@ class Calendar
             'title' => $title,
             'descr' => $description,
             'uid'   => $uid,
+            'org'   => $organizer,
+            'att'   => $attendees,
         );
+    }
+
+    /**
+     * @param $line
+     * @return bool|mixed
+     */
+    static public function getEmail($line)
+    {
+        $items = explode(':', $line);
+
+        foreach ($items as $item)
+        {
+            if ($item == 'mailto')
+            {
+                next($items);
+                return next($items);
+            }
+        }
+
+        return false;
     }
 }
