@@ -27,7 +27,7 @@ class Calendar
         $attendees = [];
         $description = '';
 
-        $text = str_replace("\n ", '', $text);
+        $text = str_replace("\r\n ", '', $text);
 
         foreach (explode("\n", $text) as $row)
         {
