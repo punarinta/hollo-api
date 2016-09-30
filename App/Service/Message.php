@@ -606,7 +606,6 @@ class Message extends Generic
                     $calendar = Calendar::parse($item['content']);
                     $body = json_encode(array
                     (
-                        'class'     => 'widget',
                         'type'      => 'ics',
                         'widget'    => $calendar,
                     ));
