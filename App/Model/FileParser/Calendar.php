@@ -1,6 +1,6 @@
 <?php
 
-namespace App\FileParse\Model;
+namespace App\Model\FileParser;
 
 /**
  * ICS calendar file parser
@@ -25,9 +25,11 @@ class Calendar
         $timeStart = 0;
         $description = '';
 
+        $text = str_replace("\n ", '', $text);
+
         foreach (explode("\n", $text) as $row)
         {
-            $split = explode(':', $row);
+            $split = explode(':', trim($row), 2);
 
             switch ($split[0])
             {
@@ -44,24 +46,24 @@ class Calendar
                     break;
 
                 case 'SUMMARY':
-                    $title = strtotime($split[1]);
+                    $title = $split[1];
                     break;
 
                 case 'DESCRIPTION':
-                    $description = strtotime($split[1]);
+                    $description = $split[1];
                     break;
 
                 case 'UID':
-                    $uid = strtotime($split[1]);
+                    $uid = $split[1];
                     break;
 
                 default:
-                    $split = explode(';', $row);
+                    $split = explode(';', trim($row), 2);
 
                     switch ($split[0])
                     {
                         case 'ORGANIZER':
-                            $timeStart = strtotime($split[1]);
+                            $timeStart = $split[1];
                             break;
 
                     }

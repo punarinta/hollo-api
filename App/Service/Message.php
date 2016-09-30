@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\FileParse\Model\Calendar;
+use App\Model\FileParser\Calendar;
 
 class Message extends Generic
 {
@@ -603,7 +603,7 @@ class Message extends Generic
                 {
                     // calendar found => remove all the attachments, adjust body and subject
                     $files = null;
-                    $calendar = Calendar::parse($item);
+                    $calendar = Calendar::parse($item['content']);
                     $body = json_encode(array
                     (
                         'class'     => 'widget',
