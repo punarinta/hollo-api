@@ -54,6 +54,11 @@ class Fetch
 
         $data = $data->getData();
 
+        if (!isset ($data['body']))
+        {
+            return "No body? WTF?\n";
+        }
+
         return print_r($full ? $data : $data['body'][0]['content'], true);
     }
 }
