@@ -30,7 +30,7 @@ class Auth extends Generic
             (
                 'id'        => \Auth::user()->id,
                 'email'     => \Auth::user()->email,
-                'name'      => \Sys::svc('User')->name(),
+                'name'      => \Auth::user()->name,
                 'ava'       => @$_SESSION['-AUTH']['avatar'],
                 'settings'  => json_decode(\Auth::user()->settings),
             ) : null,
