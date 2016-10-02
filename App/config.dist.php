@@ -75,8 +75,8 @@ return array
     'sys' => array
     (
         'password_cost' => 14,
-        'sync_depth'    => 10,
-        'sync_period'   => 31536000,
+        'sync_depth'    => 8,
+        'sync_period'   => 8640000,
     ),
     'mime' => array
     (
