@@ -183,10 +183,11 @@ class Message extends Generic
      *
      * @param $userId
      * @param bool $fetchMuted      - fetch muted too
+     * @param bool $noMarks         - set 'true' to skip marking as unread through IM
      * @return int
      * @throws \Exception
      */
-    public function syncAllByUserId($userId, $fetchMuted = false)
+    public function syncAllByUserId($userId, $fetchMuted = false, $noMarks = false)
     {
         $offset = 0;
         $limit = 100;
@@ -218,7 +219,12 @@ class Message extends Generic
 
                     foreach ($rows as $row)
                     {
-                        $this->processMessageSync($user, $row, ['fetchMuted' => $fetchMuted, 'fetchAll' => true]);
+                        $this->processMessageSync($user, $row,
+                        [
+                            'fetchMuted'    => $fetchMuted,
+                            'fetchAll'      => true,
+                            'noMarks'       => $noMarks,
+                        ]);
                     }
 
                     break;
@@ -289,6 +295,8 @@ class Message extends Generic
         }
 
         // '571f73e9920d7f18098b4567'
+
+        // TODO: pick user ext id from message ref
         if (!$data = $this->getDataByExtId(\Auth::user()->ext_id, $message->ext_id))
         {
             return false;
@@ -421,6 +429,7 @@ class Message extends Generic
         $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : \Sys::cfg('sys.sync_period');
         $keepOld = isset ($options['keepOld']) ? $options['keepOld'] : false;
         $notify = isset ($options['notify']) ? $options['notify'] : true;
+        $noMarks = isset ($options['noMarks']) ? $options['noMarks'] : false;
 
         if (!$message = $this->findByExtId($extId))
         {
@@ -635,7 +644,13 @@ class Message extends Generic
 
             if (!$temporaryMessageExisted && $notify)
             {
-                \Sys::svc('Notify')->send(['cmd' => 'notify', 'userIds' => [$user->id], 'chatId' => $chat->id]);
+                \Sys::svc('Notify')->send(
+                [
+                    'cmd'       => 'notify',
+                    'userIds'   => [$user->id],
+                    'chatId'    => $chat->id,
+                    'noMarks'   => $noMarks,
+                ]);
             }
 
             // remove old messages if not explicitly instructed

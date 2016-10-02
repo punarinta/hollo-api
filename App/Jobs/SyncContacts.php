@@ -34,7 +34,7 @@ class SyncContacts extends Generic
 
         sleep(5);
 
-        \Sys::svc('Message')->syncAllByUserId($user->id);
+        \Sys::svc('Message')->syncAllByUserId($user->id, false, true);
 
         return true;
     }
