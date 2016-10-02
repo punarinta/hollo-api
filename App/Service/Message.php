@@ -784,7 +784,7 @@ class Message extends Generic
      */
     protected function retry($params, $attempt)
     {
-        $timeout = (int)(5 + $attempt/3);
+        $timeout = (int)(5 + $attempt/2);
 
         $this->say("Sync error, attempt #$attempt in $timeout seconds");
         sleep($timeout);
