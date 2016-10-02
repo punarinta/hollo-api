@@ -81,10 +81,12 @@ class Smtp
             }
 
             // temporary messages do not have external IDs
-            if ($message->ext_id)
+            $refUser = \Sys::svc('User')->findById($message->ref_id);
+
+            if ($message->ext_id && $refUser->ext_id)
             {
                 // get original message data
-                $data = $this->conn->getMessage($user->ext_id, ['message_id' => $message->ext_id, 'include_body' => 1]);
+                $data = $this->conn->getMessage($refUser->ext_id, ['message_id' => $message->ext_id, 'include_body' => 1]);
 
                 if ($data)
                 {

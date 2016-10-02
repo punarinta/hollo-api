@@ -77,6 +77,7 @@ class Message extends Generic
                 'id'        => $item->id,
                 'ts'        => $item->ts,
                 'body'      => $item->body,
+                'refId'     => $item->ref_id,
                 'subject'   => $this->clearSubject($item->subject),
                 'from'      => array
                 (
@@ -535,7 +536,6 @@ class Message extends Generic
                         'type'  => $file['type'],
                         'size'  => $file['size'],
                         'extId' => $file['file_id'],
-                        'refId' => $user->id,
                     );
                 }
             }
@@ -616,6 +616,7 @@ class Message extends Generic
                 'ext_id'    => $extId,
                 'user_id'   => $senderId,
                 'chat_id'   => $chat->id,
+                'ref_id'    => $user->id,
                 'subject'   => $subject,
                 'body'      => $body,
                 'files'     => empty ($files) ? '' : json_encode($files),

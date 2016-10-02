@@ -15,11 +15,11 @@ class File extends Generic
     {
         $items = [];
 
-        foreach (\DB::rows('SELECT files FROM message WHERE chat_id=?', [$chatId]) as $row)
+        foreach (\DB::rows('SELECT files, ref_id FROM message WHERE chat_id=?', [$chatId]) as $row)
         {
             foreach (json_decode($row->files, true) ?: [] as $file)
             {
-                $user = \Sys::svc('User')->findById(@$file['refId']);
+                $user = \Sys::svc('User')->findById($row->ref_id);
                 $userExtId = $user ? $user->ext_id : null;
 
                 $url = ($withImageUrl && \Mime::isImage($file['type']) && $userExtId) ? $this->getProcessorLink($userExtId, $file['extId']) : null;
@@ -30,7 +30,7 @@ class File extends Generic
                     'size'  => $file['size'],
                     'type'  => $file['type'],
                     'url'   => $url,
-                    'refId' => $userExtId,
+                    'refId' => $row->ref_id,
                     'extId' => @$file['extId'], // temporary files do not have extIds
                 );
             }
