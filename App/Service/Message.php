@@ -207,10 +207,7 @@ class Message extends Generic
             $attempt = 0;
             $params['offset'] = $offset;
 
-            if (@$GLOBALS['-SYS-VERBOSE'])
-            {
-                echo "User {$user->email}, offset = $offset\n";
-            }
+            $this->say("User {$user->email}, offset = $offset");
 
             while ($attempt < 10)
             {
@@ -268,10 +265,7 @@ class Message extends Generic
 
         $data = $data->getData();
 
-        if (@$GLOBALS['-SYS-VERBOSE'])
-        {
-            print_r($data);
-        }
+        $this->say($data, 1);
 
         // TODO: send a signal to notifier
 
@@ -357,7 +351,6 @@ class Message extends Generic
 
         if ($byCount)
         {
-
             $messages = array_reverse($messages);
             $messages = array_slice($messages, \Sys::cfg('sys.sync_depth'));
 
@@ -518,10 +511,7 @@ class Message extends Generic
             // check after muting is tested
             if (!isset ($messageData['body']))
             {
-                if (@$GLOBALS['-SYS-VERBOSE'])
-                {
-                    echo "Body extraction. Ext ID = {$extId}\n";
-                }
+                $this->say("Body extraction. Ext ID = {$extId}");
                 $messageData = $this->getDataByExtId($user->ext_id, $extId);
             }
 
@@ -547,6 +537,7 @@ class Message extends Generic
 
             if (!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]['content']))
             {
+                $this->say('Code 1: no body');
                 // no body?
                 return false;
             }
@@ -566,6 +557,7 @@ class Message extends Generic
             // avoid duplicating by user_id-chat_id-ts key
             if (!$this->isUnique($senderId, $chat->id, $messageData['date']))
             {
+                $this->say('Code 2: not unique');
                 return false;
             }
 
@@ -579,6 +571,7 @@ class Message extends Generic
 
             if (!mb_strlen($content) && empty ($files))
             {
+                $this->say('Code 3: no content');
                 // avoid empty replies
                 return false;
             }
@@ -793,16 +786,17 @@ class Message extends Generic
     {
         $timeout = (int)(5 + $attempt/3);
 
-        if (@$GLOBALS['-SYS-VERBOSE'])
-        {
-            echo "Sync error, attempt #$attempt in $timeout seconds\n";
-        }
-
+        $this->say("Sync error, attempt #$attempt in $timeout seconds");
         sleep($timeout);
+        $this->say($params, 1);
+    }
 
+    protected function say($what, $print = 0)
+    {
         if (@$GLOBALS['-SYS-VERBOSE'])
         {
-            print_r($params);
+            if ($print) print_r($what);
+            else echo "$what\n";
         }
     }
 }
