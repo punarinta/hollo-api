@@ -423,6 +423,11 @@ class Message extends Generic
 
         if (!$message = $this->findByExtId($extId))
         {
+            if (!isset ($messageData['addresses']['from']))
+            {
+                return false;
+            }
+
             // collect emails and names from the message
             $emails = [$messageData['addresses']['from']['email']];
             $names = [$messageData['addresses']['from']['email'] => @$messageData['addresses']['from']['name']];
