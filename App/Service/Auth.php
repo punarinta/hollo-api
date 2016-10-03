@@ -117,7 +117,7 @@ class Auth
 
         imap_close($box);
         
-        $settings = ['svc' => (int) $mailService->id];
+        $settings = ['svc' => (int) $mailService->id/*, 'email' => $email, 'password' => $password*/];
         
         if ($locale != 'en_US')
         {
@@ -271,7 +271,7 @@ class Auth
         if (!$user || !$user->ext_id)
         {
             // no user -> register
-            $settings = ['svc' => (int) $mailService->id];
+            $settings = ['svc' => (int) $mailService->id, 'token' => $token];
 
             \DB::begin();
 
