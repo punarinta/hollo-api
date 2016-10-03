@@ -23,25 +23,18 @@ class Chat extends Generic
      */
     static public function find()
     {
-        // issue an immediate sync
-    //    \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => \Auth::user()->id]);
-
         $items = [];
+        $myId = \Auth::user()->id;
 
-        foreach (\Sys::svc('Chat')->findAllByUserId(\Auth::user()->id, \Input::data('filters') ?:[], \Input::data('sortBy'), \Input::data('sortMode')) as $chat)
+        foreach (\Sys::svc('Chat')->findAllByUserId($myId, \Input::data('filters') ?:[], \Input::data('sortBy'), \Input::data('sortMode')) as $chat)
         {
             \DB::$pageStart = null;
-
-            // get flags
-            if (!$flags = \Sys::svc('Chat')->getFlags($chat->id, \Auth::user()->id))
-            {
-                throw new \Exception('Chat is not set up. That should not be so.');
-            }
 
             $lastMsg = null;
 
             if ($lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id))
             {
+                // TODO: move the logic below onto frontend
                 if ($lastMsg->body)
                 {
                     $lastMsg = $lastMsg->body;
@@ -60,11 +53,11 @@ class Chat extends Generic
             (
                 'id'        => $chat->id,
                 'name'      => $chat->name,
-                'muted'     => $flags->muted,
-                'read'      => $flags->read,
+                'muted'     => $chat->muted,
+                'read'      => $chat->read,
                 'lastTs'    => $chat->last_ts,
                 'lastMsg'   => $lastMsg,
-                'users'     => \Sys::svc('User')->findByChatId($chat->id, true),
+                'users'     => \Sys::svc('User')->findByChatId($chat->id, true, $myId),
             );
         }
 

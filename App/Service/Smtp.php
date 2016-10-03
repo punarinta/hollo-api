@@ -160,7 +160,7 @@ class Smtp
 
         $userIds = [];
 
-        foreach (\Sys::svc('User')->findByChatId($chatId, true) as $user)
+        foreach (\Sys::svc('User')->findByChatId($chatId, true, \Auth::user()->id) as $user)
         {
             $this->mail->addAddress($user->email, $user->name);
 

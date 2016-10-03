@@ -58,14 +58,15 @@ class User extends Generic
      *
      * @param $chatId
      * @param bool $forContacts
+     * @param null $exceptId
      * @return array
      */
-    public function findByChatId($chatId, $forContacts = false)
+    public function findByChatId($chatId, $forContacts = false, $exceptId = null)
     {
         if ($forContacts)
         {
             // skip yourself, feed only basic data
-            return \DB::rows('SELECT id, email, `name` FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=? AND u.id!=?', [$chatId, \Auth::user()->id]);
+            return \DB::rows('SELECT id, email, `name` FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=? AND u.id!=?', [$chatId, $exceptId]);
         }
         else
         {

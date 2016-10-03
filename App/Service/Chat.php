@@ -101,12 +101,13 @@ class Chat extends Generic
      */
     public function findAllByUserId($userId, $filters = [], $sortBy = null, $sortMode = null)
     {
-        $sql = 'SELECT c.* FROM chat AS c LEFT JOIN chat_user AS cu ON cu.chat_id=c.id WHERE cu.user_id=?';
+        $sql = 'SELECT c.id, c.name, c.last_ts, cu.`read`, cu.muted
+                FROM chat AS c LEFT JOIN chat_user AS cu ON cu.chat_id=c.id WHERE cu.user_id=?';
 
         // TODO: rewrite in a proper way
         if (@$filters[0]['mode'] == 'email' || @$filters[1]['mode'] == 'email')
         {
-            $sql = 'SELECT DISTINCT c.id, c.* FROM chat AS c
+            $sql = 'SELECT DISTINCT c.id, c.name, c.last_ts, cu.read, cu.muted FROM chat AS c
                     LEFT JOIN chat_user AS cu ON cu.chat_id = c.id
                     LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
                     LEFT JOIN `user` AS u ON cu2.user_id = u.id

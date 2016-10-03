@@ -52,7 +52,7 @@ class Message extends Generic
                 'id'    => $chat->id,
                 'name'  => $chat->name,
                 'muted' => $flags->muted,
-                'users' => \Sys::svc('User')->findByChatId($chat->id, true),
+                'users' => \Sys::svc('User')->findByChatId($chat->id, true, \Auth::user()->id),
             ),
             'messages'  => $msgs,
         );
