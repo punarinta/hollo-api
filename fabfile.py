@@ -24,11 +24,16 @@ def setup(name):
 
     if name == 'x':
         env.hosts = fab_hosts = ['deathstar.s.coursio.com', ]
-        env.production = True
-        env.stage = True
         env.user = 'root'
         env.deployed = '/apps/mls-api/{}'
         env.deployed_dir = '/apps/mls-api'
+        env.worker = False
+    elif name == 'w':
+        env.hosts = fab_hosts = ['deathstar.s.coursio.com', ]
+        env.user = 'root'
+        env.deployed = '/apps/mls-api/{}'
+        env.deployed_dir = '/apps/mls-api'
+        env.worker = True
     else:
         raise ValueError('Invalid name')
 
@@ -86,7 +91,8 @@ def restart():
     sudo('service nginx restart')
 
     # restart worker from a new location
-    sudo('supervisorctl reload')
+    if env.worker is True:
+        sudo('supervisorctl reload')
 
 
 def cleanup():
@@ -116,6 +122,8 @@ def deploy():
 
     # Copy config files
     if env.name == 'x':
+        sudo('sed \'s/replaceString/{}/g\' /apps/mls-api.config.php > {}/App/config.php'.format(commithash, env.deploy));
+    elif env.name == 'w':
         sudo('sed \'s/replaceString/{}/g\' /apps/mls-api.config.php > {}/App/config.php'.format(commithash, env.deploy));
     else:
         raise ValueError('Invalid name')
