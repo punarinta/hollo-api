@@ -220,6 +220,7 @@ class Auth
         $client->setRedirectUri($redirectUrl);
         $client->addScope('https://mail.google.com/');
         $client->addScope('https://www.googleapis.com/auth/userinfo.email');
+        $client->addScope('https://www.googleapis.com/auth/userinfo.profile');
         $client->addScope('https://www.googleapis.com/auth/plus.me');
         $client->setAccessType('offline');
         $client->setApprovalPrompt('force');
@@ -241,6 +242,7 @@ class Auth
             (
                 'refresh'   => $client->getRefreshToken(),
                 'email'     => $data['email'],
+                'name'      => $data['name'],
                 'avatar'    => $data['picture'],
             );
         }
@@ -262,6 +264,7 @@ class Auth
         $token = $oauthData['refresh'];
         $email = $oauthData['email'];
         $avatar = $oauthData['avatar'];
+        $name = $oauthData['name'];
 
         $mailService = \Sys::svc('MailService')->findByEmail($email);
         $in = \Sys::svc('MailService')->getCfg($mailService);
@@ -282,6 +285,7 @@ class Auth
                     // create Hollo account
                     $user = \Sys::svc('User')->create(array
                     (
+                        'name'      => $name,
                         'email'     => $email,
                         'ext_id'    => null,
                         'roles'     => \Auth::USER,
