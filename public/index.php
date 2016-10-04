@@ -4,8 +4,8 @@
 $t1 = microtime(1);
 $m1 = memory_get_usage();
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+/*error_reporting(E_ALL);
+ini_set('display_errors', 1);*/
 
 // 1. Preliminary settings
 
@@ -96,7 +96,7 @@ unset ($autoClasses0, $autoClasses4);
 
 // 4. Compiled routes
 
-// Built 11.08.16 @ 19:02:51 +0300
+// Built 04.10.16 @ 09:33:59 +0200
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],

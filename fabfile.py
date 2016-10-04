@@ -87,8 +87,8 @@ def get_git_commit():
 
 def restart():
     # restart services
-    sudo('service php7.0-fpm restart')
-    sudo('service nginx restart')
+    sudo('service php7.0-fpm reload')
+    sudo('service nginx reload')
 
     # restart worker from a new location
     if env.worker is True:

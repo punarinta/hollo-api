@@ -11,14 +11,10 @@ class Sys
      */
     static function run($config)
     {
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token');
-
         $GLOBALS['-CFG'] = $config;
 
         // usual request starts
 
-        header('Content-Type: application/json;charset=UTF-8');
         DB::connect();
 
         if (isset ($_SERVER['HTTP_TOKEN']) && $_SERVER['HTTP_TOKEN'] !== 'null')
