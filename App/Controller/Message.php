@@ -140,7 +140,9 @@ class Message extends Generic
             throw new \Exception('Message does not exist');
         }
 
-        if (!$data = \Sys::svc('Message')->getDataByExtId($message->ext_id, $message->ext_id))
+        $user = \Sys::svc('User')->findById($message->ref_id);
+
+        if (!$data = \Sys::svc('Message')->getDataByExtId($user->ext_id, $message->ext_id))
         {
             return false;
         }
