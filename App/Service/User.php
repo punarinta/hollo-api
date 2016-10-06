@@ -6,6 +6,16 @@ class User extends Generic
 {
     protected $cache = [];
 
+    public function create($data)
+    {
+        if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false)
+        {
+            throw new \Exception('Cannot add user: invalid email');
+        }
+
+        return parent::create($data);
+    }
+
     /**
      * Overwritten as User uses custom ID field name
      *

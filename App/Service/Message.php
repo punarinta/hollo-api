@@ -463,31 +463,46 @@ class Message extends Generic
                 return false;
             }
 
-            // chat may not exist -> init and mute if necessary
-            if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
+            // try to clean emails
+            foreach ($emails as $k => $email)
             {
-                if ($limitToChatId)
-                {
-                    // chat does not exist while ID restriction is imposed -> leave
-                    return false;
-                }
-
-                if (count($emails) < 2)
-                {
-                    // the cannot be less than 2 people in chat
-                    return false;
-                }
-
-                $chat = \Sys::svc('Chat')->init($emails, [$user->id], $names);
+                $emails[$k] = trim($email, "'");
             }
-            else
+
+            try
             {
-                if ($limitToChatId && $chat->id != $limitToChatId)
+                // chat may not exist -> init and mute if necessary
+                if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
                 {
-                    // chat exists, but does not fulfill the ID requirement, used by moreByChatId
-                    return false;
+                    if ($limitToChatId)
+                    {
+                        // chat does not exist while ID restriction is imposed -> leave
+                        return false;
+                    }
+
+                    if (count($emails) < 2)
+                    {
+                        // the cannot be less than 2 people in chat
+                        return false;
+                    }
+
+                    $chat = \Sys::svc('Chat')->init($emails, [$user->id], $names);
+                }
+                else
+                {
+                    if ($limitToChatId && $chat->id != $limitToChatId)
+                    {
+                        // chat exists, but does not fulfill the ID requirement, used by moreByChatId
+                        return false;
+                    }
                 }
             }
+            catch (\Exception $e)
+            {
+                $this->say('Code 1: invalid chat');
+                return false;
+            }
+
 
             if (!$chat)
             {
