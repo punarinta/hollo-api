@@ -54,7 +54,7 @@ class Fetch
 
         $data = $data->getData();
 
-        if (!isset ($data['body']))
+        if (!isset ($data['body']) && !$full)
         {
             return "No body? WTF?\n";
         }
