@@ -179,8 +179,8 @@ class Auth
             // add Context web-hook
             $this->conn->addWebhook($user->ext_id,
             [
-                'callback_url'      => 'https://api.hollo.email/api/context-io',
-                'failure_notif_url' => 'https://api.hollo.email/api/context-io',
+                'callback_url'      => 'https://app.hollo.email/api/context-io',
+                'failure_notif_url' => 'https://app.hollo.email/api/context-io',
             ]);
         }
         catch (\Exception $e)
@@ -330,8 +330,8 @@ class Auth
                 // add webhook to an existing account
                 $this->conn->addWebhook($user->ext_id,
                 [
-                    'callback_url'      => 'https://api.hollo.email/api/context-io',
-                    'failure_notif_url' => 'https://api.hollo.email/api/context-io',
+                    'callback_url'      => 'https://app.hollo.email/api/context-io',
+                    'failure_notif_url' => 'https://app.hollo.email/api/context-io',
                 ]);
             }
             catch (\Exception $e)
