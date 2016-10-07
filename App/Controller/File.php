@@ -49,9 +49,7 @@ class File extends Generic
             throw new \Exception('External ID not provided.');
         }
 
-        $refId = \Input::data('refId');
-
-        if ($refId && $user = \Sys::svc('User')->findById($refId))
+        if ($user = \Sys::svc('User')->findById(\Input::data('refId')))
         {
             return \Sys::svc('File')->getProcessorLink($user->ext_id, $extFileId);
         }
