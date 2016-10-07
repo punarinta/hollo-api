@@ -93,6 +93,17 @@ class Message extends Generic
     }
 
     /**
+     * Find last message in chat that is not
+     *
+     * @param $chatId
+     * @return null|\StdClass
+     */
+    public function findByLastRealByChatId($chatId)
+    {
+        return \DB::row("SELECT * FROM message WHERE chat_id = ? AND ext_id != '' ORDER BY ts DESC LIMIT 1", [$chatId]);
+    }
+
+    /**
      * Gets more messages into the Chat
      *
      * @param $chat
