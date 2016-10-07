@@ -42,6 +42,30 @@ class Clear
         return "Total removed = $count\n";
     }
 
+    public function duplicateMessages()
+    {
+        $messages = \Sys::svc('Message')->findAll();
+        $len = count($messages);
+        $count = 0;
+
+        for ($i = 0; $i < $len; ++$i)
+        {
+            for ($j = $i + 1; $j < $len; ++$j)
+            {
+                if ($messages[$i]->chat_id == $messages[$j]->chat_id
+                &&  $messages[$i]->user_id == $messages[$j]->user_id
+                &&  $messages[$i]->body == $messages[$j]->body
+                &&  abs($messages[$i]->ts - $messages[$j]->ts) < 60)
+                {
+                    echo "{$messages[$i]->id} ({$messages[$i]->ext_id})  :  {$messages[$j]->id} ({$messages[$j]->ext_id})\n";
+                    ++$count;
+                }
+            }
+        }
+
+        echo "Count = $count\n";
+    }
+
     /**
      * @param $sql
      * @param array $params
