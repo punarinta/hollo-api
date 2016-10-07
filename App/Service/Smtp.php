@@ -13,6 +13,7 @@ class Smtp
     protected $conn = null;
     protected $mail = null;
     protected $setup = false;
+    protected $messageExisted = false;
 
     public function __construct()
     {
@@ -25,12 +26,12 @@ class Smtp
      * Sets up message sending for a particular thread
      *
      * @param $userId
-     * @param null $messageId
+     * @param null $chatId
      * @param null $tempMsgId
      * @return bool
      * @throws \Exception
      */
-    public function setupThread($userId, $messageId = null, $tempMsgId = null)
+    public function setupThread($userId, $chatId = null, $tempMsgId = null)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -72,17 +73,17 @@ class Smtp
             $this->mail->addCustomHeader('X-Temporary-ID: ' . $tempMsgId);
         }
         
-        if ($messageId)
+        if ($chatId)
         {
             // get external message ID
-            if (!$message = \Sys::svc('Message')->findById($messageId))
+            if (!$message = \Sys::svc('Message')->findByLastRealByChatId($chatId))
             {
                 throw new \Exception('Message does not exist');
             }
 
-            // temporary messages do not have external IDs
             $refUser = \Sys::svc('User')->findById($message->ref_id);
 
+            // temporary messages do not have external IDs and external Owner IDs
             if ($message->ext_id && $refUser->ext_id)
             {
                 // get original message data
@@ -103,6 +104,8 @@ class Smtp
 
                     if (isset ($data['body']))
                     {
+                        $this->messageExisted = true;
+
                         $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
 
                         $body = [];
@@ -155,7 +158,12 @@ class Smtp
 
         if ($subject)
         {
-            $this->mail->Subject = $subject;
+            if (!$this->messageExisted || \Sys::svc('Message')->clearSubject($this->mail->Subject) != $subject)
+            {
+                // this means the mail did not exist or message existed, but this one is new
+                $this->mail->Body = $body;
+                $this->mail->Subject = $subject;
+            }
         }
 
         $userIds = [];

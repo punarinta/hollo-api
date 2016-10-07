@@ -217,7 +217,7 @@ class Message extends Generic
         $chat->last_ts = time();
         \Sys::svc('Chat')->update($chat);
 
-        \Sys::svc('Smtp')->setupThread(\Auth::user()->id, \Input::data('messageId'), $message->id);
+        \Sys::svc('Smtp')->setupThread(\Auth::user()->id, $chatId, $message->id);
         $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
 
         // force Context.IO sync after mail is sent
