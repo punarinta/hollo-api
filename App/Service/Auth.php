@@ -238,6 +238,7 @@ class Auth
             $ch = curl_init('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' . $accessToken['access_token']);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $data = json_decode(curl_exec($ch), true) ?:[];
+            curl_close($ch);
 
             return array
             (
@@ -267,7 +268,9 @@ class Auth
         $avatar = $oauthData['avatar'];
         $name = $oauthData['name'];
 
-        $mailService = \Sys::svc('MailService')->findByEmail($email);
+        // $mailService = \Sys::svc('MailService')->findByEmail($email);
+        // Now we only have Google working with OAuth
+        $mailService = \Sys::svc('MailService')->findById(1);
         $in = \Sys::svc('MailService')->getCfg($mailService);
 
         $user = \Sys::svc('User')->findByEmail($email);
@@ -366,6 +369,7 @@ class Auth
                 (
                     'status'                    => 1,
                     'provider_refresh_token'    => $token,
+                    'provider_consumer_key'     => \Sys::cfg('oauth.google.clientId'),
                 ));
             }
 
