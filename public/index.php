@@ -19,8 +19,7 @@ $autoClasses0 =
 [
     'App\\'     => '.',
 
-  //  3rd parties
-
+    // 3rd parties
   //  'Predis'            => 'vendor/predis/predis/lib',
     'Resque'            => 'vendor/chrisboulton/php-resque/lib',
     'RandomLib'         => 'vendor/ircmaxell/random-lib/lib',
@@ -42,7 +41,7 @@ $autoClasses4 =
   //  'Monolog\\'             => 'vendor/monolog/monolog/src/Monolog/',
 ];
 
-$autoClassesX =
+$loaderClassMap =
 [
     'Google\\Auth\\OAuth2'                          => 'vendor/google/auth/src/OAuth2.php',
     'Google\\Auth\\FetchAuthTokenInterface'         => 'vendor/google/auth/src/FetchAuthTokenInterface.php',
@@ -56,7 +55,7 @@ $autoClassesX =
     'Google\\Auth\\Cache\\Item'                     => 'vendor/google/auth/src/Cache/Item.php',*/
 ];
 
-spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4, $autoClassesX)
+spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4, $loaderClassMap)
 {
     if (strpos($class, '\\') === false && file_exists('boosters/' . $class . '.php'))
     {
@@ -64,12 +63,15 @@ spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4, $auto
         return true;
     }
 
-    foreach ($autoClassesX as $autoClassX => $file)
+    if (isset ($loaderClassMap[$class]))
     {
-        if ($class == $autoClassX)
+        if ($loaderClassMap[$class])
         {
-            include_once $file;
-            return true;
+            include_once $loaderClassMap[$class];
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -120,11 +122,11 @@ spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4, $auto
 
 // 3. Cleanup
 
-unset ($autoClasses0, $autoClasses4);
+unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 09.10.16 @ 21:39:48 +0200
+// Built 10.10.16 @ 09:16:33 +0200
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],

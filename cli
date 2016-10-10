@@ -4,6 +4,9 @@
 $t1 = microtime(1);
 $m1 = memory_get_usage();
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // 1. Preliminary settings
 
 date_default_timezone_set('Europe/Stockholm');
@@ -16,8 +19,10 @@ chdir(__DIR__);
 
 $loaderClassMap = array
 (
-//    'TCPDF'         => 'vendor/ensepar/tcpdf/tcpdf.php',
-//    'HTML2PDF'      => 'vendor/ensepar/html2pdf/HTML2PDF.php',
+    'Google\\Auth\\OAuth2'                          => 'vendor/google/auth/src/OAuth2.php',
+    'Google\\Auth\\FetchAuthTokenInterface'         => 'vendor/google/auth/src/FetchAuthTokenInterface.php',
+    'Google\\Auth\\HttpHandler\\HttpHandlerFactory' => 'vendor/google/auth/src/HttpHandler/HttpHandlerFactory.php',
+    'Google\\Auth\\HttpHandler\\Guzzle6HttpHandler' => 'vendor/google/auth/src/HttpHandler/Guzzle6HttpHandler.php',
 );
 
 $autoClasses0 = array
@@ -25,20 +30,21 @@ $autoClasses0 = array
     'App\\'         => '.',
 
     // 3rd parties
-//    'Predis'        => 'vendor/predis/predis/lib',
     'Resque'        => 'vendor/chrisboulton/php-resque/lib',
-    'Google'    => 'vendor/google/apiclient/src',
-    'SecurityLib' => 'vendor/ircmaxell/security-lib/lib',
-    'RandomLib' => 'vendor/ircmaxell/random-lib/lib',
+    'Psr\\Log\\'    => 'vendor/psr/log',
+    'Google'        => 'vendor/google/apiclient/src',
+    'SecurityLib'   => 'vendor/ircmaxell/security-lib/lib',
+    'RandomLib'     => 'vendor/ircmaxell/random-lib/lib',
 );
 
 $autoClasses4 =
 [
-    'League\\OAuth2\\Client\\' => ['vendor/league/oauth2-client/src/', 'vendor/league/oauth2-google/src/'],
-    'Psr\\Http\\Message\\'  => 'vendor/psr/http-message/src/',
-    'GuzzleHttp\\Psr7\\'    => 'vendor/guzzlehttp/psr7/src/',
-    'GuzzleHttp\\Promise\\' => 'vendor/guzzlehttp/promises/src/',
-    'GuzzleHttp\\'          => 'vendor/guzzlehttp/guzzle/src/',
+    'League\\OAuth2\\Client\\'  => ['vendor/league/oauth2-client/src/', 'vendor/league/oauth2-google/src/'],
+    'Psr\\Http\\Message\\'      => 'vendor/psr/http-message/src/',
+    'GuzzleHttp\\Psr7\\'        => 'vendor/guzzlehttp/psr7/src/',
+    'GuzzleHttp\\Promise\\'     => 'vendor/guzzlehttp/promises/src/',
+    'GuzzleHttp\\'              => 'vendor/guzzlehttp/guzzle/src/',
+    'Monolog\\'                 => 'vendor/monolog/monolog/src/Monolog/',
 ];
 
 spl_autoload_register(function($class) use ($loaderClassMap, $autoClasses0, $autoClasses4)
@@ -49,6 +55,7 @@ spl_autoload_register(function($class) use ($loaderClassMap, $autoClasses0, $aut
         if ($loaderClassMap[$class])
         {
             include_once $loaderClassMap[$class];
+            return true;
         }
         else
         {
@@ -71,7 +78,7 @@ spl_autoload_register(function($class) use ($loaderClassMap, $autoClasses0, $aut
                 $class = strtr(strtr($class, $namespace . '_', ''), '_', '/');
             }
 
-            @include_once $dir . '/' . strtr($class, '\\', '/') . '.php';
+            include_once $dir . '/' . strtr($class, '\\', '/') . '.php';
             return true;
         }
     }
@@ -90,14 +97,14 @@ spl_autoload_register(function($class) use ($loaderClassMap, $autoClasses0, $aut
                     $file = $dirry . strtr(str_replace($namespace, '', $class), '\\', '/') . '.php';
                     if (file_exists($file))
                     {
-                        @include_once $file;
+                        include_once $file;
                         return true;
                     }
                 }
             }
             else
             {
-                @include_once $dir . strtr(str_replace($namespace, '', $class), '\\', '/') . '.php';
+                include_once $dir . strtr(str_replace($namespace, '', $class), '\\', '/') . '.php';
                 return true;
             }
         }
