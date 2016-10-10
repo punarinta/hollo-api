@@ -60,8 +60,8 @@ def symlink_current():
     current = env.deployed.format('current')
     sudo('rm -f {}'.format(current))
     sudo('ln -s {} {}'.format(env.deploy, current))
-    # sudo('rm -rf {}/data/files'.format(current)) # Remove the folder recursively as it is the user-folder
-    # sudo('ln -s {} {}/data/files'.format(FILES_DIR, current))
+    sudo('rm -rf {}/data/files'.format(current)) # Remove the folder recursively as it is the user-folder
+    sudo('ln -s {} {}/data/files'.format(FILES_DIR, current))
     # sudo('rm -rf {}/public/files'.format(current))
     # sudo('ln -s {} {}/public/files'.format(FILES_DIR, current))
     sudo('mkdir {}/data/temp'.format(current))
