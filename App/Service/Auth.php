@@ -407,6 +407,12 @@ class Auth
                     'provider_refresh_token'    => $token,
                 ));
             }
+
+            // save updated refresh token on every login
+            $settings = json_decode($user->settings, true) ?: [];
+            $settings['token'] = $token;
+            $user->settings = json_encode($settings);
+            \Sys::svc('User')->update($user);
         }
 
         $_SESSION['-AUTH']['user'] = $user;
