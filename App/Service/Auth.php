@@ -239,45 +239,6 @@ class Auth
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $data = json_decode(curl_exec($ch), true) ?:[];
 
-        /*    $ch = curl_init('https://www.google.com/m8/feeds/contacts/default/full?max-results=50&alt=json&v=3.0&oauth_token=' . $accessToken['access_token']);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $contacts = json_decode(curl_exec($ch), true) ?:[];
-            curl_close($ch);
-
-            $return = [];
-            foreach ($contacts['feed']['entry'] as $contact)
-            {
-                $image = null;
-
-                if (isset($contact['link'][0]['href']))
-                {
-                    $url = $contact['link'][0]['href'];
-                    $url = $url . '&access_token=' . urlencode($accessToken['access_token']);
-
-                    $curl = curl_init($url);
-                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-                    curl_setopt($curl, CURLOPT_TIMEOUT, 3);
-                    curl_setopt($curl, CURLOPT_VERBOSE, true);
-
-                    $image = curl_exec($curl);
-                    curl_close($curl);
-                }
-
-                //retrieve Name + email and store into array
-                $return[] = array
-                (
-                    'name'  => $contact['title']['$t'],
-                    'email' => $contact['gd$email'][0]['address'],
-                    'image' => base64_encode($image),
-                );
-
-                //  echo '<img src="data:image/jpeg;base64,' . base64_encode( $image ) . '" />';
-            };
-
-            print_r($return);
-            exit;*/
-
             return array
             (
                 'refresh'   => $client->getRefreshToken(),
