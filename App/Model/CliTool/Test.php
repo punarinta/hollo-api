@@ -212,15 +212,35 @@ class Test
         $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
         $client->refreshToken($token);
         $accessToken = $client->getAccessToken();
-        $pageStart = 0;
-        $pageSize = 5;
 
-        $ch = curl_init("https://www.googleapis.com/gmail/v1/users/me/messages?start-index=$pageStart&max-results=$pageSize&alt=json&v=3.0&oauth_token=" . $accessToken['access_token']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $res = json_decode(curl_exec($ch), true) ?:[];
-        curl_close($ch);
+        $ids = [];
+        $nextPageToken = null;
 
-        print_r($res);
+        while (1)
+        {
+            $pageTokenStr = $nextPageToken ? "&pageToken=$nextPageToken" : '';
+
+            $ch = curl_init("https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=10$pageTokenStr&oauth_token=" . $accessToken['access_token']);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $res = json_decode(curl_exec($ch), true) ?:[];
+            curl_close($ch);
+
+            foreach ($res['messages'] as $message)
+            {
+                $ids[] = $message['id'];
+            }
+
+            if (!isset ($res['nextPageToken']))
+            {
+                break;
+            }
+            $nextPageToken = $res['nextPageToken'];
+
+            sleep(1);
+            echo "t = $nextPageToken\n";
+        }
+
+        print_r($ids);
 
         return '';
     }
