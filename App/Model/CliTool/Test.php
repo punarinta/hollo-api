@@ -192,4 +192,34 @@ class Test
 
         return "\n";
     }
+
+    public function googleImap($userId = 1)
+    {
+        include_once 'vendor/guzzlehttp/psr7/src/functions.php';
+        include_once 'vendor/guzzlehttp/guzzle/src/functions.php';
+        include_once 'vendor/guzzlehttp/promises/src/functions.php';
+
+        $user = \Sys::svc('User')->findById($userId);
+        $settings = json_decode($user->settings, true) ?: [];
+
+        if (!$token = $settings['token'])
+        {
+            return "No refresh token\n";
+        }
+
+        $client = new \Google_Client();
+        $client->setClientId(\Sys::cfg('oauth.google.clientId'));
+        $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
+        $client->refreshToken($token);
+        $service = new \Google_Service_Gmail($client);
+
+        $optParams = [];
+        $optParams['maxResults'] = 5; // Return Only 5 Messages
+        $optParams['labelIds'] = 'INBOX'; // Only show messages in Inbox
+        $messages = $service->users_messages->listUsersMessages('me',$optParams);
+        $list = $messages->getMessages();
+        $messageId = $list[0]->getId(); // Grab first Message
+
+        return '';
+    }
 }
