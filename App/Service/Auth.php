@@ -324,10 +324,9 @@ class Auth
                 $user->ext_id = $data['id'];
 
                 // save token, just in case
-                // TODO: CHECK: register, log out, login, post.
-                // $s = \Sys::svc('User')->setting($user);
-                // $settings['token'] = $token;
-                // $user->settings = json_encode($s);
+                $s = \Sys::svc('User')->setting($user);
+                $s['token'] = $token;
+                $user->settings = json_encode($s);
 
                 \Sys::svc('User')->update($user);
 
