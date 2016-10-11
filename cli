@@ -23,12 +23,6 @@ $loaderClassMap = array
     'Google\\Auth\\FetchAuthTokenInterface'         => 'vendor/google/auth/src/FetchAuthTokenInterface.php',
     'Google\\Auth\\HttpHandler\\HttpHandlerFactory' => 'vendor/google/auth/src/HttpHandler/HttpHandlerFactory.php',
     'Google\\Auth\\HttpHandler\\Guzzle6HttpHandler' => 'vendor/google/auth/src/HttpHandler/Guzzle6HttpHandler.php',
-    'Google_Service_Resource'                       => 'vendor/google/apiclient/src/Google/Service/Resource.php',
-        'Google_Service_Exception' => 'vendor/google/apiclient/src/Google/Service/Exception.php',
-    'Google\\Auth\\Cache\\MemoryCacheItemPool'      => 'vendor/google/auth/src/Cache/MemoryCacheItemPool.php',
-        'Google\\Auth\\Middleware\\ScopedAccessTokenMiddleware' => 'vendor/google/auth/src/Middleware/ScopedAccessTokenMiddleware.php',
-            'Google\\Auth\\CacheTrait' => 'vendor/google/auth/src/CacheTrait.php',
-                'Google\\Auth\\Cache\\Item' => 'vendor/google/auth/src/Cache/Item.php',
 );
 
 $autoClasses0 = array
@@ -38,9 +32,7 @@ $autoClasses0 = array
     // 3rd parties
     'Resque'        => 'vendor/chrisboulton/php-resque/lib',
     'Psr\\Log\\'    => 'vendor/psr/log',
-  //  'Google'        => 'vendor/google/apiclient/src',
-    'Google_Service_' => 'vendor/google/apiclient-services/src',
-    'Google_'       => 'vendor/google/apiclient/src',
+    'Google'        => 'vendor/google/apiclient/src',
     'SecurityLib'   => 'vendor/ircmaxell/security-lib/lib',
     'RandomLib'     => 'vendor/ircmaxell/random-lib/lib',
 );
@@ -49,7 +41,6 @@ $autoClasses4 =
 [
     'League\\OAuth2\\Client\\'  => ['vendor/league/oauth2-client/src/', 'vendor/league/oauth2-google/src/'],
     'Psr\\Http\\Message\\'      => 'vendor/psr/http-message/src/',
-    'Psr\\Cache\\'              => 'vendor/psr/cache/src/',
     'GuzzleHttp\\Psr7\\'        => 'vendor/guzzlehttp/psr7/src/',
     'GuzzleHttp\\Promise\\'     => 'vendor/guzzlehttp/promises/src/',
     'GuzzleHttp\\'              => 'vendor/guzzlehttp/guzzle/src/',

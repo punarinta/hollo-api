@@ -211,14 +211,16 @@ class Test
         $client->setClientId(\Sys::cfg('oauth.google.clientId'));
         $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
         $client->refreshToken($token);
-        $service = new \Google_Service_Gmail($client);
+        $accessToken = $client->getAccessToken();
+        $pageStart = 0;
+        $pageSize = 5;
 
-        $optParams = [];
-        $optParams['maxResults'] = 5; // Return Only 5 Messages
-        $optParams['labelIds'] = 'INBOX'; // Only show messages in Inbox
-        $messages = $service->users_messages->listUsersMessages('me',$optParams);
-        $list = $messages->getMessages();
-        $messageId = $list[0]->getId(); // Grab first Message
+        $ch = curl_init("https://www.googleapis.com/gmail/v1/users/me/messages?start-index=$pageStart&max-results=$pageSize&alt=json&v=3.0&oauth_token=" . $accessToken['access_token']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $res = json_decode(curl_exec($ch), true) ?:[];
+        curl_close($ch);
+
+        print_r($res);
 
         return '';
     }
