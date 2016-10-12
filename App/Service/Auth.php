@@ -215,10 +215,6 @@ class Auth
      */
     public function getOAuthToken($code = null, $redirectUrl = null)
     {
-        include_once 'vendor/guzzlehttp/psr7/src/functions.php';
-        include_once 'vendor/guzzlehttp/guzzle/src/functions.php';
-        include_once 'vendor/guzzlehttp/promises/src/functions.php';
-
         if (!$redirectUrl)
         {
             $redirectUrl = 'https://' . \Sys::cfg('mailless.app_domain') . '/oauth/google';
@@ -241,6 +237,7 @@ class Auth
         {
             $accessToken = $client->authenticate($code);
             $client->setAccessToken($accessToken);
+            $accessToken = json_decode($accessToken, true);
 
             $ch = curl_init('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' . $accessToken['access_token']);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

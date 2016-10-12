@@ -19,40 +19,24 @@ $autoClasses0 =
 [
     'App\\'     => '.',
 
-    // 3rd parties
-  //  'Predis'            => 'vendor/predis/predis/lib',
-    'Resque'            => 'vendor/chrisboulton/php-resque/lib',
-    'RandomLib'         => 'vendor/ircmaxell/random-lib/lib',
-    'Psr\\Log\\'        => 'vendor/psr/log',
-    'SecurityLib'       => 'vendor/ircmaxell/security-lib/lib',
-  //  'Google_Service_'   => 'vendor/google/apiclient-services/src',
-    'Google_'           => 'vendor/google/apiclient/src',
+    'Resque'        => 'vendor/chrisboulton/php-resque/lib',
+    'RandomLib'     => 'vendor/ircmaxell/random-lib/lib',
+    'SecurityLib'   => 'vendor/ircmaxell/security-lib/lib',
+    'Google'        => 'vendor/google/apiclient/src',
 ];
 
 $autoClasses4 =
 [
     'League\\OAuth2\\Client\\' => ['vendor/league/oauth2-client/src/', 'vendor/league/oauth2-google/src/'],
     'Psr\\Http\\Message\\'  => 'vendor/psr/http-message/src/',
-  //  'Psr\\Cache\\'          => 'vendor/psr/cache/src/',
     'GuzzleHttp\\Psr7\\'    => 'vendor/guzzlehttp/psr7/src/',
     'GuzzleHttp\\Promise\\' => 'vendor/guzzlehttp/promises/src/',
     'GuzzleHttp\\'          => 'vendor/guzzlehttp/guzzle/src/',
     'EmailAuth\\'           => 'vendor/punarinta/email-auth/src/',
-  //  'Monolog\\'             => 'vendor/monolog/monolog/src/Monolog/',
 ];
 
 $loaderClassMap =
 [
-    'Google\\Auth\\OAuth2'                          => 'vendor/google/auth/src/OAuth2.php',
-    'Google\\Auth\\FetchAuthTokenInterface'         => 'vendor/google/auth/src/FetchAuthTokenInterface.php',
-    'Google\\Auth\\HttpHandler\\HttpHandlerFactory' => 'vendor/google/auth/src/HttpHandler/HttpHandlerFactory.php',
-    'Google\\Auth\\HttpHandler\\Guzzle6HttpHandler' => 'vendor/google/auth/src/HttpHandler/Guzzle6HttpHandler.php',
-  /*  'Google_Service_Exception'                      => 'vendor/google/apiclient/src/Google/Service/Exception.php',
-    'Google_Service_Resource'                       => 'vendor/google/apiclient/src/Google/Service/Resource.php',
-    'Google\\Auth\\Cache\\MemoryCacheItemPool'      => 'vendor/google/auth/src/Cache/MemoryCacheItemPool.php',
-    'Google\\Auth\\Middleware\\ScopedAccessTokenMiddleware' => 'vendor/google/auth/src/Middleware/ScopedAccessTokenMiddleware.php',
-    'Google\\Auth\\CacheTrait'                      => 'vendor/google/auth/src/CacheTrait.php',
-    'Google\\Auth\\Cache\\Item'                     => 'vendor/google/auth/src/Cache/Item.php',*/
 ];
 
 spl_autoload_register(function ($class) use ($autoClasses0, $autoClasses4, $loaderClassMap)
@@ -126,7 +110,7 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 10.10.16 @ 09:16:33 +0200
+// Built 12.10.16 @ 09:36:41 +0200
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],

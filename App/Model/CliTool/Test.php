@@ -114,10 +114,6 @@ class Test
      */
     public function updateAvatars($userId = 1)
     {
-        include_once 'vendor/guzzlehttp/psr7/src/functions.php';
-        include_once 'vendor/guzzlehttp/guzzle/src/functions.php';
-        include_once 'vendor/guzzlehttp/promises/src/functions.php';
-
         $user = \Sys::svc('User')->findById($userId);
         $settings = json_decode($user->settings, true) ?: [];
 
@@ -131,6 +127,7 @@ class Test
         $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
         $client->refreshToken($token);
         $accessToken = $client->getAccessToken();
+        $accessToken = json_decode($accessToken, true);
 
         $pageSize = 25;
         $pageStart = 1;
@@ -195,10 +192,6 @@ class Test
 
     public function googleImap($userId = 1)
     {
-        include_once 'vendor/guzzlehttp/psr7/src/functions.php';
-        include_once 'vendor/guzzlehttp/guzzle/src/functions.php';
-        include_once 'vendor/guzzlehttp/promises/src/functions.php';
-
         $user = \Sys::svc('User')->findById($userId);
         $settings = json_decode($user->settings, true) ?: [];
 
@@ -212,6 +205,7 @@ class Test
         $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
         $client->refreshToken($token);
         $accessToken = $client->getAccessToken();
+        $accessToken = json_decode($accessToken, true);
 
         $ids = [];
         $nextPageToken = null;
