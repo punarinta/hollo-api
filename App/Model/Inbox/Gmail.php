@@ -84,6 +84,7 @@ class Gmail extends Generic implements InboxInterface
             }
 
             $nextPageToken = $res['nextPageToken'];
+            usleep(100000);
         }
 
         return $ids;
