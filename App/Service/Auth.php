@@ -78,6 +78,11 @@ class Auth
 
         imap_close($box);
 
+        $key = \Sys::cfg('sys.imap_hash');
+        $cfg['hash'] = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key);
+        $user->settings = json_encode($cfg);
+        \Sys::svc('User')->update($user);
+
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['mail'] = ['user' => $user->email, 'pass' => $password];
     }
@@ -116,8 +121,10 @@ class Auth
         }
 
         imap_close($box);
-        
-        $settings = ['svc' => (int) $mailService->id/*, 'email' => $email, 'password' => $password*/];
+
+        $key = \Sys::cfg('sys.imap_hash');
+
+        $settings = ['svc' => (int) $mailService->id, 'hash' => openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key)];
         
         if ($locale != 'en_US')
         {

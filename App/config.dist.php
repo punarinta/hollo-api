@@ -53,12 +53,6 @@ return array
         'region'		=> 'US',
         'bucket'		=> 'hollo',
     ),
-    'zencoder' => array
-    (
-        'read_key'      => '',
-        'full_key'		=> '',
-        'bucket'        => 'hollo',
-    ),
     'emails' => array
     (
         'support'       => 'dev+support@hollo.email',
@@ -77,6 +71,7 @@ return array
         'password_cost' => 14,
         'sync_depth'    => 8,
         'sync_period'   => 8640000,
+        'imap_hash'     => '',
     ),
     'mime' => array
     (
