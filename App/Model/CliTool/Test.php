@@ -3,6 +3,8 @@
 namespace App\Model\CliTool;
 
 use App\Model\ContextIO\ContextIO;
+use App\Model\Inbox\Gmail;
+use App\Model\Inbox\Imap;
 
 /**
  * Class Test
@@ -190,51 +192,14 @@ class Test
         return "\n";
     }
 
-    public function googleImap($userId = 1)
+    public function inbox($userId = 1)
     {
-        $user = \Sys::svc('User')->findById($userId);
-        $settings = json_decode($user->settings, true) ?: [];
+        $imap = new Imap($userId);
 
-        if (!$token = $settings['token'])
-        {
-            return "No refresh token\n";
-        }
+        $imap->getMessages();
 
-        $client = new \Google_Client();
-        $client->setClientId(\Sys::cfg('oauth.google.clientId'));
-        $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
-        $client->refreshToken($token);
-        $accessToken = $client->getAccessToken();
-        $accessToken = json_decode($accessToken, true);
-
-        $ids = [];
-        $nextPageToken = null;
-
-        while (1)
-        {
-            $pageTokenStr = $nextPageToken ? "&pageToken=$nextPageToken" : '';
-
-            $ch = curl_init("https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=10$pageTokenStr&oauth_token=" . $accessToken['access_token']);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $res = json_decode(curl_exec($ch), true) ?:[];
-            curl_close($ch);
-
-            foreach ($res['messages'] as $message)
-            {
-                $ids[] = $message['id'];
-            }
-
-            if (!isset ($res['nextPageToken']))
-            {
-                break;
-            }
-            $nextPageToken = $res['nextPageToken'];
-
-            sleep(1);
-            echo "t = $nextPageToken\n";
-        }
-
-        print_r($ids);
+    //    $imap = new Gmail($userId);
+    //    print_r($imap->getMessage('1569d26f3489b282'));
 
         return '';
     }
