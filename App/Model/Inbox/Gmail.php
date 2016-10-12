@@ -118,6 +118,7 @@ class Gmail extends Generic implements InboxInterface
         {
             $bodies[] = array
             (
+                'size'      => $payload['body']['size'],
                 'type'      => 'text/html',
                 'content'   => $this->base64_decode($payload['body']['data']),
             );
@@ -131,53 +132,64 @@ class Gmail extends Generic implements InboxInterface
                 // we need to go deeper
                 foreach ($part['parts'] as $subPart)
                 {
-                    $data = null;
+                    // that's a body => get raw data, bro
 
-                    if (isset ($subPart['body']['data']))
+                    if (strpos($subPart['mimeType'], 'text/') === 0 && isset ($subPart['body']['attachmentId']))
                     {
-                        $data = $subPart['body']['data'];
+                        $bodies[] = array
+                        (
+                            'type'      => $subPart['mimeType'],
+                            'size'      => $subPart['body']['size'],
+                            'content'   => $this->getFileData($messageId, $subPart['body']['attachmentId']),
+                            'file_id'   => null,
+                        );
                     }
                     else
                     {
-                        foreach ($subPart['body'] as $k => $v)
-                        {
-                            if ($k != 'size')
-                            {
-                                $data = $v;
-                                break;
-                            }
-                        }
+                        $bodies[] = array
+                        (
+                            'type'      => $subPart['mimeType'],
+                            'size'      => $subPart['body']['size'],
+                            'content'   => $this->base64_decode(@$subPart['body']['data']),
+                            'file_id'   => @$subPart['body']['attachmentId'],
+                        );
                     }
-
-                    if ($data) $bodies[] = array
-                    (
-                        'type'      => $subPart['mimeType'],
-                        'content'   => $this->base64_decode($data),
-                    );
                 }
             }
             else
             {
                 $files[] = array
                 (
-                    'type' => $part['mimeType'],
-                    'name' => $part['filename'],
-                //    'body' => $part['body'],
+                    'type'      => $part['mimeType'],
+                    'name'      => $part['filename'],
+                    'size'      => $part['body']['size'],
+                    'content'   => $this->base64_decode(@$part['body']['data']),
+                    'file_id'   => @$part['body']['attachmentId'],
                 );
             }
         }
 
         return array
         (
-            'message_id'     => $messageId,
-            'subject'        => $headers['Subject'][0],
-            'addresses'      => $this->getAddresses($headers),
-            'body'           => $bodies,
-            'headers'        => $headers,
-            'files'          => $files,
-            'date'           => strtotime($headers['Date'][0]),
-            'folders'       => $raw['labelIds'],
+            'message_id' => $messageId,
+            'subject'    => $headers['Subject'][0],
+            'addresses'  => $this->getAddresses($headers),
+            'body'       => $bodies,
+            'headers'    => $headers,
+            'files'      => $files,
+            'date'       => strtotime($headers['Date'][0]),
+            'folders'    => $raw['labelIds'],
         );
+    }
+
+    /**
+     * @param $messageId
+     * @param $fileId
+     * @return string
+     */
+    public function getFileData($messageId, $fileId)
+    {
+        return $this->base64_decode($this->curl("messages/$messageId/attachments/$fileId")['data']);
     }
 
     /**
