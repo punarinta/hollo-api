@@ -19,10 +19,6 @@ chdir(__DIR__);
 
 $loaderClassMap = array
 (
-    'Google\\Auth\\OAuth2'                          => 'vendor/google/auth/src/OAuth2.php',
-    'Google\\Auth\\FetchAuthTokenInterface'         => 'vendor/google/auth/src/FetchAuthTokenInterface.php',
-    'Google\\Auth\\HttpHandler\\HttpHandlerFactory' => 'vendor/google/auth/src/HttpHandler/HttpHandlerFactory.php',
-    'Google\\Auth\\HttpHandler\\Guzzle6HttpHandler' => 'vendor/google/auth/src/HttpHandler/Guzzle6HttpHandler.php',
 );
 
 $autoClasses0 = array
@@ -31,7 +27,6 @@ $autoClasses0 = array
 
     // 3rd parties
     'Resque'        => 'vendor/chrisboulton/php-resque/lib',
-    'Psr\\Log\\'    => 'vendor/psr/log',
     'Google'        => 'vendor/google/apiclient/src',
     'SecurityLib'   => 'vendor/ircmaxell/security-lib/lib',
     'RandomLib'     => 'vendor/ircmaxell/random-lib/lib',
@@ -44,7 +39,6 @@ $autoClasses4 =
     'GuzzleHttp\\Psr7\\'        => 'vendor/guzzlehttp/psr7/src/',
     'GuzzleHttp\\Promise\\'     => 'vendor/guzzlehttp/promises/src/',
     'GuzzleHttp\\'              => 'vendor/guzzlehttp/guzzle/src/',
-    'Monolog\\'                 => 'vendor/monolog/monolog/src/Monolog/',
 ];
 
 spl_autoload_register(function($class) use ($loaderClassMap, $autoClasses0, $autoClasses4)
