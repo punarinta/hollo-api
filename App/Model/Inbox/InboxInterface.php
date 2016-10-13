@@ -9,6 +9,6 @@ namespace App\Model\Inbox;
 interface InboxInterface
 {
     public function checkNew($userId);
-    public function getMessages();
+    public function getMessages($options);
     public function getMessage($messageId);
 }

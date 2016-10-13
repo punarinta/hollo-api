@@ -60,18 +60,25 @@ class Gmail extends Generic implements InboxInterface
     }
 
     /**
+     * @param array $options
      * @return array
      */
-    public function getMessages()
+    public function getMessages($options = [])
     {
         $ids = [];
         $nextPageToken = null;
 
         while (1)
         {
+            $query = '';
             $pageTokenStr = $nextPageToken ? "&pageToken=$nextPageToken" : '';
 
-            $res = $this->curl("messages?maxResults=100$pageTokenStr&fields=messages,nextPageToken");
+            if (isset ($options['ts_after']))
+            {
+                $query = '&q=' . urlencode('after:' . date('Y/m/d', $options['ts_after']));
+            }
+
+            $res = $this->curl("messages?maxResults=100$pageTokenStr&fields=messages,nextPageToken$query");
 
             foreach ($res['messages'] as $message)
             {
