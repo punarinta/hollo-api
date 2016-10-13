@@ -97,15 +97,22 @@ class Plancake
                 preg_match('/([^:]+): ?(.*)$/', $line, $matches);
                 $newHeader = strtolower($matches[1]);
                 $value = $matches[2];
-                $this->rawFields[$newHeader] = $value;
+
+                if (!isset ($this->rawFields[$newHeader]))
+                {
+                    $this->rawFields[$newHeader] = [];
+                }
+
+                $this->rawFields[$newHeader][] = $value;
                 $currentHeader = $newHeader;
             }
-            else // more lines related to the current header
+            else
             {
+                // more lines related to the current header
                 if ($currentHeader)
                 {
-                    // to prevent notice from empty lines
-                    $this->rawFields[$currentHeader] .= substr($line, 1);
+                    // use the last one, in case there are several headers with the same name
+                    $this->rawFields[$currentHeader][count($this->rawFields[$currentHeader]) - 1] .= substr($line, 1);
                 }
             }
             ++$i;
@@ -118,14 +125,14 @@ class Plancake
      */
     public function getSubject()
     {
-        if (!isset ($this->rawFields['subject']))
+        if (!isset ($this->rawFields['subject'][0]))
         {
             throw new \Exception("Couldn't find the subject of the email");
         }
 
         $ret = '';
 
-        foreach (imap_mime_header_decode($this->rawFields['subject']) as $h)
+        foreach (imap_mime_header_decode($this->rawFields['subject'][0]) as $h)
         {
             // subject can span into several lines
             $charset = ($h->charset == 'default') ? 'US-ASCII' : $h->charset;
@@ -133,33 +140,6 @@ class Plancake
         }
 
         return $ret;
-    }
-
-    /**
-     * @return array
-     */
-    public function getCc()
-    {
-        if (!isset ($this->rawFields['cc']))
-        {
-            return [];
-        }
-
-        return explode(',', $this->rawFields['cc']);
-    }
-
-    /**
-     * @return array
-     * @throws \Exception if a to header is not found or if there are no recipient
-     */
-    public function getTo()
-    {
-        if ((!isset ($this->rawFields['to'])) || (!count($this->rawFields['to'])))
-        {
-            throw new \Exception("Couldn't find the recipients of the email");
-        }
-
-        return explode(',', $this->rawFields['to']);
     }
 
     /**
