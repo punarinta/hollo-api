@@ -27,16 +27,18 @@ class Generic
 
         foreach ($headers as $k => $v)
         {
-            if ($k == 'From')
+            $k = strtolower($k);
+
+            if ($k == 'from')
             {
                 $addr['from'] = $this->splitAddress($v[0]);
             }
-            if ($k == 'To')
+            if ($k == 'to')
             {
                 if (!isset ($addr['to'])) $addr['to'] = [];
                 $addr['to'][] = $this->splitAddress($v[0]);
             }
-            if ($k == 'Cc')
+            if ($k == 'cc')
             {
                 if (!isset ($addr['cc'])) $addr['cc'] = [];
                 $addr['cc'][] = $this->splitAddress($v[0]);
