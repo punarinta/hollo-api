@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Model\Inbox;
+use App\Model\Plancake;
 
 /**
  * Class Imap
@@ -8,10 +9,10 @@ namespace App\Model\Inbox;
  */
 class Imap extends Generic implements InboxInterface
 {
+    private $in = [];
     private $login = null;
     private $password = null;
-    private $in = [];
-    private $imapRef = '';
+    private $connector = null;
 
     /**
      * Init and get a password
@@ -44,54 +45,86 @@ class Imap extends Generic implements InboxInterface
         }
     }
 
+    /**
+     * @param $userId
+     */
     public function checkNew($userId)
     {
-        if (!$box = $this->imap_open())
-        {
-            throw new \Exception('Incorrect username or password.');
-        }
-
-        imap_close($box);
-    }
-
-    public function getMessages()
-    {
-        if (!$box = $this->imap_open())
-        {
-            throw new \Exception('Incorrect username or password.');
-        }
-
-        $MC = imap_check($box);
-
-        $messages = imap_fetch_overview($box, "1:{$MC->Nmsgs}");
-
-        foreach ($messages as $message)
-        {
-            print_r($message);
-            /*$folder = str_replace($this->imapRef, '', imap_base64($folder));
-            echo "Folder = $folder\n";*/
-        }
-
-        imap_close($box);
-    }
-
-    public function getMessage($messageId)
-    {
+        $this->checkOpened();
     }
 
     /**
-     * @return resource
-     * @throws \Exception
+     * @param array $options
+     * @return array
      */
-    private function imap_open()
+    public function getMessages($options = [])
     {
-        if (!$this->in)
+        $query = 'ALL';
+        $this->checkOpened();
+
+        if (isset ($options['ts_after']))
         {
-            throw new \Exception('Mail service not configured');
+            $query = 'SINCE "' . date('Y-m-d', $options['ts_after']) . '"';
         }
 
-        $this->imapRef = '{' . $this->in['host'] . ':' . $this->in['port'] . '/imap/ssl/novalidate-cert/readonly}';
+        return imap_search($this->connector, $query, SE_UID);
+    }
 
-        return imap_open($this->imapRef, $this->login, $this->password);
+    /**
+     * @param $messageId
+     * @return array
+     */
+    public function getMessage($messageId)
+    {
+        $this->checkOpened();
+
+        if (!$overview = imap_fetchbody($this->connector, $messageId, '', FT_UID))
+        {
+            return [];
+        }
+
+        $email = new Plancake($overview);
+        $headers = $email->getHeaders();
+
+        return array
+        (
+            'message_id' => $messageId,
+            'subject'    => $email->getSubject(),
+            'addresses'  => $this->getAddresses($headers),
+            'body'       => '',
+            'headers'    => $headers,
+            'files'      => '',
+            'date'       => strtotime($headers['date']),
+            'folders'    => '',
+        );
+    }
+
+    /**
+     * Check if the connection is opened and open if necessary
+     *
+     * @throws \Exception
+     */
+    private function checkOpened()
+    {
+        if (!$this->connector)
+        {
+            if (!$this->in)
+            {
+                throw new \Exception('Mail service not configured');
+            }
+
+            $this->connector = imap_open('{' . $this->in['host'] . ':' . $this->in['port'] . '/imap/ssl/novalidate-cert/readonly}', $this->login, $this->password);
+        }
+    }
+
+    /**
+     * Kill connector with fire on class destruction
+     */
+    public function __destruct()
+    {
+        if ($this->connector)
+        {
+            imap_close($this->connector);
+        }
     }
 }
