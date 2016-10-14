@@ -47,10 +47,23 @@ class Imap extends Generic implements InboxInterface
 
     /**
      * @param $userId
+     * @return bool
      */
     public function checkNew($userId)
     {
         $this->checkOpened();
+
+        // TODO: adjust time
+        $ids = $this->getMessages(['ts_after' => date('Y-m-d', strtotime('yesterday'))]);
+
+        if (!count($ids))
+        {
+            return false;
+        }
+
+        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$userId]);
+
+        return !$row || $row->ext_id != $ids[0];
     }
 
     /**
@@ -67,7 +80,7 @@ class Imap extends Generic implements InboxInterface
             $query = 'SINCE "' . date('Y-m-d', $options['ts_after']) . '"';
         }
 
-        return imap_search($this->connector, $query, SE_UID);
+        return array_reverse(imap_search($this->connector, $query, SE_UID));
     }
 
     /**
@@ -91,11 +104,11 @@ class Imap extends Generic implements InboxInterface
             'message_id' => $messageId,
             'subject'    => $email->getSubject(),
             'addresses'  => $this->getAddresses($headers),
-            'body'       => '',
+            'body'       => $email->getBodies(),
             'headers'    => $headers,
-            'files'      => '',
-            'date'       => strtotime($headers['date']),
-            'folders'    => '',
+            'files'      => $email->getAttachments(),
+            'date'       => strtotime($headers['date'][0]),
+            'folders'    => [],     // not really clear ow to fill in this for a standard IMAP
         );
     }
 
