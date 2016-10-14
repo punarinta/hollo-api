@@ -196,7 +196,10 @@ class Test
     {
         $imap = new Imap($userId);
 
-        $imap->getMessages();
+    //    print_r($imap->getMessages(['ts_after' => strtotime('2016-10-14')]));
+
+    //    print_r($imap->getMessage(11216));
+        $imap->getMessage(11298);
 
     //    $imap = new Gmail($userId);
     //    print_r($imap->getMessage('1569d26f3489b282'));

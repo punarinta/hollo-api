@@ -2,43 +2,9 @@
 
 namespace App\Model;
 
-/*************************************************************************************
- * ===================================================================================*
- * Software by: Danyuki Software Limited                                              *
- * This file is part of Plancake.                                                     *
- *                                                                                    *
- * Copyright 2009-2010-2011 by:     Danyuki Software Limited                          *
- * Support, News, Updates at:  http://www.plancake.com                                *
- * Licensed under the LGPL version 3 license.                                         *                                                       *
- * Danyuki Software Limited is registered in England and Wales (Company No. 07554549) *
- **************************************************************************************
- * Plancake is distributed in the hope that it will be useful,                        *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of                     *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      *
- * GNU Lesser General Public License v3.0 for more details.                           *
- *                                                                                    *
- * You should have received a copy of the GNU Lesser General Public License           *
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.              *
- *                                                                                    *
- **************************************************************************************
- *
- * Valuable contributions by:
- * - Chris
- *
- * **************************************************************************************/
-
 /**
- * Extracts the headers and the body of an email
- * Obviously it can't extract the bcc header because it doesn't appear in the content
- * of the email.
- *
- * N.B.: if you deal with non-English languages, we recommend you install the IMAP PHP extension:
- * the Plancake PHP Email Parser will detect it and used it automatically for better results.
- *
- * For more info, check:
- * https://github.com/plancake/official-library-php-email-parser
- *
- * @author dan
+ * Class Plancake
+ * @package App\Model
  */
 class Plancake
 {
@@ -89,6 +55,10 @@ class Plancake
             {
                 // end of headers
                 $this->rawBodyLines = array_slice($lines, $i);
+
+                $this->rawBodyLines = implode("\n", $this->rawBodyLines);
+            //    $temp = quoted_printable_decode($temp);
+            //    $this->rawBodyLines = strtr($temp, ["=\n" => '']);
                 break;
             }
 
@@ -143,164 +113,58 @@ class Plancake
     }
 
     /**
-     * return string - UTF8 encoded
-     *
-     * Example of an email body
-     *
-    --0016e65b5ec22721580487cb20fd
-    Content-Type: text/plain; charset=ISO-8859-1
-
-    Hi all. I am new to Android development.
-    Please help me.
-
-    --
-    My signature
-
-    email: myemail@gmail.com
-    web: http://www.example.com
-
-    --0016e65b5ec22721580487cb20fd
-    Content-Type: text/html; charset=ISO-8859-1
-
-     * @param int $returnType
-     * @return mixed|string
+     * @return array
      */
-    public function getBody($returnType = self::PLAINTEXT)
+    public function getBodies()
     {
-        $body = '';
-        $detectedContentType = false;
-        $contentTransferEncoding = null;
-        $charset = 'ASCII';
-        $waitingForContentStart = true;
+        $bodies = [];
 
-        if ($returnType == self::HTML)
+        if (!$topContentType = $this->getHeader('Content-Type'))
         {
-            $contentTypeRegex = '/^Content-Type: ?text\/html/i';
-        }
-        else
-        {
-            $contentTypeRegex = '/^Content-Type: ?text\/plain/i';
+            return [];
         }
 
-        // there could be more than one boundary
-        preg_match_all('!boundary=(.*)$!mi', $this->emailRawContent, $matches);
-        $boundaries = $matches[1];
+        preg_match('!boundary=(.*)$!i', $topContentType[0], $topBoundary);
+        $topBoundary = $topBoundary[1];
 
-        // sometimes boundaries are delimited by quotes - we want to remove them
-        foreach ($boundaries as $i => $v)
+        foreach (explode('--' . $topBoundary, $this->rawBodyLines) as $topPart)
         {
-            $boundaries[$i] = str_replace(["'", '"'], '', $v);
-        }
-
-        foreach ($this->rawBodyLines as $line)
-        {
-            if (!$detectedContentType)
+            if (!trim($topPart))
             {
-                if (preg_match($contentTypeRegex, $line, $matches))
-                {
-                    $detectedContentType = true;
-                }
-
-                if(preg_match('/charset=(.*)/i', $line, $matches))
-                {
-                    $charset = strtoupper(trim($matches[1], '"'));
-                }
+                continue;
             }
-            else if ($detectedContentType && $waitingForContentStart)
+
+            if (preg_match('/^Content-Type: ?(.*)$/mi', $topPart, $matches))
             {
+                $contentType = explode(';', $matches[1]);
 
-                if (preg_match('/charset=(.*)/i', $line, $matches))
+                if (trim($contentType[0]) == 'multipart/alternative')
                 {
-                    $charset = strtoupper(trim($matches[1], '"'));
-                }
+                    // $boundary = trim(strtr($contentType[1], ['boundary=' => '']));
 
-                if ($contentTransferEncoding == null && preg_match('/^Content-Transfer-Encoding: ?(.*)/i', $line, $matches))
-                {
-                    $contentTransferEncoding = $matches[1];
-                }
+                    print_r($this->rawBodyLines);
+                    break;
 
-                if (self::isNewLine($line))
-                {
-                    $waitingForContentStart = false;
-                }
-            }
-            else
-            {
-                // ($detectedContentType && !$waitingForContentStart)
-                // collecting the actual content until we find the delimiter
-
-                // if the delimited is AAAAA, the line will be --AAAAA  - that's why we use substr
-                if (is_array($boundaries))
-                {
-                    if (in_array(substr($line, 2), $boundaries))
+                /*    foreach (explode('--' . $boundary, $topPart) as $part)
                     {
-                        // found the delimiter
-                        break;
-                    }
+                        print_r($part);
+                    }*/
                 }
-                $body .= $line . "\n";
             }
         }
 
-        if (!$detectedContentType)
-        {
-            // if here, we missed the text/plain content-type (probably it was
-            // in the header), thus we assume the whole body is what we are after
-            $body = implode("\n", $this->rawBodyLines);
-        }
-
-        // removing trailing new lines
-        $body = preg_replace('/((\r?\n)*)$/', '', $body);
-
-        if ($contentTransferEncoding == 'base64')
-        {
-            $body = base64_decode($body);
-        }
-        else if ($contentTransferEncoding == 'quoted-printable')
-        {
-            $body = quoted_printable_decode($body);
-        }
-
-        if ($charset != 'UTF-8')
-        {
-            // FORMAT=FLOWED, despite being popular in emails, it is not
-            // supported by iconv
-            $charset = str_replace("FORMAT=FLOWED", "", $charset);
-
-            $bodyCopy = $body;
-            $body = iconv($charset, 'UTF-8//TRANSLIT', $body);
-
-            if ($body === false)
-            {
-                // iconv returns FALSE on failure
-                $body = utf8_encode($bodyCopy);
-            }
-        }
-
-        return $body;
+        return $bodies;
     }
 
     /**
-     * @return string - UTF8 encoded
+     * @return array
      */
-    public function getPlainBody()
+    public function getAttachments()
     {
-        return $this->getBody(self::PLAINTEXT);
+        return [];
     }
 
     /**
-     * return string - UTF8 encoded
-     *
-     * @return mixed|string
-     */
-    public function getHTMLBody()
-    {
-        return $this->getBody(self::HTML);
-    }
-
-    /**
-     * N.B.: if the header doesn't exist an empty string is returned
-     *
      * @param string $headerName - the header we want to retrieve
      * @return string - the value of the header
      */
