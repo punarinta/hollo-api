@@ -138,7 +138,7 @@ class Imap extends Generic implements InboxInterface
                 throw new \Exception('Mail service not configured');
             }
 
-            $this->connector = imap_open('{' . $this->in['host'] . ':' . $this->in['port'] . '/imap/ssl/novalidate-cert/readonly}', $this->login, $this->password);
+            $this->connector = imap_open('{' . $this->in['host'] . ':' . $this->in['port'] . '/imap/ssl/novalidate-cert/readonly}INBOX', $this->login, $this->password);
         }
     }
 
