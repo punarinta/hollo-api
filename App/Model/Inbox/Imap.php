@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Model\Inbox;
-use App\Model\Plancake;
+use App\Model\EmailParser;
 
 /**
  * Class Imap
@@ -96,7 +96,7 @@ class Imap extends Generic implements InboxInterface
             return [];
         }
 
-        $email = new Plancake($overview);
+        $email = new EmailParser($overview);
         $headers = $email->getHeaders();
 
         return array
