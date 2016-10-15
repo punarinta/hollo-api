@@ -107,8 +107,6 @@ class Gmail extends Generic implements InboxInterface
         $raw = $this->curl("messages/$messageId");
         $payload = $raw['payload'];
 
-        // print_r($raw);
-
         foreach ($payload['headers'] as $header)
         {
             if (!isset ($headers[$header['name']]))
@@ -148,7 +146,7 @@ class Gmail extends Generic implements InboxInterface
                         (
                             'type'      => $subPart['mimeType'],
                             'size'      => $subPart['body']['size'],
-                            'content'   => $this->getFileData($messageId, $subPart['body']['attachmentId']),
+                            'content'   => $this->getAttachmentData($messageId, $subPart['body']['attachmentId']),
                             'file_id'   => null,
                         );
                     }
@@ -205,6 +203,16 @@ class Gmail extends Generic implements InboxInterface
         }
 
         return @$this->base64_decode($this->curl("messages/$messageId/attachments/{$data['files'][$fileId]['file_id']}")['data']);
+    }
+
+    /**
+     * @param $messageId
+     * @param $attachmentId
+     * @return string
+     */
+    public function getAttachmentData($messageId, $attachmentId)
+    {
+        return @$this->base64_decode($this->curl("messages/$messageId/attachments/$attachmentId")['data']);
     }
 
     /**
