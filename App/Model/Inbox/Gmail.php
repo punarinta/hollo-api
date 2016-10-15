@@ -197,7 +197,14 @@ class Gmail extends Generic implements InboxInterface
      */
     public function getFileData($messageId, $fileId)
     {
-        return $this->base64_decode($this->curl("messages/$messageId/attachments/$fileId")['data']);
+        $data = $this->getMessage($messageId);
+
+        if (@$data['files'][$fileId]['content'])
+        {
+            return $data['files'][$fileId]['content'];
+        }
+
+        return @$this->base64_decode($this->curl("messages/$messageId/attachments/{$data['files'][$fileId]['file_id']}")['data']);
     }
 
     /**

@@ -113,6 +113,18 @@ class Imap extends Generic implements InboxInterface
     }
 
     /**
+     * @param $messageId
+     * @param $fileId
+     * @return mixed
+     */
+    public function getFileData($messageId, $fileId)
+    {
+        $data = $this->getMessage($messageId);
+
+        return @$data['files'][$fileId]['content'];
+    }
+
+    /**
      * Check if the connection is opened and open if necessary
      *
      * @throws \Exception
