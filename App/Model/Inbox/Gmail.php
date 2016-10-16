@@ -131,47 +131,67 @@ class Gmail extends Generic implements InboxInterface
         }
 
         // normalize parts
-        if (isset ($payload['parts'])) foreach ($payload['parts'] as $part)
+        if (isset ($payload['parts']))
         {
-            if ($part['mimeType'] == 'multipart/alternative')
+            foreach ($payload['parts'] as $part)
             {
-                // we need to go deeper
-                foreach ($part['parts'] as $subPart)
+                if ($part['mimeType'] == 'multipart/alternative')
                 {
-                    // that's a body => get raw data, bro
+                    // we need to go deeper
+                    foreach ($part['parts'] as $k => $subPart)
+                    {
+                        // that's a body => get raw data, bro
 
-                    if (strpos($subPart['mimeType'], 'text/') === 0 && isset ($subPart['body']['attachmentId']))
-                    {
-                        $bodies[] = array
-                        (
-                            'type'      => $subPart['mimeType'],
-                            'size'      => $subPart['body']['size'],
-                            'content'   => $this->getAttachmentData($messageId, $subPart['body']['attachmentId']),
-                            'file_id'   => null,
-                        );
-                    }
-                    else
-                    {
-                        $bodies[] = array
-                        (
-                            'type'      => $subPart['mimeType'],
-                            'size'      => $subPart['body']['size'],
-                            'content'   => $this->base64_decode(@$subPart['body']['data']),
-                            'file_id'   => @$subPart['body']['attachmentId'],
-                        );
+                        if (strpos($subPart['mimeType'], 'text/') === 0 && isset ($subPart['body']['attachmentId']))
+                        {
+                            $bodies[] = array
+                            (
+                                'type'      => $subPart['mimeType'],
+                                'size'      => $subPart['body']['size'],
+                                'content'   => $this->getAttachmentData($messageId, $subPart['body']['attachmentId']),
+                                'file_id'   => null,
+                            );
+                        }
+                        else
+                        {
+                            $bodies[] = array
+                            (
+                                'type'      => $subPart['mimeType'],
+                                'size'      => $subPart['body']['size'],
+                                'content'   => $this->base64_decode(@$subPart['body']['data']),
+                                'file_id'   => @$subPart['body']['attachmentId'],
+                            );
+                        }
+
+                        unset ($part['parts'][$k]);
                     }
                 }
             }
-            else
+
+            $bodiesEmpty = empty ($bodies);
+
+            foreach ($payload['parts'] as $part) if ($part)
             {
-                $files[] = array
-                (
-                    'type'      => $part['mimeType'],
-                    'name'      => $part['filename'],
-                    'size'      => $part['body']['size'],
-                    'content'   => $this->base64_decode(@$part['body']['data']),
-                    'file_id'   => @$part['body']['attachmentId'],
-                );
+                if ($bodiesEmpty)
+                {
+                    // this is most probably a normal body
+                    $bodies[] = array
+                    (
+                        'type'      => $part['mimeType'],
+                        'size'      => $part['body']['size'],
+                        'content'   => $this->base64_decode(@$part['body']['data']),
+                    );
+                }
+                elseif ($part['mimeType'] != 'multipart/alternative')
+                {
+                    $files[] = array
+                    (
+                        'type'      => $part['mimeType'],
+                        'name'      => $part['filename'],
+                        'size'      => $part['body']['size'],
+                        'file_id'   => @$part['body']['attachmentId'],
+                    );
+                }
             }
         }
 
