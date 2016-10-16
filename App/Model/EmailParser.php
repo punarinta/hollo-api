@@ -70,6 +70,22 @@ class EmailParser
             }
             ++$i;
         }
+
+        foreach ($this->rawFields as $k => $v)
+        {
+            if (strpos($v[0], '=?') !== false)
+            {
+                $res = '';
+                foreach (imap_mime_header_decode($v[0]) as $h)
+                {
+                    // subject can span into several lines
+                    $charset = ($h->charset == 'default') ? 'US-ASCII' : $h->charset;
+                    $res .= iconv($charset, "UTF-8//TRANSLIT", $h->text);
+                }
+
+                $this->rawFields[$k] = [$res];
+            }
+        }
     }
 
     /**
@@ -78,21 +94,7 @@ class EmailParser
      */
     public function getSubject()
     {
-        if (!isset ($this->rawFields['subject'][0]))
-        {
-            throw new \Exception("Couldn't find the subject of the email");
-        }
-
-        $ret = '';
-
-        foreach (imap_mime_header_decode($this->rawFields['subject'][0]) as $h)
-        {
-            // subject can span into several lines
-            $charset = ($h->charset == 'default') ? 'US-ASCII' : $h->charset;
-            $ret .= iconv($charset, "UTF-8//TRANSLIT", $h->text);
-        }
-
-        return $ret;
+        return $this->rawFields['subject'][0];
     }
 
     /**
@@ -121,14 +123,17 @@ class EmailParser
 
             $content = $this->rawBodyLines;
 
-            if ($contentEncoding[0] == 'quoted-printable')
+            if ($contentEncoding)
             {
-                $content = quoted_printable_decode($content);
-                $content = strtr($content, ["=\n" => '']);
-            }
-            if ($contentEncoding[0] == 'base64')
-            {
-                $content = base64_decode(strtr($content, ['-' => '+', '_' => '/']));
+                if ($contentEncoding[0] == 'quoted-printable')
+                {
+                    $content = quoted_printable_decode($content);
+                    $content = strtr($content, ["=\n" => '']);
+                }
+                if ($contentEncoding[0] == 'base64')
+                {
+                    $content = base64_decode(strtr($content, ['-' => '+', '_' => '/']));
+                }
             }
 
             // TODO: do something with charset
@@ -152,7 +157,7 @@ class EmailParser
 
                 $topPartData = $this->parsePart($topPart);
 
-                if ($topPartData['headers']['content-type'][0] == 'multipart/alternative')
+                if (@$topPartData['headers']['content-type'][0] == 'multipart/alternative')
                 {
                     foreach (explode('--' . $topPartData['headers']['content-type']['boundary'], $topPartData['content']) as $part)
                     {
@@ -255,25 +260,27 @@ class EmailParser
 
                 $topPartData = $this->parsePart($topPart);
 
-                if ($topPartData['headers']['content-type'][0] != 'multipart/alternative' && $topPartData)
+                if (@$topPartData['headers']['content-type'][0] != 'multipart/alternative' && $topPartData)
                 {
                     $content = $topPartData['content'];
 
-                    if ($topPartData['headers']['content-transfer-encoding'][0] == 'quoted-printable')
+                    switch (@$topPartData['headers']['content-transfer-encoding'][0])
                     {
-                        $content = quoted_printable_decode($content);
-                        $content = strtr($content, ["=\n" => '']);
-                    }
-                    if ($topPartData['headers']['content-transfer-encoding'][0] == 'base64')
-                    {
-                        $content = base64_decode(strtr($content, ['-' => '+', '_' => '/']));
+                        case 'quoted-printable':
+                            $content = quoted_printable_decode($content);
+                            $content = strtr($content, ["=\n" => '']);
+                            break;
+
+                        case 'base64':
+                            $content = base64_decode(strtr($content, ['-' => '+', '_' => '/']));
+                            break;
                     }
 
                     $attachments[] = array
                     (
                         'size'      => strlen($content),
-                        'type'      => $topPartData['headers']['content-type'][0],
-                        'name'      => strtr($topPartData['headers']['content-type']['name'], ['"' => '', "'" => '']),
+                        'type'      => @$topPartData['headers']['content-type'][0],
+                        'name'      => strtr(@$topPartData['headers']['content-type']['name'], ['"' => '', "'" => '']),
                         'content'   => $content,
                     );
                 }
