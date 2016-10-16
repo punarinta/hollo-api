@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Model\FileParser\Calendar;
+use App\Model\Inbox\Inbox;
 
 class Message extends Generic
 {
@@ -200,64 +201,36 @@ class Message extends Generic
      */
     public function syncAllByUserId($userId, $fetchMuted = false, $noMarks = false)
     {
-        $offset = 0;
-        $limit = 100;
-
         if (!$user = \Sys::svc('User')->findById($userId))
         {
             throw new \Exception('User does not exist');
         }
 
-        $params =
-        [
-            'limit'         => $limit,
-            'sort_order'    => 'desc',
-        ];
+        $count = 0;
 
-        while (1)
+        // init email layer
+        $imap = Inbox::init($user);
+
+        foreach ($imap->getMessages() as $messageExtId)
         {
-            $rows = [];
-            $attempt = 0;
-            $params['offset'] = $offset;
+            $this->say("User {$user->email}, extId = $messageExtId");
 
-            $this->say("User {$user->email}, offset = $offset");
+            $emailData = $imap->getMessage($messageExtId);
 
-            while ($attempt < 10)
-            {
-                if ($data = $this->conn->listMessages($user->ext_id, $params))
-                {
-                    $rows = $data->getData();
-
-                    foreach ($rows as $row)
-                    {
-                        $this->processMessageSync($user, $row,
-                        [
-                            'fetchMuted'    => $fetchMuted,
-                            'fetchAll'      => true,
-                            'noMarks'       => $noMarks,
-                        ]);
-                    }
-
-                    break;
-                }
-                else
-                {
-                    $this->retry($params, ++$attempt);
-                }
-            }
-
-            if (count($rows) < $limit)
-            {
-                return $offset + count($rows);
-            }
-
-            $offset += $limit;
+            $count += 1 * !empty($this->processMessageSync($user, $emailData,
+            [
+                'fetchMuted'    => $fetchMuted,
+                'fetchAll'      => true,
+                'noMarks'       => $noMarks,
+            //    'maxTimeBack'   => 100000000,       // TODO: REMOVE!
+            //    'keepOld'       => true,            // TODO: REMOVE!
+            ]));
 
             // sleep a bit to prevent API request queue growth
-            usleep(600000);
+            usleep(200000);
         }
 
-        return 0;
+        return $count;
     }
 
     /**
@@ -270,19 +243,13 @@ class Message extends Generic
      */
     public function sync($accountId, $messageExtId)
     {
-        if (!$data = $this->conn->getMessage($accountId, ['message_id' => $messageExtId, 'include_body' => 1, 'include_headers' => 1]))
-        {
-            // no data -> skip this sync
-            return false;
-        }
-
         if (!$user = \Sys::svc('User')->findByExtId($accountId))
         {
             throw new \Exception('User does not exist.');
         }
 
-        $data = $data->getData();
-
+        $imap = Inbox::init($user);
+        $data = $imap->getMessage($messageExtId);
         $this->say($data, 1);
 
         // TODO: send a signal to notifier
@@ -446,6 +413,7 @@ class Message extends Generic
         {
             if (!isset ($messageData['addresses']['from']))
             {
+                $this->say('Error: no "from" address');
                 return false;
             }
 
@@ -471,6 +439,7 @@ class Message extends Generic
             // sometimes it may happen that Context.IO user is not in the chat (e.g. stolen message), check this
             if (!in_array($user->email, $emails))
             {
+                $this->say('Error: user is not in the chat');
                 return false;
             }
 
@@ -494,6 +463,7 @@ class Message extends Generic
                     if (count($emails) < 2)
                     {
                         // the cannot be less than 2 people in chat
+                        $this->say('Error: only one person in chat');
                         return false;
                     }
 
@@ -510,7 +480,7 @@ class Message extends Generic
             }
             catch (\Exception $e)
             {
-                $this->say('Code 1: invalid chat');
+                $this->say('Error: invalid chat');
                 return false;
             }
 
@@ -523,6 +493,7 @@ class Message extends Generic
             // thus, allow a chat to be created first
             if ($maxTimeBack > 0 && $messageData['date'] < time() - $maxTimeBack)
             {
+                $this->say('Error: message is too old');
                 return false;
             }
 
@@ -536,6 +507,7 @@ class Message extends Generic
 
                 if ($flags && $flags->muted)
                 {
+                    $this->say('Error: message is muted');
                     return false;
                 }
             }
@@ -545,16 +517,17 @@ class Message extends Generic
             {
                 if (stripos($folder, 'draft') !== false)
                 {
+                    $this->say('Error: message is a draft');
                     return false;
                 }
             }
 
-            // check after muting is tested
+        /*    // check after muting is tested
             if (!isset ($messageData['body']))
             {
                 $this->say("Body extraction. Ext ID = {$extId}");
                 $messageData = $this->getDataByExtId($user->ext_id, $extId);
-            }
+            }*/
 
 
             // === process the message content ===
@@ -567,18 +540,16 @@ class Message extends Generic
                 {
                     $files[] = array
                     (
-                        'name'  => $file['file_name'],
+                        'name'  => $file['name'],
                         'type'  => $file['type'],
                         'size'  => $file['size'],
-                        'extId' => $file['file_id'],
                     );
                 }
             }
 
-            if (!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]['content']))
+            if ((!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]['content'])) && empty ($files))
             {
-                $this->say('Code 1: no body');
-                // no body?
+                $this->say('Error: no payload');
                 return false;
             }
 
@@ -597,7 +568,7 @@ class Message extends Generic
             // avoid duplicating by user_id-chat_id-ts key
             if (!$this->isUnique($senderId, $chat->id, $messageData['date']))
             {
-                $this->say('Code 2: not unique');
+                $this->say('Error: duplicate message');
                 return false;
             }
 
@@ -611,8 +582,8 @@ class Message extends Generic
 
             if (!mb_strlen($content) && empty ($files))
             {
-                $this->say('Code 3: no content');
                 // avoid empty replies
+                $this->say('Error: message has no real content');
                 return false;
             }
 
@@ -782,6 +753,9 @@ class Message extends Generic
 
         // Remove lines like '____________'
         $content = preg_replace("/^____________.*$/mi", '', $content);
+
+        // rare bullshit
+        $content = preg_replace("/^--_=_.*$/ims", '', $content);
 
         // Remove blocks of text with formats like:
         //   - 'From: Sent: To: Subject:'

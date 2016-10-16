@@ -194,15 +194,14 @@ class Test
 
     public function inbox($userId = 1)
     {
-        $imap = new Imap($userId);
+        $imap = new Imap($userId); // 11298 - attachment, 11216 - polish symbols
 
     //    print_r($imap->getMessages(['ts_after' => strtotime('2016-10-14')]));
 
-    //    print_r($imap->getMessage(11216));
-        $imap->getMessage(11298);
+        print_r($imap->getMessage(11077));
 
     //    $imap = new Gmail($userId);
-    //    print_r($imap->getMessage('1569d26f3489b282'));
+    //    print_r($imap->getMessage('155b48e12ef23f00'));
 
         return '';
     }

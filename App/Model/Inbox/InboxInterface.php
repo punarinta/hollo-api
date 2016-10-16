@@ -9,7 +9,7 @@ namespace App\Model\Inbox;
 interface InboxInterface
 {
     public function checkNew($userId);
-    public function getMessages($options);
+    public function getMessages($options = []);
     public function getMessage($messageId);
     public function getFileData($messageId, $fileId);
 }
