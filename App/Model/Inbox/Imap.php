@@ -30,7 +30,7 @@ class Imap extends Generic implements InboxInterface
         $this->userId = $user->id;
         $settings = json_decode($user->settings, true) ?: [];
 
-        if (!$hash = $settings['hash'])
+        if (!$hash = @$settings['hash'])
         {
             return;
         }
