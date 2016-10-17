@@ -242,10 +242,11 @@ class Message extends Generic
      *
      * @param $userId
      * @param $messageExtId
-     * @return bool|\StdClass
+     * @param bool $tryVerbose
+     * @return bool|null|\StdClass
      * @throws \Exception
      */
-    public function sync($userId, $messageExtId)
+    public function sync($userId, $messageExtId, $tryVerbose = true)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -254,7 +255,11 @@ class Message extends Generic
 
         $imap = Inbox::init($user);
         $data = $imap->getMessage($messageExtId);
-        $this->say($data, 1);
+
+        if ($tryVerbose)
+        {
+            $this->say($data, 1);
+        }
 
         // TODO: send a signal to notifier
 
