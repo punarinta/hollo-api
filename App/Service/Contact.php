@@ -11,24 +11,6 @@ namespace App\Service;
 class Contact extends Generic
 {
     /**
-     * Checks if contact list is empty
-     *
-     * @return bool|int
-     */
-    public function isListEmpty()
-    {
-        $res = $this->conn->listContacts(\Auth::user()->ext_id, ['limit' => 1]);
-
-        if (!$res)
-        {
-            // error
-            return -1;
-        }
-
-        return count($res->getData()) == 0;
-    }
-
-    /**
      * Check if the contact is muted by default or not
      *
      * @param $email
