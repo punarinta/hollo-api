@@ -47,8 +47,7 @@ class Chat extends Generic
                     (
                         'email'     => $email,
                         'name'      => (isset ($names[$email]) && $names[$email] != $email) ? $names[$email] : null,
-                        'ext_id'    => null,
-                        'roles'     => \Auth::USER,
+                        'roles'     => \Auth::GUEST,
                         'settings'  => '',
                     ));
                 }
