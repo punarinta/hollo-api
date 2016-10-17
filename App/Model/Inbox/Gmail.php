@@ -48,15 +48,21 @@ class Gmail extends Generic implements InboxInterface
      */
     public function checkNew()
     {
-        $res = $this->curl('messages?maxResults=1&fields=messages');
+        $res = $this->curl('messages?maxResults=1&fields=messages&labelIds=INBOX');
+
+        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->userId]);
 
         if (!isset ($res['messages'][0]['id']))
         {
-            // no new ones
-            return false;
-        }
+            $res = $this->curl('messages?maxResults=1&fields=messages&labelIds=SENT');
+            if (!isset ($res['messages'][0]['id']))
+            {
+                // no new ones
+                return false;
+            }
 
-        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->userId]);
+            return !$row || $row->ext_id != $res['messages'][0]['id'];
+        }
 
         return !$row || $row->ext_id != $res['messages'][0]['id'];
     }
@@ -80,7 +86,39 @@ class Gmail extends Generic implements InboxInterface
                 $query = '&q=' . urlencode('after:' . date('Y/m/d', $options['ts_after']));
             }
 
-            $res = $this->curl("messages?maxResults=100$pageTokenStr&fields=messages,nextPageToken$query");
+            $res = $this->curl("messages?maxResults=100$pageTokenStr&labelIds=INBOX&fields=messages,nextPageToken$query");
+
+            if (!isset ($res['messages']))
+            {
+                // no (more) messages -> stop
+                break;
+            }
+
+            foreach ($res['messages'] as $message)
+            {
+                $ids[] = $message['id'];
+            }
+
+            if (!isset ($res['nextPageToken']))
+            {
+                break;
+            }
+
+            $nextPageToken = $res['nextPageToken'];
+            usleep(100000);
+        }
+
+        while (1)
+        {
+            $query = '';
+            $pageTokenStr = $nextPageToken ? "&pageToken=$nextPageToken" : '';
+
+            if (isset ($options['ts_after']))
+            {
+                $query = '&q=' . urlencode('after:' . date('Y/m/d', $options['ts_after']));
+            }
+
+            $res = $this->curl("messages?maxResults=100$pageTokenStr&labelIds=SENT&fields=messages,nextPageToken$query");
 
             if (!isset ($res['messages']))
             {
