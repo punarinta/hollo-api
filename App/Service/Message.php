@@ -269,7 +269,7 @@ class Message extends Generic
      * @param bool $retry
      * @return null
      */
-    public function getDataByExtId($userExtId, $extId, $retry = true)
+    public function getDataByRefIdAndExtId($userExtId, $extId, $retry = true)
     {
         // TODO: t.b.d.
 
