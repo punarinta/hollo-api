@@ -323,45 +323,18 @@ class Message extends Generic
     }
 
     /**
-     * Removes excessive messages from a Chat
+     * Removes excessive messages by a reference User ID
      *
-     * @param $chatId
-     * @param bool $byTime
-     * @param bool $byCount
+     * @param $userId
      * @return int
      */
-    public function removeOld($chatId, $byTime = true, $byCount = false)
+    public function removeOldByRefId($userId)
     {
-        $messages = $this->findByChatId($chatId);
-        $count = count($messages);
-        $startCount = $count;
+        $stmt = \DB::prepare('DELETE FROM message WHERE ref_id=? AND ts<?', [$userId, time() - \Sys::cfg('sys.sync_period')]);
+        $stmt->execute();
+        $stmt->close();
 
-        if ($byCount)
-        {
-            $messages = array_reverse($messages);
-            $messages = array_slice($messages, \Sys::cfg('sys.sync_depth'));
-
-            foreach ($messages as $message)
-            {
-                $this->delete($message);
-                --$count;
-            }
-        }
-
-        if ($byTime)
-        {
-            foreach ($messages as $k => $message)
-            {
-                if ($message->ts < time() - \Sys::cfg('sys.sync_period'))
-                {
-                    $this->delete($message);
-                    unset ($messages[$k]);
-                    --$count;
-                }
-            }
-        }
-
-        return $startCount - $count;
+        return \DB::l()->affected_rows;
     }
 
     /**
@@ -653,7 +626,7 @@ class Message extends Generic
             // remove old messages if not explicitly instructed
             if (!$keepOld)
             {
-                $this->removeOld($chat->id);
+                $this->removeOldByRefId($user->id);
             }
         }
 
