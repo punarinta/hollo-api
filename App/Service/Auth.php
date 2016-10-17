@@ -2,18 +2,9 @@
 
 namespace App\Service;
 
-use App\Model\ContextIO\ContextIO;
-
 class Auth
 {
-    protected $conn   = null;
     protected $secure = true;
-
-    public function __construct()
-    {
-        $cfg = \Sys::cfg('contextio');
-        $this->conn = new ContextIO($cfg['key'], $cfg['secret']);
-    }
 
     /**
      * Returns a current logged-in user
@@ -123,85 +114,46 @@ class Auth
         imap_close($box);
 
         $key = \Sys::cfg('sys.imap_hash');
-
         $settings = ['svc' => (int) $mailService->id, 'hash' => openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key)];
-        
+
         if ($locale != 'en_US')
         {
             $settings['locale'] = $locale;
         }
-        
-        \DB::begin();
-        
-        try
+
+        // create Hollo account or use an existing dummy one
+        if (!$user = \Sys::svc('User')->findByEmail($email))
         {
-            // create Hollo account or use an existing dummy one
-            if (!$user = \Sys::svc('User')->findByEmail($email))
-            {
-                $user = \Sys::svc('User')->create(array
-                (
-                    'email'     => $email,
-                    'ext_id'    => null,
-                    'roles'     => \Auth::USER,
-                    'settings'  => json_encode($settings),
-                ));
-            }
-            else
-            {
-                // user exists and it's real, not good
-                if ($user->ext_id)
-                {
-                    throw new \Exception('Cannot add user');
-                }
-                $user->settings = json_encode($settings);
-                $user->roles = \Auth::USER;
-            }
-
-            if (!$user->id)
-            {
-                throw new \Exception('Cannot add user');
-            }
-
-            // create Context account
-            $res = $this->conn->addAccount(array
+            $user = \Sys::svc('User')->create(array
             (
-                'email'         => $email,
-                'server'        => $in['host'],
-                'username'      => $email,
-                'use_ssl'       => $in['enc'] != 'no',
-                'password'      => $password,
-                'port'          => $in['port'],
-                'type'          => 'IMAP',
+                // 'name' is unknown for a standard IMAP
+                'email'     => $email,
+                'roles'     => \Auth::USER,
+                'settings'  => json_encode($settings),
             ));
-            
-            if (!$res)
-            {
-                throw new \Exception('Cannot add account');
-            }
-
-            $res = $res->getData();
-            $user->ext_id = $res['id'];
-            \Sys::svc('User')->update($user);
-
-            // add Context web-hook
-            $this->conn->addWebhook($user->ext_id,
-            [
-                'callback_url'      => 'https://app.hollo.email/api/context-io',
-                'failure_notif_url' => 'https://app.hollo.email/api/context-io',
-            ]);
         }
-        catch (\Exception $e)
+        else
         {
-            \DB::rollback();
-            throw $e;
+            // user exists and it's real, not good
+            if ($user->roles)
+            {
+                throw new \Exception('User already exists');
+            }
+            $user->roles = \Auth::USER;
+            $user->settings = json_encode($settings);
+            \Sys::svc('User')->update($user);
         }
 
-        \DB::commit();
+        if (!$user->id)
+        {
+            throw new \Exception('Cannot add user');
+        }
+
+        \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
+
 
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['mail'] = ['user' => $user->email, 'pass' => $password];
-
-        \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
 
         return $user;
     }
@@ -272,14 +224,11 @@ class Auth
         $avatar = $oauthData['avatar'];
         $name = $oauthData['name'];
 
-        // $mailService = \Sys::svc('MailService')->findByEmail($email);
         // Now we only have Google working with OAuth
         $mailService = \Sys::svc('MailService')->findById(1);
-        $in = \Sys::svc('MailService')->getCfg($mailService);
-
         $user = \Sys::svc('User')->findByEmail($email);
 
-        if (!$user || !$user->ext_id)
+        if (!$user || !$user->roles)
         {
             // no user -> register
             $settings = ['svc' => (int) $mailService->id, 'token' => $token];
@@ -295,7 +244,6 @@ class Auth
                     (
                         'name'      => $name,
                         'email'     => $email,
-                        'ext_id'    => null,
                         'roles'     => \Auth::USER,
                         'settings'  => json_encode($settings),
                     ));
@@ -304,42 +252,13 @@ class Auth
                 {
                     $user->roles = \Auth::USER;
                     $user->settings = json_encode($settings);
+                    \Sys::svc('User')->update($user);
                 }
 
                 if (!$user->id)
                 {
                     throw new \Exception('Cannot add user');
                 }
-
-                // create Context.IO account
-                $data = $this->conn->addAccount(array
-                (
-                    'email'                     => $email,
-                    'server'                    => $in['host'],
-                    'port'                      => $in['port'],
-                    'username'                  => $email,
-                    'use_ssl'                   => 1,
-                    'type'                      => 'IMAP',
-                    'provider_refresh_token'    => $token,
-                    'provider_consumer_key'     => \Sys::cfg('oauth.google.clientId'),
-                ));
-
-                $data = $data->getData();
-                $user->ext_id = $data['id'];
-
-                // save token, just in case
-                $s = \Sys::svc('User')->setting($user);
-                $s['token'] = $token;
-                $user->settings = json_encode($s);
-
-                \Sys::svc('User')->update($user);
-
-                // add webhook to an existing account
-                $this->conn->addWebhook($user->ext_id,
-                [
-                    'callback_url'      => 'https://app.hollo.email/api/context-io',
-                    'failure_notif_url' => 'https://app.hollo.email/api/context-io',
-                ]);
             }
             catch (\Exception $e)
             {
@@ -352,30 +271,6 @@ class Auth
         }
         else
         {
-            if (empty ($this->conn->listSources($user->ext_id, ['status_ok' => 1])->getData()))
-            {
-                /*$this->conn->deleteSource($user->ext_id, ['label' => 0]);
-
-                $this->conn->addSource($user->ext_id, array
-                (
-                    'email'                     => $email,
-                    'server'                    => $in['host'],
-                    'port'                      => $in['port'],
-                    'username'                  => $email,
-                    'use_ssl'                   => 1,
-                    'type'                      => 'IMAP',
-                    'provider_refresh_token'    => $token,
-                    'provider_consumer_key'     => \Sys::cfg('oauth.google.clientId'),
-                ));*/
-
-                $this->conn->post($user->ext_id, 'sources/0', array
-                (
-                    'status'                    => 1,
-                    'provider_refresh_token'    => $token,
-                    'provider_consumer_key'     => \Sys::cfg('oauth.google.clientId'),
-                ));
-            }
-
             // save updated refresh token on every login
             $settings = json_decode($user->settings, true) ?: [];
             $settings['token'] = $token;
