@@ -22,8 +22,11 @@ class Achtung
 
         if ($withUsers)
         {
-            $this->justRun('DELETE FROM `user` WHERE ext_id IS NULL', []);
-            $this->justRun('ALTER TABLE `user` AUTO_INCREMENT = 1', []);
+            // TODO: use 'roles' later
+            $this->justRun('DELETE FROM `user` WHERE settings = ""');
+            $this->justRun('ALTER TABLE `user` AUTO_INCREMENT = 1');
+            $this->justRun('SELECT @i := 0');
+            $this->justRun('UPDATE `user` SET id=(SELECT @i := @i + 1)', []);
         }
 
         return "\n";
