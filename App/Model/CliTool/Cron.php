@@ -9,24 +9,24 @@ namespace App\Model\CliTool;
 class Cron
 {
     /**
-     * @param bool $byTime
-     * @param bool $byCount
      * @return string
      */
-    public function removeOldMessages($byTime = true, $byCount = false)
+    public function removeOldMessages()
     {
+        $users = 0;
         $count = 0;
 
-        // This call is too heavy!
-        // We must not run this in production
-
-        // TODO: report every 1000 chats
-
-        foreach (\Sys::svc('Chat')->findAll() as $chat)
+        foreach (\Sys::svc('User')->findAllReal() as $user)
         {
-            $count += \Sys::svc('Message')->removeOld($chat->id, $byTime, $byCount);
+            ++$users;
+            $count += \Sys::svc('Message')->removeOldByRefId($user->id);
+
+            if (!($users % 100))
+            {
+                echo "Purged: $count\n";
+            }
         }
 
-        return "Messaged purged: $count\n";
+        return "Total messaged purged: $count\n";
     }
 }
