@@ -142,7 +142,7 @@ class Message extends Generic
 
         $user = \Sys::svc('User')->findById($message->ref_id);
 
-        if (!$data = \Sys::svc('Message')->getDataByExtId($user->ext_id, $message->ext_id))
+        if (!$data = \Sys::svc('Message')->getDataByRefIdAndExtId($user->ext_id, $message->ext_id))
         {
             return false;
         }
