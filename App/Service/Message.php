@@ -21,12 +21,13 @@ class Message extends Generic
     /**
      * Finds a Message by its external ID
      *
+     * @param $refUserId
      * @param $extId
      * @return null|\StdClass
      */
-    public function findByExtId($extId)
+    public function findByRefIdExtId($refUserId, $extId)
     {
-        return \DB::row('SELECT * FROM message WHERE ext_id = ? LIMIT 1', [$extId]);
+        return \DB::row('SELECT * FROM message WHERE ref_id=? AND ext_id=? LIMIT 1', [$refUserId, $extId]);
     }
 
     /**
@@ -113,6 +114,9 @@ class Message extends Generic
      */
     public function moreByChat($chat, $user)
     {
+        // TODO: t.b.d.
+        return [];
+
         $offset = 0;
         $synced = 0;
         $limit = 20;
@@ -236,14 +240,14 @@ class Message extends Generic
     /**
      * Syncs a single message
      *
-     * @param $accountId
+     * @param $userId
      * @param $messageExtId
      * @return bool|\StdClass
      * @throws \Exception
      */
-    public function sync($accountId, $messageExtId)
+    public function sync($userId, $messageExtId)
     {
-        if (!$user = \Sys::svc('User')->findByExtId($accountId))
+        if (!$user = \Sys::svc('User')->findById($userId))
         {
             throw new \Exception('User does not exist.');
         }
@@ -258,42 +262,6 @@ class Message extends Generic
     }
 
     /**
-     * Switches message body and updates it in the database
-     *
-     * @param $messageId
-     * @param $bodyId
-     * @return bool
-     * @throws \Exception
-     */
-    public function switchBody($messageId, $bodyId)
-    {
-        if (!$message = $this->findById($messageId))
-        {
-            throw new \Exception('Message does not exist');
-        }
-
-        // '571f73e9920d7f18098b4567'
-
-        // TODO: pick user ext id from message ref
-        if (!$data = $this->getDataByExtId(\Auth::user()->ext_id, $message->ext_id))
-        {
-            return false;
-        }
-
-        if (!isset ($data['body'][$bodyId]['content']))
-        {
-            throw new \Exception('Body does not exist');
-        }
-
-        // echo replace4byte($data['body'][$bodyId]['content']);
-
-        $message->body = $this->clearContent($data['body'][$bodyId]['type'], $data['body'][$bodyId]['content']);
-        $this->update($message);
-
-        return true;
-    }
-
-    /**
      * Gets message data from external provider
      *
      * @param $userExtId
@@ -303,21 +271,7 @@ class Message extends Generic
      */
     public function getDataByExtId($userExtId, $extId, $retry = true)
     {
-        $attempt = 0;
-        $params = ['message_id' => $extId, 'include_body' => 1];
-
-        while ($attempt < 10)
-        {
-            if ($data = $this->conn->getMessage($userExtId, $params))
-            {
-                return $data->getData();
-            }
-            elseif ($retry)
-            {
-                $this->retry($params, ++$attempt);
-            }
-            else break;
-        }
+        // TODO: t.b.d.
 
         return null;
     }
@@ -382,7 +336,7 @@ class Message extends Generic
         $notify = isset ($options['notify']) ? $options['notify'] : true;
         $noMarks = isset ($options['noMarks']) ? $options['noMarks'] : false;
 
-        if (!$message = $this->findByExtId($extId))
+        if (!$message = $this->findByRefIdExtId($user->id, $extId))
         {
             if (!isset ($messageData['addresses']['from']))
             {
@@ -494,14 +448,6 @@ class Message extends Generic
                     return false;
                 }
             }
-
-        /*    // check after muting is tested
-            if (!isset ($messageData['body']))
-            {
-                $this->say("Body extraction. Ext ID = {$extId}");
-                $messageData = $this->getDataByExtId($user->ext_id, $extId);
-            }*/
-
 
             // === process the message content ===
 

@@ -18,11 +18,7 @@ class Admin
 
     public function syncMessage($userId, $messageExtId)
     {
-        if (!$user = \Sys::svc('User')->findById($userId))
-        {
-            return "User not found: $userId\n";
-        }
-        \Sys::svc('Message')->sync($user->ext_id, $messageExtId);
+        \Sys::svc('Message')->sync($userId, $messageExtId);
 
         return '';
     }
