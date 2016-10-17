@@ -110,7 +110,7 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 12.10.16 @ 09:36:41 +0200
+// Built 17.10.16 @ 15:14:11 +0200
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
@@ -120,7 +120,6 @@ $GLOBALS['-R'] = [
 'message' => ['/api/message', \Auth::USER, '\App\Controller\Message', 'index'],
 'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],
 'settings' => ['/api/settings', \Auth::USER, '\App\Controller\Settings', 'index'],
-'context-io' => ['/api/context-io', \Auth::GUEST, '\App\Controller\ContextIO', 'index'],
 ];
 
 // 5. Run application
