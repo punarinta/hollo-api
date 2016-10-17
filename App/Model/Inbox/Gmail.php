@@ -96,7 +96,7 @@ class Gmail extends Generic implements InboxInterface
 
             foreach ($res['messages'] as $message)
             {
-                $ids[] = $message['id'];
+                $ids[$message['id']] = $message['id'];
             }
 
             if (!isset ($res['nextPageToken']))
@@ -128,7 +128,7 @@ class Gmail extends Generic implements InboxInterface
 
             foreach ($res['messages'] as $message)
             {
-                $ids[] = $message['id'];
+                $ids[$message['id']] = $message['id'];
             }
 
             if (!isset ($res['nextPageToken']))
@@ -140,7 +140,7 @@ class Gmail extends Generic implements InboxInterface
             usleep(100000);
         }
 
-        return $ids;
+        return array_values($ids);
     }
 
     /**
