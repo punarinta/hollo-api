@@ -82,6 +82,12 @@ class Gmail extends Generic implements InboxInterface
 
             $res = $this->curl("messages?maxResults=100$pageTokenStr&fields=messages,nextPageToken$query");
 
+            if (!isset ($res['messages']))
+            {
+                // no (more) messages -> stop
+                break;
+            }
+
             foreach ($res['messages'] as $message)
             {
                 $ids[] = $message['id'];
@@ -197,15 +203,24 @@ class Gmail extends Generic implements InboxInterface
             }
         }
 
+        if (isset ($headers['Date'][0]))
+        {
+            $date = strtotime($headers['Date'][0]);
+        }
+        else
+        {
+            $date = round($raw['internalDate'] / 1000);
+        }
+
         return array
         (
             'message_id' => $messageId,
-            'subject'    => $headers['Subject'][0],
+            'subject'    => @$headers['Subject'][0] ?: '',      // subject may be absent sometimes
             'addresses'  => $this->getAddresses($headers),
             'body'       => $bodies,
             'headers'    => $headers,
             'files'      => $files,
-            'date'       => strtotime($headers['Date'][0]),
+            'date'       => $date,
             'folders'    => $raw['labelIds'],
         );
     }
@@ -245,7 +260,14 @@ class Gmail extends Generic implements InboxInterface
     {
         $ch = curl_init('https://www.googleapis.com/gmail/v1/users/me/' . $url . (strpos($url, '?') === false ? '?' : '&') . 'oauth_token=' . $this->accessToken['access_token']);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $res = json_decode(curl_exec($ch), true) ?:[];
+        $output = curl_exec($ch);
+
+        if ($output === false)
+        {
+            echo 'Curl error: ' . curl_error($ch) . "\n";
+        }
+
+        $res = json_decode($output, true) ?:[];
         curl_close($ch);
         return $res;
     }

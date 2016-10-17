@@ -54,7 +54,7 @@ class Imap extends Generic implements InboxInterface
         $this->checkOpened();
 
         // TODO: adjust time
-        $ids = $this->getMessages(['ts_after' => date('Y-m-d', strtotime('yesterday'))]);
+        $ids = $this->getMessages(['ts_after' => strtotime('yesterday')]);
 
         if (!count($ids))
         {
