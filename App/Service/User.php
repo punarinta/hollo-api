@@ -6,6 +6,13 @@ class User extends Generic
 {
     protected $cache = [];
 
+    /**
+     * Overwritten creation to validate email
+     *
+     * @param $data
+     * @return \StdClass
+     * @throws \Exception
+     */
     public function create($data)
     {
         if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false)
@@ -34,6 +41,14 @@ class User extends Generic
     }
 
     /**
+     * @return array
+     */
+    public function findAllReal()
+    {
+        return \DB::rows('SELECT * FROM `user` WHERE roles > 0');
+    }
+
+    /**
      * Gets a User by its email
      *
      * @param $email
@@ -44,23 +59,12 @@ class User extends Generic
     {
         if ($realOnly)
         {
-            return \DB::row('SELECT * FROM `user` WHERE email=? AND ext_id IS NOT NULL LIMIT 1', [$email]);
+            return \DB::row('SELECT * FROM `user` WHERE email=? AND roles > 0 LIMIT 1', [$email]);
         }
         else
         {
             return \DB::row('SELECT * FROM `user` WHERE email=? LIMIT 1', [$email]);
         }
-    }
-
-    /**
-     * Gets a User by its external ID
-     *
-     * @param $extId
-     * @return array
-     */
-    public function findByExtId($extId)
-    {
-        return \DB::row('SELECT * FROM user WHERE ext_id = ? LIMIT 1', [$extId]);
     }
 
     /**
@@ -152,73 +156,6 @@ class User extends Generic
                 WHERE u.email = ? AND cu2.user_id = ? LIMIT 1';
 
         return (bool) \DB::row($sql, [$email, $user]);
-    }
-
-    /**
-     * Adds an account to a user
-     *
-     * @param $email
-     * @return mixed
-     * @throws \Exception
-     */
-    public function addAccount($email)
-    {
-        // TODO: add more params for an account
-        $res = $this->conn->addAccount(['email' => $email])->getData();
-
-        if (!@$res['success'])
-        {
-            throw new \Exception('Cannot add account');
-        }
-
-        return $res['id'];
-    }
-
-    /**
-     * Syncs remote account name with the local one
-     *
-     * @param $userId
-     * @throws \Exception
-     */
-    public function syncNames($userId)
-    {
-        $user = $this->findById($userId);
-        $settings = json_decode($user->settings);
-
-        if (!$user || !$user->ext_id)
-        {
-            throw new \Exception('Names sync is not possible');
-        }
-
-        $this->conn->modifyAccount($user->ext_id, array
-        (
-            'first_name' => $settings->firstName,
-            'last_name'  => $settings->lastName,
-        ));
-    }
-
-    /**
-     * Trigger an external mail sync
-     * 
-     * @param $user
-     * @return null
-     * @throws \Exception
-     */
-    public function syncExt($user)
-    {
-        if (!is_object($user))
-        {
-            $user = $this->findById($user);
-        }
-
-        if (!$user || !$user->ext_id)
-        {
-            throw new \Exception('Sync is not possible');
-        }
-
-        $res = $this->conn->syncSource($user->ext_id, ['label' => 0]);
-
-        return $res ? $res->getData() : null;
     }
 
     /**
