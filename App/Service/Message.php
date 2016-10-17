@@ -215,7 +215,11 @@ class Message extends Generic
         // init email layer
         $imap = Inbox::init($user);
 
-        foreach ($imap->getMessages() as $messageExtId)
+        $messageExtIds = $imap->getMessages(['ts_after' => time() - \Sys::cfg('sys.sync_period')]);
+
+        $this->say('Prepared ' . count($messageExtIds) . ' messages to analyze.');
+
+        foreach ($messageExtIds as $messageExtId)
         {
             $this->say("User {$user->email}, extId = $messageExtId");
 
@@ -226,8 +230,6 @@ class Message extends Generic
                 'fetchMuted'    => $fetchMuted,
                 'fetchAll'      => true,
                 'noMarks'       => $noMarks,
-            //    'maxTimeBack'   => 100000000,       // TODO: REMOVE!
-            //    'keepOld'       => true,            // TODO: REMOVE!
             ]));
 
             // sleep a bit to prevent API request queue growth
@@ -368,7 +370,7 @@ class Message extends Generic
             // we don't need duplicates
             $emails = array_unique($emails);
 
-            // sometimes it may happen that Context.IO user is not in the chat (e.g. stolen message), check this
+            // sometimes it may happen that user is not in the chat (e.g. stolen message), check this
             if (!in_array($user->email, $emails))
             {
                 $this->say('Error: user is not in the chat');
@@ -412,7 +414,7 @@ class Message extends Generic
             }
             catch (\Exception $e)
             {
-                $this->say('Error: invalid chat');
+                $this->say('Error: cannot init chat or chat ID limitation is set');
                 return false;
             }
 
@@ -425,7 +427,7 @@ class Message extends Generic
             // thus, allow a chat to be created first
             if ($maxTimeBack > 0 && $messageData['date'] < time() - $maxTimeBack)
             {
-                $this->say('Error: message is too old');
+                $this->say('Notice: message is too old');
                 return false;
             }
 
@@ -439,7 +441,7 @@ class Message extends Generic
 
                 if ($flags && $flags->muted)
                 {
-                    $this->say('Error: message is muted');
+                    $this->say('Notice: message is muted');
                     return false;
                 }
             }
@@ -449,7 +451,7 @@ class Message extends Generic
             {
                 if (stripos($folder, 'draft') !== false)
                 {
-                    $this->say('Error: message is a draft');
+                    $this->say('Notice: message is a draft');
                     return false;
                 }
             }
@@ -492,7 +494,7 @@ class Message extends Generic
             // avoid duplicating by user_id-chat_id-ts key
             if (!$this->isUnique($senderId, $chat->id, $messageData['date']))
             {
-                $this->say('Error: duplicate message');
+                $this->say('Notice: duplicate message');
                 return false;
             }
 
@@ -507,7 +509,7 @@ class Message extends Generic
             if (!mb_strlen($content) && empty ($files))
             {
                 // avoid empty replies
-                $this->say('Error: message has no real content');
+                $this->say('Notice: message has no real content');
                 return false;
             }
 
