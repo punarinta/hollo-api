@@ -172,7 +172,7 @@ class Gmail extends Generic implements InboxInterface
             (
                 'size'      => $payload['body']['size'],
                 'type'      => 'text/html',
-                'content'   => $this->base64_decode($payload['body']['data']),
+                'content'   => $this->base64_decode(@$payload['body']['data']),
             );
         }
 
