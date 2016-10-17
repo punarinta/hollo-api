@@ -217,6 +217,12 @@ class Message extends Generic
 
         $messageExtIds = $imap->getMessages(['ts_after' => time() - \Sys::cfg('sys.sync_period')]);
 
+        if (count($messageExtIds) && $messageExtIds[0] != $user->last_muid)
+        {
+            $user->last_muid = $messageExtIds[0];
+            \Sys::svc('User')->update($user);
+        }
+
         $this->say('Prepared ' . count($messageExtIds) . ' messages to analyze.');
 
         foreach ($messageExtIds as $messageExtId)
