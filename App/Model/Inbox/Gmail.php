@@ -23,12 +23,15 @@ class Gmail extends Generic implements InboxInterface
             $user = \Sys::svc('User')->findById($user);
         }
 
+        $this->userId = $user->id;
         $settings = json_decode($user->settings, true) ?: [];
 
-        if (!$token = $settings['token'])
+        if (!isset ($settings['token']))
         {
             return;
         }
+
+        $token = $settings['token'];
 
         $client = new \Google_Client();
         $client->setClientId(\Sys::cfg('oauth.google.clientId'));
@@ -41,10 +44,9 @@ class Gmail extends Generic implements InboxInterface
     }
 
     /**
-     * @param $userId
      * @return bool
      */
-    public function checkNew($userId)
+    public function checkNew()
     {
         $res = $this->curl('messages?maxResults=1&fields=messages');
 
@@ -54,7 +56,7 @@ class Gmail extends Generic implements InboxInterface
             return false;
         }
 
-        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$userId]);
+        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->userId]);
 
         return !$row || $row->ext_id != $res['messages'][0]['id'];
     }

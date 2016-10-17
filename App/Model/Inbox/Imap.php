@@ -27,6 +27,7 @@ class Imap extends Generic implements InboxInterface
             $user = \Sys::svc('User')->findById($user);
         }
 
+        $this->userId = $user->id;
         $settings = json_decode($user->settings, true) ?: [];
 
         if (!$hash = $settings['hash'])
@@ -46,10 +47,9 @@ class Imap extends Generic implements InboxInterface
     }
 
     /**
-     * @param $userId
      * @return bool
      */
-    public function checkNew($userId)
+    public function checkNew()
     {
         $this->checkOpened();
 
@@ -61,7 +61,7 @@ class Imap extends Generic implements InboxInterface
             return false;
         }
 
-        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$userId]);
+        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->userId]);
 
         return !$row || $row->ext_id != $ids[0];
     }

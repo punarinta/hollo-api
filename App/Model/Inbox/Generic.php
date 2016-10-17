@@ -8,6 +8,8 @@ namespace App\Model\Inbox;
  */
 class Generic
 {
+    protected $userId = null;
+
     /**
      * @param $str
      * @return string
