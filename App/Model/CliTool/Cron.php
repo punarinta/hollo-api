@@ -57,11 +57,30 @@ class Cron
                 $count = 0;
                 echo "User {$user->id} has new messages. Syncing... ";
 
-                foreach ($inbox->getMessages(['ts_after' => $tsAfter]) as $messageId)
-                {
-                    $count += 1 * !empty(\Sys::svc('Message')->sync($user->id, $messageId, false));
+                $messageIds = $inbox->getMessages(['ts_after' => $tsAfter]);
 
-                    usleep(100000);
+                if (count($messageIds))
+                {
+                    $lastMuid = $messageIds[0];
+
+                    foreach ($messageIds as $messageId)
+                    {
+                        if ($messageId == $user->last_muid)
+                        {
+                            // we've reached
+                            break;
+                        }
+
+                        $count += 1 * !empty(\Sys::svc('Message')->sync($user->id, $messageId, false));
+
+                        usleep(200000);
+                    }
+
+                    if ($user->last_muid != $lastMuid)
+                    {
+                        $user->last_muid = $lastMuid;
+                        \Sys::svc('User')->update($user);
+                    }
                 }
 
                 echo "Found $count new.\n";
