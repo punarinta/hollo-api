@@ -258,7 +258,7 @@ class Message extends Generic
 
         // TODO: send a signal to notifier
 
-        return $this->processMessageSync($user, $data, ['fetchMuted' => false, 'limitToChatId' => 0]);
+        return $this->processMessageSync($user, $data, ['fetchMuted' => false]);
     }
 
     /**
