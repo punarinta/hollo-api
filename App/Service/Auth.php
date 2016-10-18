@@ -4,8 +4,6 @@ namespace App\Service;
 
 class Auth
 {
-    protected $secure = true;
-
     /**
      * Returns a current logged-in user
      *
