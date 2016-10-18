@@ -54,35 +54,37 @@ class File extends Generic
             throw new \Exception('Message ID not provided.');
         }
 
-        if (!$offset = \Input::get('offset'))
+        if (($offset = \Input::get('offset') === null))
         {
             throw new \Exception('File offset not provided.');
         }
 
         try
         {
-            if ($message = \Sys::svc('Message')->findByRefIdExtId(\Auth::user()->id, $messageId))
+            if (!$message = \Sys::svc('Message')->findById($messageId))
             {
                 throw new \Exception('Message not found');
             }
-            else
+            if ($message->ref_id != \Auth::user()->id)
             {
-                $inbox = Inbox::init(\Auth::user());
-                if (!$messageData = $inbox->getMessage($message->ext_id))
-                {
-                    throw new \Exception('Cannot retrieve message');
-                }
-
-                if (!$file = $messageData['files'][$offset])
-                {
-                    throw new \Exception('File not found');
-                }
-
-                header("Content-type:{$file['type']}");
-                header("Content-Disposition:attachment;filename='{$file['name']}'");
-
-                echo $inbox->getFileData($message->ext_id, $offset);
+                throw new \Exception('Access denied');
             }
+
+            $inbox = Inbox::init(\Auth::user());
+
+            if (!$messageData = $inbox->getMessage($message->ext_id))
+            {
+                throw new \Exception('Cannot retrieve message');
+            }
+            if (!$file = $messageData['files'][$offset])
+            {
+                throw new \Exception('File not found');
+            }
+
+            header("Content-type:{$file['type']}");
+            header("Content-Disposition:attachment;filename='{$file['name']}'");
+
+            echo $inbox->getFileData($message->ext_id, $offset);
         }
         catch (\Exception $e)
         {
