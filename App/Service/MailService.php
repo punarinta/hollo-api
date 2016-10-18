@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Model\ContextIO\ContextIO;
 use EmailAuth\Discover;
 
 class MailService extends Generic
@@ -104,9 +105,12 @@ class MailService extends Generic
      */
     public function discoverEmail($email)
     {
+        $cfg = \Sys::cfg('contextio');
+        $conn = new ContextIO($cfg['key'], $cfg['secret']);
+
         // TODO: refactor
 
-        $r = $this->conn->discovery(array
+        $r = $conn->discovery(array
         (
             'source_type'   => 'IMAP',
             'email'         => $email,
