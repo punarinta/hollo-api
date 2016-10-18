@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller;
+use App\Model\Inbox\Inbox;
 
 /**
  * Class File
@@ -38,30 +39,59 @@ class File extends Generic
     }
 
     /**
-     * Gets a URL by external file ID and external user ID
+     * Download a file
      *
-     * @doc-var     (int) extId     - External file ID.
-     * @doc-var     (int) refId     - User reference ID.
+     * @doc-var     (int) messageId         - Message ID.
+     * @doc-var     (int) offset            - File offset in the message.
      *
      * @return mixed
      * @throws \Exception
      */
-    static public function getFileUrl()
+    static public function download()
     {
-        return null;
-
-        // TODO: t.b.d.
-
-        if (!$extFileId = \Input::data('extId'))
+        if (!$messageId = \Input::get('messageId'))
         {
-            throw new \Exception('External ID not provided.');
+            throw new \Exception('Message ID not provided.');
         }
 
-        if ($user = \Sys::svc('User')->findById(\Input::data('refId')))
+        if (!$offset = \Input::get('offset'))
         {
-            return \Sys::svc('File')->getProcessorLink($user->ext_id, $extFileId);
+            throw new \Exception('File offset not provided.');
         }
 
-        return null;
+        try
+        {
+            if ($message = \Sys::svc('Message')->findByRefIdExtId(\Auth::user()->id, $messageId))
+            {
+                throw new \Exception('Message not found');
+            }
+            else
+            {
+                $inbox = Inbox::init(\Auth::user());
+                if (!$messageData = $inbox->getMessage($message->ext_id))
+                {
+                    throw new \Exception('Cannot retrieve message');
+                }
+
+                if (!$file = $messageData['files'][$offset])
+                {
+                    throw new \Exception('File not found');
+                }
+
+                header("Content-type:{$file['type']}");
+                header("Content-Disposition:attachment;filename='{$file['name']}'");
+
+                echo $inbox->getFileData($message->ext_id, $offset);
+            }
+        }
+        catch (\Exception $e)
+        {
+            http_response_code(404);
+            echo $e->getMessage();
+        }
+        finally
+        {
+            exit;
+        }
     }
 }
