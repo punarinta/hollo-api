@@ -220,9 +220,6 @@ class Message extends Generic
         \Sys::svc('Smtp')->setupThread(\Auth::user()->id, $chatId, $message->id);
         $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
 
-        // force Context.IO sync after mail is sent
-        \Sys::svc('User')->syncExt(\Auth::user());
-
         return true; // $res;
     }
 

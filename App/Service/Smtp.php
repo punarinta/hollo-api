@@ -2,6 +2,7 @@
 
 namespace App\Service;
 use App\Model\ContextIO\ContextIO;
+use App\Model\Inbox\Inbox;
 
 require_once 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
 require_once 'vendor/guzzlehttp/promises/src/functions_include.php';
@@ -84,20 +85,21 @@ class Smtp
             $refUser = \Sys::svc('User')->findById($message->ref_id);
 
             // temporary messages do not have external IDs and external Owner IDs
-            if ($message->ext_id && $refUser->ext_id)
+            if ($message->ext_id && $refUser->roles)
             {
                 // get original message data
-                $data = $this->conn->getMessage($refUser->ext_id, ['message_id' => $message->ext_id, 'include_body' => 1]);
 
-                if ($data)
+                $inbox = Inbox::init($refUser);
+
+                if ($data = $inbox->getMessage($message->ext_id))
                 {
-                    $data = $data->getData();
+                    $emailMessageId = $data['headers']['message-id'][0];
 
-                    $refs = $data['references'];
-                    array_push($refs, $data['email_message_id']);
+                    $refs = $data['headers']['references'];
+                    array_push($refs, $emailMessageId);
 
                     $this->mail->addCustomHeader('Message-ID: ' . \Text::GUID_v4() . '@' . \Sys::cfg('mailless.this_server'));
-                    $this->mail->addCustomHeader('In-Reply-To: ' . $data['email_message_id']);
+                    $this->mail->addCustomHeader('In-Reply-To: ' . $emailMessageId);
                     $this->mail->addCustomHeader('References: ' . implode(' ', $refs));
 
                     $this->mail->Subject = 'Re: ' . $data['subject'];
@@ -172,15 +174,6 @@ class Smtp
         {
             $this->mail->addAddress($user->email, $user->name);
 
-        /*    foreach ($to as $toAtom2)
-            {
-                // everyone must be CCed in the mail sent to another recipient
-                if ($toAtom != $toAtom2)
-                {
-                    $this->mail->addCC($toAtom2['email'], @$toAtom2['name']);
-                }
-            }*/
-
             // collect user IDs for IM notification
             $userIds[] = $user->id;
         }
@@ -213,6 +206,6 @@ class Smtp
             unlink($file);
         }
 
-        return [$this->mail, $this->mail->getToAddresses(), $this->mail->getCcAddresses(), $this->mail->getAttachments()];
+        return [$this->mail, $this->mail->getCustomHeaders(), $this->mail->getToAddresses(), $this->mail->getCcAddresses(), $this->mail->getAttachments()];
     }
 }
