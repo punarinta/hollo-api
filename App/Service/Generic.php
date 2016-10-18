@@ -1,14 +1,11 @@
 <?php
 
 namespace App\Service;
-use App\Model\ContextIO\ContextIO;
 
 class Generic
 {
     protected $ClassName;
     protected $class_name;
-    protected $conn = null;
-    protected $secure = true;
 
     public function __construct()
     {
@@ -19,9 +16,6 @@ class Generic
         {
             return strtolower(strlen($matches[1]) ? $matches[1] . '_' . $matches[2] : $matches[2]);
         }, $this->ClassName));
-
-        $cfg = \Sys::cfg('contextio');
-        $this->conn = new ContextIO($cfg['key'], $cfg['secret']);
     }
 
     /**
