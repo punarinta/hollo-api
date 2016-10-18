@@ -159,12 +159,14 @@ class Gmail extends Generic implements InboxInterface
 
         foreach ($payload['headers'] as $header)
         {
-            if (!isset ($headers[$header['name']]))
+            $name = strtolower($header['name']);
+
+            if (!isset ($headers[$name]))
             {
-                $headers[$header['name']] = [];
+                $headers[$name] = [];
             }
 
-            $headers[$header['name']][] = $header['value'];
+            $headers[$name][] = $header['value'];
         }
 
         $bodies = [];
@@ -245,9 +247,9 @@ class Gmail extends Generic implements InboxInterface
             }
         }
 
-        if (isset ($headers['Date'][0]))
+        if (isset ($headers['date'][0]))
         {
-            $date = strtotime($headers['Date'][0]);
+            $date = strtotime($headers['date'][0]);
         }
         else
         {
@@ -257,7 +259,7 @@ class Gmail extends Generic implements InboxInterface
         return array
         (
             'message_id' => $messageId,
-            'subject'    => @$headers['Subject'][0] ?: '',      // subject may be absent sometimes
+            'subject'    => @$headers['subject'][0] ?: '',      // subject may be absent sometimes
             'addresses'  => $this->getAddresses($headers),
             'body'       => $bodies,
             'headers'    => $headers,
