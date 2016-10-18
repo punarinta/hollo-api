@@ -21,10 +21,6 @@ class File extends Generic
      */
     static public function findByChatId()
     {
-        return [];
-
-        // TODO: t.b.d.
-
         if (!$chatId = \Input::data('chatId'))
         {
             throw new \Exception('Chat ID not provided.');

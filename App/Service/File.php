@@ -14,20 +14,15 @@ class File extends Generic
     public function findByChatId($chatId, $withImageUrl = false)
     {
         $items = [];
-        $count = 0;
 
         // TODO: add some kind of lazy loading
-        foreach (\DB::rows("SELECT files, ref_id FROM message WHERE chat_id=? AND files!='' AND ref_id IS NOT NULL ORDER BY ts DESC LIMIT 10", [$chatId]) as $row)
+        foreach (\DB::rows("SELECT id, files, ref_id FROM message WHERE chat_id=? AND files!='' AND ref_id IS NOT NULL ORDER BY ts DESC LIMIT 10", [$chatId]) as $row)
         {
             foreach (json_decode($row->files, true) ?: [] as $file)
             {
                 $user = \Sys::svc('User')->findById($row->ref_id);
-                $userExtId = $user ? $user->ext_id : null;
 
-            /*    if ($url = ($withImageUrl && \Mime::isImage($file['type']) && $userExtId && $count < 10) ? $this->getProcessorLink($userExtId, $file['extId']) : null)
-                {
-                    ++$count;
-                }*/
+            //    $url = ($withImageUrl && \Mime::isImage($file['type']) && $user->roles && $count < 10) ? $this->getProcessorLink($userExtId, $file['extId']) : null;
 
                 $items[] = array
                 (
@@ -36,7 +31,7 @@ class File extends Generic
                     'type'  => $file['type'],
                     'url'   => null,
                     'refId' => $row->ref_id,
-                    'extId' => @$file['extId'], // temporary files do not have extIds
+                    'msgId' => $row->id,
                 );
             }
         }
