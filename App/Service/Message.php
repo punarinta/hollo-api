@@ -25,7 +25,7 @@ class Message extends Generic
      * @param $extId
      * @return null|\StdClass
      */
-    public function findByRefIdExtId($refUserId, $extId)
+    public function findByRefIdAndExtId($refUserId, $extId)
     {
         return \DB::row('SELECT * FROM message WHERE ref_id=? AND ext_id=? LIMIT 1', [$refUserId, $extId]);
     }
@@ -349,7 +349,7 @@ class Message extends Generic
         $notify = isset ($options['notify']) ? $options['notify'] : true;
         $noMarks = isset ($options['noMarks']) ? $options['noMarks'] : false;
 
-        if (!$message = $this->findByRefIdExtId($user->id, $extId))
+        if (!$message = $this->findByRefIdAndExtId($user->id, $extId))
         {
             if (!isset ($messageData['addresses']['from']))
             {
@@ -520,7 +520,7 @@ class Message extends Generic
             }
 
             // check if this email refers to a temporary message and kill the latter with file
-            if ($tempMessageId = @$messageData['headers']['X-Temporary-ID'][0])
+            if ($tempMessageId = @$messageData['headers']['x-temporary-id'][0])
             {
                 if ($tempMessage = $this->findById($tempMessageId))
                 {
