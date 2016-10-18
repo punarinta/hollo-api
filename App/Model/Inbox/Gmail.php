@@ -151,7 +151,11 @@ class Gmail extends Generic implements InboxInterface
     {
         $headers = [];
         $raw = $this->curl("messages/$messageId");
-        $payload = $raw['payload'];
+
+        if (!$payload = @$raw['payload'])
+        {
+            return [];
+        }
 
         foreach ($payload['headers'] as $header)
         {
