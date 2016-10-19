@@ -67,7 +67,8 @@ class Gmail extends Generic implements InboxInterface
 
                     'data' => array
                     (
-                        'cmd' => 'logout',
+                        'authId'    => $user->id,
+                        'cmd'       => 'logout',
                     ),
                 ));
 

@@ -191,6 +191,7 @@ class Smtp
 
                 'data' => array
                 (
+                    'authId' => $user->id,
                     'cmd'    => 'show-chat',
                     'chatId' => $chatId,
                 ),

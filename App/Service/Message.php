@@ -590,6 +590,7 @@ class Message extends Generic
 
                         'data' => array
                         (
+                            'authId' => $user->id,
                             'cmd'    => 'show-chat',
                             'chatId' => $message->chat_id,
                         ),
