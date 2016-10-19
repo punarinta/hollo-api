@@ -251,11 +251,10 @@ class Message extends Generic
      * @param $userId
      * @param $messageExtId
      * @param bool $tryVerbose
-     * @param bool $inform
      * @return bool|null|\StdClass
      * @throws \Exception
      */
-    public function sync($userId, $messageExtId, $tryVerbose = true, $inform = false)
+    public function sync($userId, $messageExtId, $tryVerbose = true)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -271,29 +270,6 @@ class Message extends Generic
         }
 
         $message = $this->processMessageSync($user, $data, ['fetchMuted' => false]);
-
-        // The message may have already existed as temporary, so TODO: check that
-        if ($inform)
-        {
-            \Sys::svc('Notify')->firebase(array
-            (
-                'to'           => '/topics/user-' . $userId,
-                'priority'     => 'high',
-
-                'notification' => array
-                (
-                    'title' => $message->subject,
-                    'body'  => $message->body,
-                    'icon'  => 'fcm_push_icon'
-                ),
-
-                'data' => array
-                (
-                    'cmd'    => 'show-chat',
-                    'chatId' => $message->chat_id,
-                ),
-            ));
-        }
 
         return $message;
     }
@@ -597,6 +573,29 @@ class Message extends Generic
 
             if (!$temporaryMessageExisted && $notify)
             {
+                if ($noMarks)
+                {
+                    // safe to use Firebase
+                    \Sys::svc('Notify')->firebase(array
+                    (
+                        'to'           => '/topics/user-' . $user->id,
+                        'priority'     => 'high',
+
+                        'notification' => array
+                        (
+                            'title' => $message->subject,
+                            'body'  => $message->body,
+                            'icon'  => 'fcm_push_icon'
+                        ),
+
+                        'data' => array
+                        (
+                            'cmd'    => 'show-chat',
+                            'chatId' => $message->chat_id,
+                        ),
+                    ));
+                }
+
                 \Sys::svc('Notify')->send(
                 [
                     'cmd'       => 'notify',
