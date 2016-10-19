@@ -9,11 +9,11 @@ class Notify extends Generic
     public $client = null;
 
     /**
-     * A small abstraction to send data to WebSocket server
+     * Send data to WebSocket server
      *
      * @param $data
      */
-    public function send($data)
+    public function im($data)
     {
         if (!$this->client)
         {
@@ -23,5 +23,34 @@ class Notify extends Generic
         }
 
         $this->client->sendData(json_encode($data));
+    }
+
+    /**
+     * Send data to Firebase server
+     *
+     * @param $data
+     * @return bool
+     */
+    public function firebase($data)
+    {
+        $data['notification']['sound'] = 'default';
+        $data['notification']['click_action'] = 'FCM_PLUGIN_ACTIVITY';
+
+        $ch = curl_init('https://fcm.googleapis.com/fcm/send');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-type:application/json", "Authorization:key=" . \Sys::cfg('notifier.firebase')));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        $output = curl_exec($ch);
+
+        if ($output === false && @$GLOBALS['-SYS-VERBOSE'])
+        {
+            echo 'Curl error: ' . curl_error($ch) . "\n";
+        }
+
+        $res = json_decode($output, true) ?:[];
+        curl_close($ch);
+
+        return $res['message_id'] ?: false;
     }
 }
