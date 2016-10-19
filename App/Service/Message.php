@@ -272,6 +272,7 @@ class Message extends Generic
 
         $message = $this->processMessageSync($user, $data, ['fetchMuted' => false]);
 
+        // The message may have already existed as temporary, so TODO: check that
         if ($inform)
         {
             \Sys::svc('Notify')->firebase(array
