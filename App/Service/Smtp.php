@@ -176,9 +176,28 @@ class Smtp
 
             // collect user IDs for IM notification
             $userIds[] = $user->id;
+
+            \Sys::svc('Notify')->firebase(array
+            (
+                'to'           => '/topics/user-' . $user->id,
+                'priority'     => 'high',
+
+                'notification' => array
+                (
+                    'title' => $subject,
+                    'body'  => $body,
+                    'icon'  => 'fcm_push_icon'
+                ),
+
+                'data' => array
+                (
+                    'cmd'    => 'show-chat',
+                    'chatId' => $chatId,
+                ),
+            ));
         }
 
-        \Sys::svc('Notify')->send(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chatId]);
+        \Sys::svc('Notify')->im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chatId]);
 
         foreach ($attachments as $file)
         {
