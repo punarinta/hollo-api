@@ -44,6 +44,37 @@ class Imap extends Generic implements InboxInterface
         {
             return;
         }
+
+        $this->connector = @imap_open('{' . $this->in['host'] . ':' . $this->in['port'] . '/imap/ssl/novalidate-cert/readonly}INBOX', $this->login, $this->password);
+
+        if (!$this->connector)
+        {
+            // clear hash
+            $settings['hash'] = null;
+            $user->settings = json_encode($settings);
+            \Sys::svc('User')->update($user);
+
+            // ask to relogin
+            \Sys::svc('Notify')->firebase(array
+            (
+                'to'           => '/topics/user-' . $user->id,
+                'priority'     => 'high',
+
+                'notification' => array
+                (
+                    'title' => 'Did you change password?',
+                    'body'  => 'We apologize, but please login once again.',
+                    'icon'  => 'fcm_push_icon'
+                ),
+
+                'data' => array
+                (
+                    'cmd' => 'logout',
+                ),
+            ));
+
+            \Sys::svc('Notify')->im(['cmd' => 'sys', 'userIds' => [$user->id], 'message' => 'logout']);
+        }
     }
 
     /**
@@ -51,7 +82,10 @@ class Imap extends Generic implements InboxInterface
      */
     public function checkNew()
     {
-        $this->checkOpened();
+        if (!$this->connector)
+        {
+            return false;
+        }
 
         // TODO: adjust time
         $ids = $this->getMessages(['ts_after' => strtotime('yesterday')]);
@@ -73,7 +107,10 @@ class Imap extends Generic implements InboxInterface
     public function getMessages($options = [])
     {
         $query = 'ALL';
-        $this->checkOpened();
+        if (!$this->connector)
+        {
+            return [];
+        }
 
         if (isset ($options['ts_after']))
         {
@@ -89,7 +126,10 @@ class Imap extends Generic implements InboxInterface
      */
     public function getMessage($messageId)
     {
-        $this->checkOpened();
+        if (!$this->connector)
+        {
+            return [];
+        }
 
         if (!$overview = imap_fetchbody($this->connector, $messageId, '', FT_UID))
         {
@@ -122,24 +162,6 @@ class Imap extends Generic implements InboxInterface
         $data = $this->getMessage($messageId);
 
         return @$data['files'][$fileId]['content'];
-    }
-
-    /**
-     * Check if the connection is opened and open if necessary
-     *
-     * @throws \Exception
-     */
-    private function checkOpened()
-    {
-        if (!$this->connector)
-        {
-            if (!$this->in)
-            {
-                throw new \Exception('Mail service not configured');
-            }
-
-            $this->connector = imap_open('{' . $this->in['host'] . ':' . $this->in['port'] . '/imap/ssl/novalidate-cert/readonly}INBOX', $this->login, $this->password);
-        }
     }
 
     /**

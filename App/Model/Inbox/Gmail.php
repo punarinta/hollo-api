@@ -26,7 +26,7 @@ class Gmail extends Generic implements InboxInterface
         $this->userId = $user->id;
         $settings = json_decode($user->settings, true) ?: [];
 
-        if (!isset ($settings['token']))
+        if (!isset ($settings['token']) || !$settings['token'])
         {
             return;
         }
@@ -37,10 +37,43 @@ class Gmail extends Generic implements InboxInterface
         $client->setClientId(\Sys::cfg('oauth.google.clientId'));
         $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
 
-        // TODO: not really a good idea to refresh the token all the time
-        $client->refreshToken($token);
-        $accessToken = $client->getAccessToken();
-        $this->accessToken = json_decode($accessToken, true);
+        try
+        {
+            $client->refreshToken($token);
+            $accessToken = $client->getAccessToken();
+            $this->accessToken = json_decode($accessToken, true);
+        }
+        catch (\Exception $e)
+        {
+            if (strpos($e->getMessage(), '"invalid_grant"'))
+            {
+                // clear token
+                $settings['token'] = null;
+                $user->settings = json_encode($settings);
+                \Sys::svc('User')->update($user);
+
+                // ask to relogin
+                \Sys::svc('Notify')->firebase(array
+                (
+                    'to'           => '/topics/user-' . $user->id,
+                    'priority'     => 'high',
+
+                    'notification' => array
+                    (
+                        'title' => 'Did you change password?',
+                        'body'  => 'We apologize, but please login once again.',
+                        'icon'  => 'fcm_push_icon'
+                    ),
+
+                    'data' => array
+                    (
+                        'cmd' => 'logout',
+                    ),
+                ));
+
+                \Sys::svc('Notify')->im(['cmd' => 'sys', 'userIds' => [$user->id], 'message' => 'logout']);
+            }
+        }
     }
 
     /**
