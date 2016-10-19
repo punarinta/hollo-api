@@ -17,10 +17,11 @@ return array
     ),
     'notifier' => array
     (
-        'host'   => '127.0.0.1',
-        'port'   => 1488,
-        'origin' => 'http://localhost',
-        'ssl'    => false,
+        'host'      => '127.0.0.1',
+        'port'      => 1488,
+        'origin'    => 'http://localhost',
+        'ssl'       => false,
+        'firebase'  => '',
     ),
     'mailless' => array
     (
