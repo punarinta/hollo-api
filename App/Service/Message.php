@@ -251,10 +251,11 @@ class Message extends Generic
      * @param $userId
      * @param $messageExtId
      * @param bool $tryVerbose
+     * @param bool $inform
      * @return bool|null|\StdClass
      * @throws \Exception
      */
-    public function sync($userId, $messageExtId, $tryVerbose = true)
+    public function sync($userId, $messageExtId, $tryVerbose = true, $inform = false)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -269,9 +270,31 @@ class Message extends Generic
             $this->say($data, 1);
         }
 
-        // TODO: send a signal to notifier
+        $message = $this->processMessageSync($user, $data, ['fetchMuted' => false]);
 
-        return $this->processMessageSync($user, $data, ['fetchMuted' => false]);
+        if ($inform)
+        {
+            \Sys::svc('Notify')->firebase(array
+            (
+                'to'           => '/topics/user-' . $userId,
+                'priority'     => 'high',
+
+                'notification' => array
+                (
+                    'title' => $message->subject,
+                    'body'  => $message->body,
+                    'icon'  => 'fcm_push_icon'
+                ),
+
+                'data' => array
+                (
+                    'cmd'    => 'show-chat',
+                    'chatId' => $message->chat_id,
+                ),
+            ));
+        }
+
+        return $message;
     }
 
     /**
@@ -347,7 +370,7 @@ class Message extends Generic
         $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : \Sys::cfg('sys.sync_period');
         $keepOld = isset ($options['keepOld']) ? $options['keepOld'] : false;
         $notify = isset ($options['notify']) ? $options['notify'] : true;
-        $noMarks = isset ($options['noMarks']) ? $options['noMarks'] : false;
+        $noMarks = isset ($options['noMarks']) ? $options['noMarks'] : false;   // set 'true' not to mark unread chats
 
         if (!$message = $this->findByRefIdAndExtId($user->id, $extId))
         {

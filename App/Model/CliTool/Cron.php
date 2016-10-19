@@ -71,7 +71,8 @@ class Cron
                             break;
                         }
 
-                        $count += 1 * !empty(\Sys::svc('Message')->sync($user->id, $messageId, false));
+                        // inform in any case
+                        $count += 1 * !empty(\Sys::svc('Message')->sync($user->id, $messageId, false, true));
 
                         usleep(200000);
                     }
