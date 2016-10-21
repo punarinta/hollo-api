@@ -280,7 +280,7 @@ class Message extends Generic
      * @param $userId
      * @param $messageExtId
      * @param bool $retry
-     * @return null
+     * @return mixed
      */
     public function getDataByRefIdAndExtId($userId, $messageExtId, $retry = true)
     {
