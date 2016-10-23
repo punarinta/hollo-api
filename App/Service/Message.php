@@ -278,18 +278,16 @@ class Message extends Generic
     }
 
     /**
-     * Gets message data from external provider
+     * Gets message data from mailbox
      *
-     * @param $userExtId
-     * @param $extId
+     * @param $userId
+     * @param $messageExtId
      * @param bool $retry
-     * @return null
+     * @return mixed
      */
-    public function getDataByRefIdAndExtId($userExtId, $extId, $retry = true)
+    public function getDataByRefIdAndExtId($userId, $messageExtId, $retry = true)
     {
-        // TODO: t.b.d.
-
-        return null;
+        return Inbox::init($userId)->getMessage($messageExtId);
     }
 
     /**
