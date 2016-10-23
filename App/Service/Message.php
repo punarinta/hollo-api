@@ -661,6 +661,8 @@ class Message extends Generic
      */
     protected function clearContent($type, $content)
     {
+        $content = str_ireplace(['<br />','<br>','<br/>'], "\n", $content);
+
         if ($type == 'text/html')
         {
             // do not let HTML spam in
@@ -677,7 +679,6 @@ class Message extends Generic
 
             $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
             $content = str_replace('</div><div>', "\n", $content);
-            $content = str_ireplace(['<br />','<br>','<br/>'], "\n", $content);
             $content = strip_tags($content);
             $content = html_entity_decode($content);
         }
