@@ -251,10 +251,11 @@ class Message extends Generic
      * @param $userId
      * @param $messageExtId
      * @param bool $tryVerbose
+     * @param array $options
      * @return bool|null|\StdClass
      * @throws \Exception
      */
-    public function sync($userId, $messageExtId, $tryVerbose = true)
+    public function sync($userId, $messageExtId, $tryVerbose = true, $options = [])
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -269,7 +270,9 @@ class Message extends Generic
             $this->say($data, 1);
         }
 
-        $message = $this->processMessageSync($user, $data, ['fetchMuted' => false]);
+        $options['fetchMuted'] = false;
+
+        $message = $this->processMessageSync($user, $data, $options);
 
         return $message;
     }
