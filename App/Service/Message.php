@@ -461,6 +461,10 @@ class Message extends Generic
                     $this->say('Notice: message is a draft');
                     return false;
                 }
+                if (stripos($folder, 'sent') !== false)
+                {
+                    $notify = false;
+                }
             }
 
             // === process the message content ===
