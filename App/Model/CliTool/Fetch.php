@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Model\CliTool;
-use App\Model\ContextIO\ContextIO;
 use App\Model\Inbox\Inbox;
 
 /**
@@ -11,25 +10,24 @@ use App\Model\Inbox\Inbox;
 class Fetch
 {
     /**
-     * @param $userId
-     * @param $fileExtId
-     * @return mixed|string
+     * @param $messageId
+     * @param $offset
+     * @return string
+     * @throws \Exception
      */
-    public function file($userId, $fileExtId)
+    public function file($messageId, $offset = 0)
     {
-        $cfg = \Sys::cfg('contextio');
-        $conn = new ContextIO($cfg['key'], $cfg['secret']);
-
-        if (!$user = \Sys::svc('User')->findById($userId))
+        if (!$message = \Sys::svc('Message')->findById($messageId))
         {
-            return "User not found: $userId\n";
+            throw new \Exception('Message not found');
         }
 
-        return $conn->getFileContent($user->ext_id,
-        [
-            'file_id' => $fileExtId,
-            'as_link' => 1,
-        ]);
+        $fileName = 'data/temp/fetched';
+        $inbox = Inbox::init($message->ref_id);
+
+        file_put_contents($fileName, $inbox->getFileData($message->ext_id, $offset));
+
+        return "File saved to '$fileName'.\n";
     }
 
     /**
