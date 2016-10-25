@@ -12,92 +12,6 @@ use App\Model\Inbox\Imap;
  */
 class Test
 {
-    public function updateSource()
-    {
-        $user = \Sys::svc('User')->findById(1);
-
-        $cfg = \Sys::cfg('contextio');
-        $conn = new ContextIO($cfg['key'], $cfg['secret']);
-
-        $res = $conn->post($user->ext_id, 'sources/0', array
-        (
-            'status'                    => 'DISABLED',
-            'provider_refresh_token'    => 'hello world',
-        ));
-
-        print_r($res->getData());
-    }
-
-    public function smtp()
-    {
-        // fill your own refresh token
-        $_SESSION['-AUTH']['mail']['token'] = 'foobar';
-        \Sys::svc('Smtp')->setupThread(1, 1);
-        \Sys::svc('Smtp')->send([['email'=>'cheaterx@yandex.ru', 'name'=>'Test Guy']], 'hollo, world!' . uniqid());
-        return "\n";
-    }
-
-    public function gmail()
-    {
-        $client = new \Google_Client();
-        $client->setApplicationName('Hollo app');
-        $client->setClientId(\Sys::cfg('social_auth.google.clientId'));
-        $client->setClientSecret(\Sys::cfg('social_auth.google.secret'));
-        $client->setRedirectUri('https://app.hollo.dev/oauth/google');
-        $client->addScope('https://mail.google.com/');
-        $client->addScope('https://www.googleapis.com/auth/userinfo.email');
-        $client->addScope('https://www.googleapis.com/auth/plus.me');
-        $client->setAccessType('offline');
-        $client->setApprovalPrompt('force');
-
-        // Load previously authorized credentials from a file.
-        $credentialsPath = 'google.token';
-        if (file_exists($credentialsPath))
-        {
-            $accessToken = file_get_contents($credentialsPath);
-        }
-        else
-        {
-            // Request authorization from the user.
-            $authUrl = $client->createAuthUrl();
-            printf("Open the following link in your browser:\n%s\n", $authUrl);
-            print 'Enter verification code: ';
-            $authCode = trim(fgets(STDIN));
-
-            // Exchange authorization code for an access token.
-            $accessToken = $client->authenticate($authCode);
-
-            // Store the credentials to disk.
-            file_put_contents($credentialsPath, $accessToken);
-            printf("Credentials saved to %s\n", $credentialsPath);
-        }
-        $client->setAccessToken($accessToken);
-
-        // Refresh the token if it's expired.
-        if ($client->isAccessTokenExpired())
-        {
-            $client->refreshToken($client->getRefreshToken());
-            file_put_contents($credentialsPath, $client->getAccessToken());
-        }
-
-        echo "Refresh token: " . $client->getRefreshToken() . "\n";
-        echo "Access token: " . $accessToken . "\n";
-
-        // use an access token to fetch email and picture
-        $accessToken = json_decode($accessToken, true);
-
-        $ch = curl_init('https://www.googleapis.com/oauth2/v1/userinfo?access_token=' . $accessToken['access_token']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $data = json_decode(curl_exec($ch), true) ?:[];
-        curl_close($ch);
-
-        // @$data['picture'];   — url of an avatar
-
-        echo "Email: {$data['email']}\n";
-
-        return "\n";
-    }
-
     public function reClean()
     {
         $count = 0;
@@ -192,17 +106,44 @@ class Test
         return "\n";
     }
 
-    public function inbox($userId = 1)
+    public function inbox($userId = 2)
     {
         $imap = new Imap($userId); // 11298 - attachment, 11216 - polish symbols
 
-    //    print_r($imap->getMessages(['ts_after' => strtotime('2016-10-14')]));
+        print_r($imap->getMessages(['ts_after' => strtotime('2016-10-14')]));
 
-        print_r($imap->getMessage(11077));
+    //    print_r($imap->getMessage(11077));
 
     //    $imap = new Gmail($userId);
-    //    print_r($imap->getMessage('155b48e12ef23f00'));
+    //    print_r($imap->getMessage('157c395527a42e95'));
 
         return '';
+    }
+
+    public function firebase()
+    {
+        $payload = array
+        (
+            'to'           => '/topics/user-1',
+            'priority'     => 'high',
+
+            'notification' => array
+            (
+                'title' => 'You have new message',          // Any value
+                'body'  => 'Testing 🎂',                    // Any value
+                'icon'  => 'fcm_push_icon'                  // White icon Android resource
+            ),
+
+            'data' => array
+            (
+                'authId' => 1,
+                'cmd'    => 'show-chat',
+                'chatId' => 1,
+            ),
+        );
+
+        $res = \Sys::svc('Notify')->firebase($payload);
+
+        print_r($res);
     }
 }
