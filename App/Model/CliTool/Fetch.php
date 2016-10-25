@@ -2,6 +2,7 @@
 
 namespace App\Model\CliTool;
 use App\Model\ContextIO\ContextIO;
+use App\Model\Inbox\Inbox;
 
 /**
  * Class Fetch
@@ -39,25 +40,13 @@ class Fetch
      */
     public function message($userId, $messageExtId, $full = false)
     {
-        $cfg = \Sys::cfg('contextio');
-        $conn = new ContextIO($cfg['key'], $cfg['secret']);
-
         if (!$user = \Sys::svc('User')->findById($userId))
         {
             return "User not found: $userId\n";
         }
 
-        if (!$data = $conn->getMessage($user->ext_id, ['message_id' => $messageExtId, 'include_body' => 1]))
-        {
-            return "Message not found: $messageExtId\n";
-        }
-
-        $data = $data->getData();
-
-        if (!isset ($data['body']) && !$full)
-        {
-            return "No body? WTF?\n";
-        }
+        $inbox = Inbox::init($user);
+        $data = $inbox->getMessage($messageExtId);
 
         return print_r($full ? $data : $data['body'][0]['content'], true);
     }
