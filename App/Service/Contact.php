@@ -32,6 +32,7 @@ class Contact extends Generic
             'contact',
             'demo',
             'delivery',
+            'discover',
             'donate',
             'email',
             'event',
