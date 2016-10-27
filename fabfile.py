@@ -10,7 +10,7 @@ from fabric.api import sudo, cd, env, local, put
 
 DEPLOYED = '/apps/mls-api/{}'
 DEPLOYED_DIR = '/apps/mls-api'
-FILES_DIR = '/apps/files'
+FILES_DIR = '/apps/mls-api/files'
 packaged = False
 
 # setup function, triggered every time to select environment
