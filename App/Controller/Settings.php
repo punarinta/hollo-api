@@ -65,4 +65,9 @@ class Settings extends Generic
 
         return $settings;
     }
+
+    static public function testNotification()
+    {
+        \Sys::svc('Resque')->addJob('TestNotifications', ['user_id' => \Auth::user()->id]);
+    }
 }
