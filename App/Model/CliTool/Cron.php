@@ -90,4 +90,51 @@ class Cron
 
         return '';
     }
+
+    public function refreshGmailSubscription()
+    {
+        foreach (\Sys::svc('User')->findAllReal() as $user)
+        {
+            $settings = json_decode($user->settings, true) ?: [];
+
+            if ($settings['svc'] != 1)
+            {
+                continue;
+            }
+
+            echo "User {$user->id}... ";
+
+            if (!$token = $settings['token'])
+            {
+                echo "No refresh token\n";
+                continue;
+            }
+
+            $client = new \Google_Client();
+            $client->setClientId(\Sys::cfg('oauth.google.clientId'));
+            $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
+            $client->refreshToken($token);
+            $accessToken = $client->getAccessToken();
+            $accessToken = json_decode($accessToken, true);
+
+            $ch = curl_init("https://www.googleapis.com/gmail/v1/users/me/watch?oauth_token=" . $accessToken['access_token']);
+
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type:application/json']);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array
+            (
+                'topicName' => 'projects/hollo-1271/topics/gmail',
+                'labelIds'  => ['INBOX'],
+            )));
+            $res = curl_exec($ch);
+            curl_close($ch);
+
+            print_r($res);
+
+            echo "OK\n";
+        }
+
+        return '';
+    }
 }
