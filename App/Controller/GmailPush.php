@@ -10,6 +10,8 @@ class GmailPush
      */
     static public function index()
     {
+        file_put_contents('data/files/pubsub.log', "Incoming...\n", FILE_APPEND);
+
         $json = json_decode(file_get_contents('php://input'), 1);
 
         if (isset ($json['message']['data']))
