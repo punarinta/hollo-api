@@ -30,23 +30,26 @@ class Chat extends Generic
         {
             \DB::$pageStart = null;
 
-            $lastMsg = null;
+            $lastMsgBody = null;
+            $lastMsgSubj = null;
 
             if ($lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id))
             {
                 // TODO: move the logic below onto frontend
                 if ($lastMsg->body)
                 {
-                    $lastMsg = $lastMsg->body;
+                    $lastMsgBody = $lastMsg->body;
                 }
                 elseif ($lastMsg->files)
                 {
-                    $lastMsg = '📎';
+                    $lastMsgBody = '📎';
                 }
                 else
                 {
-                    $lastMsg = '';
+                    $lastMsgBody = '';
                 }
+
+                $lastMsgSubj = $lastMsg->subject;
             }
 
             $items[] = array
@@ -55,8 +58,12 @@ class Chat extends Generic
                 'name'      => $chat->name,
                 'muted'     => $chat->muted,
                 'read'      => $chat->read,
-                'lastTs'    => $chat->last_ts,
-                'lastMsg'   => $lastMsg,
+                'last'  => array
+                (
+                    'ts'    => $chat->last_ts,
+                    'msg'   => $lastMsgBody,
+                    'subj'  => $lastMsgSubj,
+                ),
                 'users'     => \Sys::svc('User')->findByChatId($chat->id, true, $myId),
             );
         }
