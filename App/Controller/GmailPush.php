@@ -17,8 +17,8 @@ class GmailPush
             $json['message']['x'] = base64_decode($json['message']['data']);
         }
 
-        file_put_contents('data/files/pubsub.log', json_encode($json), FILE_APPEND);
+        file_put_contents('data/files/pubsub.log', json_encode($json) . "\n", FILE_APPEND);
 
-        return true;
+        return $json['message']['x'];
     }
 }
