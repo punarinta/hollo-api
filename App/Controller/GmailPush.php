@@ -14,11 +14,15 @@ class GmailPush
 
         if (isset ($json['message']['data']))
         {
-            $json['message']['x'] = base64_decode($json['message']['data']);
+            $x = json_decode(base64_decode($json['message']['data']));
+            $user = \Sys::svc('User')->findByEmail($x['emailAddress']);
+
+            $messageId = $json['message']['message_id'];
+            $json['user_id'] = $user->id;
         }
 
-        file_put_contents('data/files/pubsub.log', json_encode($json) . "\n", FILE_APPEND);
+        file_put_contents('data/files/pubsub.log', json_encode($json, JSON_PRETTY_PRINT) . "\n", FILE_APPEND);
 
-        return $json['message']['x'];
+        return true;
     }
 }
