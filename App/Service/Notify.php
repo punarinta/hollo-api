@@ -51,6 +51,12 @@ class Notify extends Generic
         $res = json_decode($output, true) ?:[];
         curl_close($ch);
 
-        return $res['message_id'] ?: false;
+        if (!isset ($res['message_id']) && @$GLOBALS['-SYS-VERBOSE'])
+        {
+            echo "Wrong return structure:\n";
+            print_r($res);
+        }
+
+        return @$res['message_id'] ?: false;
     }
 }
