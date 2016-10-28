@@ -102,13 +102,22 @@ class Gmail extends Generic implements InboxInterface
     }
 
     /**
-     * @param $historyId
+     * @param $newHistoryId
      * @param string $labelId
      * @return mixed
      */
-    public function listHistory($historyId, $labelId = 'INBOX')
+    public function listHistory($newHistoryId, $labelId = 'INBOX')
     {
+        // get previous history ID
+        $user = \Sys::svc('User')->findById($this->userId);
+        $settings = json_decode($user->settings, true) ?: [];
+        $historyId = @$settings['historyId'] ?: $newHistoryId;
+
         $res = $this->curl('history?startHistoryId=' . $historyId . ($labelId ? '&labelId=INBOX' . $labelId : ''));
+
+        $settings['historyId'] = $newHistoryId;
+        $user->settings = json_encode($settings);
+        \Sys::svc('User')->update($user);
 
         return @$res['history'];
     }
