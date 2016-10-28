@@ -34,6 +34,10 @@ class SyncContacts extends Generic
 
         sleep(5);
 
+        // subscribe for future updates
+        \Sys::svc('User')->subscribeToGmail($user);
+
+        // fetch all the messages
         \Sys::svc('Message')->syncAllByUserId($user->id, false, true);
 
         return true;
