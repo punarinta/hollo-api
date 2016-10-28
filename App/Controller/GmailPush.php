@@ -31,6 +31,11 @@ class GmailPush
 
             file_put_contents('data/files/pubsub.log', "{$user->id}|{$messageId}\n", FILE_APPEND);
         }
+        else
+        {
+            file_put_contents('data/files/pubsub.log', "NO MSG DATA\n", FILE_APPEND);
+            return false;
+        }
 
         return true;
     }
