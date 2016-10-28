@@ -50,20 +50,31 @@ class GmailPush
 
     /**
      * @param $user
-     * @param $historyId
+     * @param $newHistoryId
      */
-    static protected function syncNew($user, $historyId)
+    static protected function syncNew($user, $newHistoryId)
     {
         $inbox = new Gmail($user);
 
-        foreach ($inbox->listHistory($historyId) as $row)
+        foreach ($inbox->listHistory($newHistoryId, null) as $row)
         {
+            // history may be empty at all
+
+            self::log(' ' . json_encode($row) . ' ');
+
             foreach ($row['messagesAdded'] as $data)
             {
+                if (in_array('CHAT', $data['message']['labelIds']))
+                {
+                    // save resources
+                    self::log('C');
+                    continue;
+                }
+
                 $messageData = $inbox->getMessage($data['message']['id']);
 
                 $message = \Sys::svc('Message')->processMessageSync($user, $messageData);
-                self::log("M{$message->id}");
+                self::log($message ? "M{$message->id}" : '.');
             }
         }
     }
