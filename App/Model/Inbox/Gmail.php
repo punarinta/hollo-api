@@ -104,7 +104,7 @@ class Gmail extends Generic implements InboxInterface
     /**
      * @param $newHistoryId
      * @param string $labelId
-     * @return mixed
+     * @return array
      */
     public function listHistory($newHistoryId, $labelId = 'INBOX')
     {
@@ -119,7 +119,7 @@ class Gmail extends Generic implements InboxInterface
         $user->settings = json_encode($settings);
         \Sys::svc('User')->update($user);
 
-        return @$res['history'];
+        return isset ($res['history']) ? $res['history'] : [];
     }
 
     /**
