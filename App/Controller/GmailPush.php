@@ -27,7 +27,7 @@ class GmailPush
 
             $messageId = $json['message']['message_id'];
 
-            \Sys::svc('Message')->sync($user->id, $messageId, false, ['noMarks' => true]);
+            \Sys::svc('Message')->sync($user->id, $messageId, false);
 
             file_put_contents('data/files/pubsub.log', "{$user->id}|{$messageId}\n", FILE_APPEND);
         }
