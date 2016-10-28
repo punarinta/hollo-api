@@ -543,7 +543,7 @@ class Message extends Generic
 
                 if ($useSocket)
                 {
-                    \Sys::svc('Notify')->send(
+                    \Sys::svc('Notify')->im(
                     [
                         'cmd'       => 'notify',
                         'userIds'   => [$user->id],
