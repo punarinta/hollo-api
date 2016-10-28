@@ -254,6 +254,10 @@ class User extends Generic
             print_r($res);
         }
 
+        $settings['historyId'] = $res['historyId'];
+        $user->settings = json_encode($settings);
+        \Sys::svc('User')->update($user);
+
         return true;
     }
 }
