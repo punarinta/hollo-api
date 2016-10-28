@@ -209,6 +209,11 @@ class Gmail extends Generic implements InboxInterface
 
         if (!$payload = @$raw['payload'])
         {
+        /*    if (@$GLOBALS['-SYS-VERBOSE'])
+            {
+                print_r($raw);
+            }*/
+
             return [];
         }
 
