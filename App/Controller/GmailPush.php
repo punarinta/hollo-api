@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Model\Inbox\Gmail;
+
 class GmailPush
 {
     /**
@@ -12,7 +14,7 @@ class GmailPush
     {
         $json = json_decode(file_get_contents('php://input'), 1);
 
-        file_put_contents('data/files/pubsub.log', date('Y-m-d H:i:s') . '|', FILE_APPEND);
+        self::log(date('Y-m-d H:i:s') . '|');
 
         if (isset ($json['message']['data']))
         {
@@ -23,28 +25,52 @@ class GmailPush
 
                 if (!isset ($json['message']['message_id']))
                 {
-                    file_put_contents('data/files/pubsub.log', "NO MSG-ID\n", FILE_APPEND);
+                    self::log("NO MSG-ID\n");
                     return false;
                 }
 
-                $messageId = $json['message']['message_id'];
+                self::syncNew($user, $x['historyId']);
 
-                \Sys::svc('Message')->sync($user->id, $messageId, false);
-
-                file_put_contents('data/files/pubsub.log', "{$user->id}|{$messageId}\n", FILE_APPEND);
+                self::log("|{$user->id}|{$x['historyId']}\n");
             }
             catch (\Exception $e)
             {
-                file_put_contents('data/files/pubsub.log', "ERR:{$e->getMessage()}\n", FILE_APPEND);
+                self::log("ERR:{$e->getMessage()}\n");
                 return false;
             }
         }
         else
         {
-            file_put_contents('data/files/pubsub.log', "NO MSG DATA\n", FILE_APPEND);
+            self::log("NO MSG DATA\n");
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * @param $user
+     * @param $historyId
+     */
+    static protected function syncNew($user, $historyId)
+    {
+        $inbox = new Gmail($user);
+
+        foreach ($inbox->listHistory($historyId) as $row)
+        {
+            foreach ($row['messagesAdded'] as $messageData)
+            {
+                $message = \Sys::svc('Message')->processMessageSync($user, $messageData);
+                self::log("M{$message->id}");
+            }
+        }
+    }
+
+    /**
+     * @param $text
+     */
+    static protected function log($text)
+    {
+        file_put_contents('data/files/pubsub.log', $text, FILE_APPEND);
     }
 }
