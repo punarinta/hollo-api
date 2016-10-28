@@ -102,6 +102,17 @@ class Gmail extends Generic implements InboxInterface
     }
 
     /**
+     * @param $historyId
+     * @return mixed
+     */
+    public function listHistory($historyId)
+    {
+        $res = $this->curl('history?startHistoryId=' . $historyId);
+
+        return @$res['history'];
+    }
+
+    /**
      * @param array $options
      * @return array
      */
