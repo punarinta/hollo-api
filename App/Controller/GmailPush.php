@@ -16,20 +16,28 @@ class GmailPush
 
         if (isset ($json['message']['data']))
         {
-            $x = json_decode(base64_decode($json['message']['data']), true);
-            $user = \Sys::svc('User')->findByEmail($x['emailAddress']);
-
-            if (!isset ($json['message']['message_id']))
+            try
             {
-                file_put_contents('data/files/pubsub.log', "NO MSG-ID\n", FILE_APPEND);
+                $x = json_decode(base64_decode($json['message']['data']), true);
+                $user = \Sys::svc('User')->findByEmail($x['emailAddress']);
+
+                if (!isset ($json['message']['message_id']))
+                {
+                    file_put_contents('data/files/pubsub.log', "NO MSG-ID\n", FILE_APPEND);
+                    return false;
+                }
+
+                $messageId = $json['message']['message_id'];
+
+                \Sys::svc('Message')->sync($user->id, $messageId, false);
+
+                file_put_contents('data/files/pubsub.log', "{$user->id}|{$messageId}\n", FILE_APPEND);
+            }
+            catch (\Exception $e)
+            {
+                file_put_contents('data/files/pubsub.log', "ERR:{$e->getMessage()}\n", FILE_APPEND);
                 return false;
             }
-
-            $messageId = $json['message']['message_id'];
-
-            \Sys::svc('Message')->sync($user->id, $messageId, false);
-
-            file_put_contents('data/files/pubsub.log', "{$user->id}|{$messageId}\n", FILE_APPEND);
         }
         else
         {
