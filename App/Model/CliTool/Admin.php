@@ -2,6 +2,7 @@
 
 namespace App\Model\CliTool;
 use App\Model\Bcrypt;
+use App\Model\Inbox\Gmail;
 
 /**
  * Class Admin
@@ -19,6 +20,21 @@ class Admin
     public function syncMessage($userId, $messageExtId)
     {
         \Sys::svc('Message')->sync($userId, $messageExtId);
+
+        return '';
+    }
+
+    /**
+     * @param $userId
+     * @param $historyId
+     * @param null $labelId
+     * @return string
+     */
+    public function showHistory($userId, $historyId, $labelId = null)
+    {
+        $inbox = new Gmail($userId);
+
+        print_r($inbox->listHistory($historyId, $labelId));
 
         return '';
     }
