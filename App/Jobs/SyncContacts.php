@@ -38,7 +38,7 @@ class SyncContacts extends Generic
         \Sys::svc('User')->subscribeToGmail($user);
 
         // fetch all the messages
-        \Sys::svc('Message')->syncAllByUserId($user->id, false, true);
+        \Sys::svc('Message')->syncAllByUserId($user->id, false);
 
         return true;
     }

@@ -126,65 +126,8 @@ class Message extends Generic
         // get more messages for this chat starting from chat's last sync
         foreach (\Sys::svc('User')->findByChatId($chat->id) as $participant)
         {
-            $params =
-            [
-                'limit'         => $limit,
-                'date_before'   => abs($chat->last_ts + 43200),     // + half a day offset
-                'sort_order'    => 'desc',
-                'email'         => $participant->email,
-            ];
-
-            while (1)
-            {
-                $rows = [];
-                $attempt = 0;
-                $params['offset'] = $offset;
-
-                while ($attempt < 10)
-                {
-                    if ($data = $this->conn->listMessages($user->ext_id, $params))
-                    {
-                        $rows = $data->getData();
-
-                        foreach ($rows as $row)
-                        {
-                            // fetch from all times and even muted, as the user has explicitly told us to do so
-                            $synced += 1 * is_object($this->processMessageSync($user, $row,
-                            [
-                                'fetchMuted'    => true,
-                                'limitToChatId' => $chat->id,
-                                'maxTimeBack'   => -1,
-                                'keepOld'       => true,
-                                'notify'        => false,
-                            ]));
-                        }
-
-                        if ($synced >= \Sys::cfg('sys.sync_depth'))
-                        {
-                            goto enough;
-                        }
-
-                        break;
-                    }
-                    else
-                    {
-                        $this->retry($params, ++$attempt);
-                    }
-                }
-
-                if (count($rows) < $limit)
-                {
-                    break;
-                }
-
-                $offset += $limit;
-
-                // sleep a bit to prevent API request queue growth
-                usleep(600000);
-            }
+            //
         }
-
-        enough:;
 
         // return with offset from DB
         $messages = $this->findByChatId($chat->id);
@@ -199,11 +142,10 @@ class Message extends Generic
      *
      * @param $userId
      * @param bool $fetchMuted      - fetch muted too
-     * @param bool $noMarks         - set 'true' to skip marking as unread through IM
      * @return int
      * @throws \Exception
      */
-    public function syncAllByUserId($userId, $fetchMuted = false, $noMarks = false)
+    public function syncAllByUserId($userId, $fetchMuted = false)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -235,7 +177,8 @@ class Message extends Generic
             [
                 'fetchMuted'    => $fetchMuted,
                 'fetchAll'      => true,
-                'noMarks'       => $noMarks,
+                'noMarks'       => true,
+                'useFirebase'   => false,           // don't spam during a mass sync
             ]));
 
             // sleep a bit to prevent API request queue growth
@@ -349,6 +292,8 @@ class Message extends Generic
         $keepOld = isset ($options['keepOld']) ? $options['keepOld'] : false;
         $notify = isset ($options['notify']) ? $options['notify'] : true;
         $noMarks = isset ($options['noMarks']) ? $options['noMarks'] : false;   // set 'true' not to mark unread chats
+        $useFirebase = isset ($options['useFirebase']) ? $options['useFirebase'] : true;
+        $useSocket = isset ($options['useSocket']) ? $options['useSocket'] : true;
 
         if (!$message = $this->findByRefIdAndExtId($user->id, $extId))
         {
@@ -578,7 +523,7 @@ class Message extends Generic
 
             if (!$temporaryMessageExisted && $notify)
             {
-                if ($noMarks)
+                if ($useFirebase)
                 {
                     // safe to use Firebase
                     \Sys::svc('Notify')->firebase(array
@@ -602,13 +547,16 @@ class Message extends Generic
                     ));
                 }
 
-                \Sys::svc('Notify')->send(
-                [
-                    'cmd'       => 'notify',
-                    'userIds'   => [$user->id],
-                    'chatId'    => $chat->id,
-                    'noMarks'   => $noMarks,
-                ]);
+                if ($useSocket)
+                {
+                    \Sys::svc('Notify')->send(
+                    [
+                        'cmd'       => 'notify',
+                        'userIds'   => [$user->id],
+                        'chatId'    => $chat->id,
+                        'noMarks'   => $noMarks,
+                    ]);
+                }
             }
 
             // remove old messages if not explicitly instructed

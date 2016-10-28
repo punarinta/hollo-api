@@ -11,7 +11,7 @@ class Admin
 {
     public function sync($userId, $fetchMuted = false)
     {
-        $x = \Sys::svc('Message')->syncAllByUserId($userId, $fetchMuted, true);
+        $x = \Sys::svc('Message')->syncAllByUserId($userId, $fetchMuted);
 
         return "Messages synced: $x\n\n";
     }
