@@ -115,11 +115,6 @@ class Message extends Generic
     public function moreByChat($chat, $user)
     {
         // TODO: t.b.d.
-        return [];
-
-        $offset = 0;
-        $synced = 0;
-        $limit = 20;
 
         $oldCount = $this->countByChatId($chat->id);
 
@@ -225,10 +220,9 @@ class Message extends Generic
      *
      * @param $userId
      * @param $messageExtId
-     * @param bool $retry
      * @return mixed
      */
-    public function getDataByRefIdAndExtId($userId, $messageExtId, $retry = true)
+    public function getDataByRefIdAndExtId($userId, $messageExtId)
     {
         return Inbox::init($userId)->getMessage($messageExtId);
     }
