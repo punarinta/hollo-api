@@ -58,8 +58,10 @@ class GmailPush
 
         foreach ($inbox->listHistory($historyId) as $row)
         {
-            foreach ($row['messagesAdded'] as $messageData)
+            foreach ($row['messagesAdded'] as $data)
             {
+                $messageData = $inbox->getMessage($data['message']['id']);
+
                 $message = \Sys::svc('Message')->processMessageSync($user, $messageData);
                 self::log("M{$message->id}");
             }
