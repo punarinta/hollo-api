@@ -195,6 +195,17 @@ class DB
     }
 
     /**
+     * @param $q
+     * @param null $params
+     */
+    static function query($q, $params = null)
+    {
+        $stmt = self::prepare($q, $params);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    /**
      * @param $stmt
      * @return array
      */
