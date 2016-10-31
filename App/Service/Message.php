@@ -208,7 +208,7 @@ class Message extends Generic
             $this->say($data, 1);
         }
 
-        $options['fetchMuted'] = false;
+        $options['fetchMuted'] = true;
 
         $message = $this->processMessageSync($user, $data, $options);
 
@@ -377,19 +377,17 @@ class Message extends Generic
                 return false;
             }
 
-            if (!$fetchMuted /*&& count($emails) == 2*/)
+
+            $recipient = \Sys::svc('User')->findByEmail(@$messageData['addresses']['to'][0]['email']);
+            $flags = \Sys::svc('Chat')->getFlags($chat->id, @$recipient->id);
+
+            // check that you want any messages in this chat
+            // message sync on behalf of a bot will not happen
+
+            if (!$fetchMuted && $flags && $flags->muted)
             {
-                // check that you want any messages in this chat
-                // message sync on behalf of a bot will not happen
-
-                $recipient = \Sys::svc('User')->findByEmail(@$messageData['addresses']['to'][0]['email']);
-                $flags = \Sys::svc('Chat')->getFlags($chat->id, @$recipient->id);
-
-                if ($flags && $flags->muted)
-                {
-                    $this->say('Notice: message is muted');
-                    return false;
-                }
+                $this->say('Notice: message is muted');
+                return false;
             }
 
             // assure the message is not a draft
@@ -491,6 +489,15 @@ class Message extends Generic
                     ));
                     $subject = '';
                 }
+            }
+
+            if ($fetchMuted && $flags && $flags->muted)
+            {
+                // OK, the chat is muted
+                // allow fetching, but keep 1 message in the chat only => clear the whole chat before sync
+                \DB::query('DELETE FROM message WHERE chat_id=?', [$chat->id]);
+
+                $notify = false;
             }
 
             $message = $this->create(array
