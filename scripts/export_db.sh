@@ -7,13 +7,13 @@ ssh root@178.62.247.169 '/apps/db_scripts/live_to_local.sh'
 scp root@178.62.247.169:/root/local.sql .
 
 # Drop old database
-mysqladmin -u root -f drop hollo
+mysqladmin -u root -p'password' -f drop hollo
 
 # Create database
-mysqladmin -u root create hollo
+mysqladmin -u root -p'password' create hollo
 
 # Import
-mysql -uroot -D hollo < local.sql
+mysql -uroot -p'password' -D hollo < local.sql
 
 # Remove remote
 ssh root@178.62.247.169 'rm /root/local.sql'
