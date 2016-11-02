@@ -39,10 +39,9 @@ class Message extends Generic
         $msgs = \Sys::svc('Message')->findByChatId($chat->id, \Input::data('subject'));
         $flags = \Sys::svc('Chat')->getFlags($chat->id, \Auth::user()->id);
 
-        if ($msgs && !\Input::data('ninja'))
+        if (!$flags->read && $msgs && !\Input::data('ninja'))
         {
-            $flags->read = 1;
-            \Sys::svc('Chat')->setFlags($chatId, \Auth::user()->id, $flags);
+            \Sys::svc('Chat')->setReadFlag($chatId, \Auth::user()->id, 1);
         }
 
         return array
