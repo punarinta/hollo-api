@@ -526,6 +526,14 @@ class Message extends Generic
             {
                 if ($useFirebase)
                 {
+                    $messageBody = $message->body;
+
+                    // make message notifiable
+                    if ($messageBody[0] == '{')
+                    {
+                        $messageBody = 'Tap to see calendar';
+                    }
+
                     // safe to use Firebase
                     \Sys::svc('Notify')->firebase(array
                     (
@@ -535,7 +543,7 @@ class Message extends Generic
                         'notification' => array
                         (
                             'title' => $message->subject,
-                            'body'  => $message->body,
+                            'body'  => $messageBody,
                             'icon'  => 'fcm_push_icon'
                         ),
 
