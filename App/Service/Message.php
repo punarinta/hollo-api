@@ -64,7 +64,7 @@ class Message extends Generic
             $params[] = '%' . $subject . '%';
         }
 
-        $sql .= ' ORDER BY ts DESC';
+        $sql .= ' ORDER BY ts DESC, id DESC';
 
         if ($offset)
         {
