@@ -217,8 +217,19 @@ class Message extends Generic
         $chat->last_ts = time();
         \Sys::svc('Chat')->update($chat);
 
-        \Sys::svc('Smtp')->setupThread(\Auth::user()->id, $chatId, $message->id);
-        $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
+        // check if you are chatting with a bot
+        if ($bots = \DB::rows("SELECT u.* FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id = u.id WHERE cu.chat_id=? AND u.email LIKE '%@bot.hollo.email' ", [$chatId]))
+        {
+            foreach ($bots as $bot)
+            {
+                \Sys::svc('Bot')->talk($bot, $chatId, $body);
+            }
+        }
+        else
+        {
+            \Sys::svc('Smtp')->setupThread(\Auth::user()->id, $chatId, $message->id);
+            $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
+        }
 
         return true; // $res;
     }
