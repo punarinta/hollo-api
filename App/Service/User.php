@@ -72,10 +72,10 @@ class User extends Generic
      *
      * @param $chatId
      * @param bool $forContacts
-     * @param null $exceptId
+     * @param int $exceptId
      * @return array
      */
-    public function findByChatId($chatId, $forContacts = false, $exceptId = null)
+    public function findByChatId($chatId, $forContacts = false, $exceptId = 0)
     {
         if ($forContacts)
         {
