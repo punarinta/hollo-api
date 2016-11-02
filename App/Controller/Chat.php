@@ -66,6 +66,11 @@ class Chat extends Generic
                 ),
                 'users'     => \Sys::svc('User')->findByChatId($chat->id, true, $myId),
             );
+
+            usort($items, function ($a, $b)
+            {
+                return count($a['users']) > count($b['users']);
+            });
         }
 
         return $items;
