@@ -179,7 +179,7 @@ class Message extends Generic
 
         if (!$chatId = \Input::data('chatId'))
         {
-            throw new \Exception('Recipient list is not provided.');
+            throw new \Exception('Chat ID is not specified.');
         }
 
         // create a temporary message in the DB
