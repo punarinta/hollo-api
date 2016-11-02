@@ -25,8 +25,9 @@ class Chat extends Generic
     {
         $items = [];
         $myId = \Auth::user()->id;
+        $filters = \Input::data('filters') ?:[];
 
-        foreach (\Sys::svc('Chat')->findAllByUserId($myId, \Input::data('filters') ?:[], \Input::data('sortBy'), \Input::data('sortMode')) as $chat)
+        foreach (\Sys::svc('Chat')->findAllByUserId($myId, $filters, \Input::data('sortBy'), \Input::data('sortMode')) as $chat)
         {
             \DB::$pageStart = null;
 
@@ -67,10 +68,16 @@ class Chat extends Generic
                 'users'     => \Sys::svc('User')->findByChatId($chat->id, true, $myId),
             );
 
-            usort($items, function ($a, $b)
+            foreach ($filters as $filter)
             {
-                return count($a['users']) > count($b['users']);
-            });
+                if ($filter['mode'] == 'email')
+                {
+                    usort($items, function ($a, $b)
+                    {
+                        return count($a['users']) > count($b['users']);
+                    });
+                }
+            }
         }
 
         return $items;
