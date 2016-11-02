@@ -44,6 +44,9 @@ class Message extends Generic
             \Sys::svc('Chat')->setReadFlag($chatId, \Auth::user()->id, 1);
         }
 
+        // do not limit users if pagination is on
+        \DB::$pageStart = null;
+
         return array
         (
             'chat'   => array
