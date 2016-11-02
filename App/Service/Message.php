@@ -15,7 +15,7 @@ class Message extends Generic
      */
     public function getLastByChatId($chatId)
     {
-        return \DB::row('SELECT * FROM message WHERE chat_id = ? ORDER BY ts DESC LIMIT 1', [$chatId]);
+        return \DB::row('SELECT * FROM message WHERE chat_id = ? ORDER BY ts DESC, id DESC LIMIT 1', [$chatId]);
     }
 
     /**
