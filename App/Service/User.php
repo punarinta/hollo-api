@@ -254,6 +254,8 @@ class User extends Generic
             print_r($res);
         }
 
+        $res = json_decode($res, true) ?: [];
+
         $settings['historyId'] = $res['historyId'];
         $user->settings = json_encode($settings);
         \Sys::svc('User')->update($user);
