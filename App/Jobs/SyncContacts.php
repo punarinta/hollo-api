@@ -40,6 +40,9 @@ class SyncContacts extends Generic
         // fetch all the messages
         \Sys::svc('Message')->syncAllByUserId($user->id, false);
 
+        // fetch avatars
+        \Sys::svc('User')->updateAvatars($user);
+
         return true;
     }
 }
