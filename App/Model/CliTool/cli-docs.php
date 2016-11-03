@@ -6,3 +6,5 @@ echo "admin hashpass [PASSWORD]                                 Creates a hash f
 echo "fetch file [MSG_ID] [FILE_OFFSET]                         Get file contents.\n";
 echo "fetch message [USER_ID] [MSG_EID] (FULL)                  Get a message.\n";
 echo "cron removeOldMessages                                    Purge old messages from DB.\n";
+echo "cron refreshGmailSubscription                             Refresh Gmail webhooks.\n";
+echo "cron updateAvatars [USER_ID]                              Resync avatars for all the users.\n";
