@@ -53,7 +53,6 @@ class Contact extends Generic
             'postmaster',
             'reklama',
             'robot',
-            'service',
             'student',
             'subscription',
             'team',
@@ -71,6 +70,7 @@ class Contact extends Generic
             || strpos($email[0], 'regist') !== false
             || strpos($email[0], 'reply') !== false
             || strpos($email[0], 'sales') !== false
+            || strpos($email[0], 'service') !== false
             || strpos($email[0], 'support') !== false
             || strpos($email[0], 'survey') !== false
             || strpos($email[0], 'update') !== false
