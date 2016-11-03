@@ -10,7 +10,6 @@ require_once 'vendor/guzzlehttp/guzzle/src/functions_include.php';
 
 class Smtp
 {
-    protected $conn = null;
     protected $mail = null;
     protected $setup = false;
     protected $messageExisted = false;
