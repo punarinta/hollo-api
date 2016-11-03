@@ -61,6 +61,13 @@ class Test
 
             foreach ($contacts['feed']['entry'] as $contact)
             {
+                $email = $contact['gd$email'][0]['address'];
+
+                if (file_exists('data/files/avatars/' . $email))
+                {
+                    continue;
+                }
+
                 $image = null;
 
                 if (isset ($contact['link'][0]['href']))
@@ -84,8 +91,6 @@ class Test
                             'email' => $contact['gd$email'][0]['address'],
                             'image' => base64_encode($image),
                         ); */
-
-                        $email = $contact['gd$email'][0]['address'];
 
                         echo "Saving ava for $email...\n";
                         file_put_contents('data/files/avatars/' . $email, $image);
