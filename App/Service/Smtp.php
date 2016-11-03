@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Service;
-use App\Model\ContextIO\ContextIO;
 use App\Model\Inbox\Inbox;
 
 require_once 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
@@ -18,8 +17,6 @@ class Smtp
 
     public function __construct()
     {
-        $cfg = \Sys::cfg('contextio');
-        $this->conn = new ContextIO($cfg['key'], $cfg['secret']);
         $this->mail = new \PHPMailer();
     }
 
