@@ -122,14 +122,18 @@ class Cron
     {
         $countAvas = 0;
         $countUsers = 0;
+        $emailsPerUserLimit = 10000;
 
         foreach (\Sys::svc('User')->findAllReal() as $user)
         {
+            echo "\nUser {$user->id}... ";
+
             $settings = json_decode($user->settings, true) ?: [];
 
-            if (!$token = $settings['token'])
+            if (!$token = @$settings['token'])
             {
-                return "No refresh token\n";
+                echo "No refresh token";
+                continue;
             }
 
             $client = new \Google_Client();
@@ -142,9 +146,9 @@ class Cron
             $pageSize = 25;
             $pageStart = 1;
 
-            echo "Access token = {$accessToken['access_token']}\n\n";
+            // echo "Access token = {$accessToken['access_token']}\n\n";
 
-            while ($pageStart < 5000)   // limit just to be safe
+            while ($pageStart < $emailsPerUserLimit)   // limit just to be safe
             {
                 echo "PageStart = $pageStart\n";
 
@@ -155,7 +159,11 @@ class Cron
 
                 foreach ($contacts['feed']['entry'] as $contact)
                 {
-                    $email = $contact['gd$email'][0]['address'];
+                    if (!$email = @$contact['gd$email'][0]['address'])
+                    {
+                        // may happen
+                        continue;
+                    }
 
                     if (file_exists('data/files/avatars/' . $email))
                     {
@@ -186,7 +194,7 @@ class Cron
                                 'image' => base64_encode($image),
                             ); */
 
-                            echo "Saving ava for $email...\n";
+                            echo " * saving ava for $email...\n";
                             file_put_contents('data/files/avatars/' . $email, $image);
 
                             ++$countAvas;
@@ -202,6 +210,8 @@ class Cron
                 {
                     $pageStart += $pageSize;
                 }
+
+                usleep(50000);
             }
 
             ++$countUsers;
