@@ -260,4 +260,115 @@ class User extends Generic
 
         return true;
     }
+
+    /**
+     * Resync avatars for the User
+     *
+     * @param $user
+     * @return int
+     */
+    public function updateAvatars($user)
+    {
+        $countAvas = 0;
+        $emailsPerUserLimit = 10000;
+
+        $settings = json_decode($user->settings, true) ?: [];
+
+        if (!$token = @$settings['token'])
+        {
+            if (@$GLOBALS['-SYS-VERBOSE'])
+            {
+                echo "No refresh token";
+            }
+
+            return 0;
+        }
+
+        $client = new \Google_Client();
+        $client->setClientId(\Sys::cfg('oauth.google.clientId'));
+        $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
+        $client->refreshToken($token);
+        $accessToken = $client->getAccessToken();
+        $accessToken = json_decode($accessToken, true);
+
+        $pageSize = 25;
+        $pageStart = 1;
+
+        // echo "Access token = {$accessToken['access_token']}\n\n";
+
+        while ($pageStart < $emailsPerUserLimit)   // limit just to be safe
+        {
+            if (@$GLOBALS['-SYS-VERBOSE'])
+            {
+                echo "PageStart = $pageStart\n";
+            }
+
+            $ch = curl_init("https://www.google.com/m8/feeds/contacts/default/full?start-index=$pageStart&max-results=$pageSize&alt=json&v=3.0&oauth_token=" . $accessToken['access_token']);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $contacts = json_decode(curl_exec($ch), true) ?:[];
+            curl_close($ch);
+
+            foreach ($contacts['feed']['entry'] as $contact)
+            {
+                if (!$email = @$contact['gd$email'][0]['address'])
+                {
+                    // may happen
+                    continue;
+                }
+
+                if (file_exists('data/files/avatars/' . $email))
+                {
+                    continue;
+                }
+
+                $image = null;
+
+                if (isset ($contact['link'][0]['href']))
+                {
+                    $url = $contact['link'][0]['href'];
+                    $url = $url . '&access_token=' . urlencode($accessToken['access_token']);
+
+                    $curl = curl_init($url);
+                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($curl, CURLOPT_TIMEOUT, 3);
+                    $image = curl_exec($curl);
+                    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                    curl_close($curl);
+
+                    if ($httpcode == 200 && isset ($contact['gd$email'][0]['address']))
+                    {
+                        /* $results[] = array
+                        (
+                            'name'  => $contact['title']['$t'],
+                            'email' => $contact['gd$email'][0]['address'],
+                            'image' => base64_encode($image),
+                        ); */
+
+                        if (@$GLOBALS['-SYS-VERBOSE'])
+                        {
+                            echo " * saving ava for $email...\n";
+                        }
+
+                        file_put_contents('data/files/avatars/' . $email, $image);
+
+                        ++$countAvas;
+                    }
+                }
+            }
+
+            if (count($contacts['feed']['entry']) < $pageSize)
+            {
+                break;
+            }
+            else
+            {
+                $pageStart += $pageSize;
+            }
+
+            usleep(50000);
+        }
+
+        return $countAvas;
+    }
 }
