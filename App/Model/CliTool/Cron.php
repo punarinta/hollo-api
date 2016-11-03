@@ -110,7 +110,7 @@ class Cron
             $count += 1 * $res;
         }
 
-        return "Updated $count subscriptions.\n";
+        return "\nUpdated $count subscriptions.\n";
     }
 
     /**
@@ -135,6 +135,6 @@ class Cron
             ++$countUsers;
         }
 
-        return "Updated $countAvas avatars for $countUsers users.\n";
+        return "\nUpdated $countAvas avatars for $countUsers users.\n";
     }
 }
