@@ -76,6 +76,36 @@ class Calendar
                             $attendees[] = self::getPerson($split[1]);
                             break;
 
+                        case 'SUMMARY':
+                            $title = explode(':', trim($split[1]));
+                            $title = end($title);
+                            break;
+
+                        case 'LOCATION':
+                            $where = explode(':', trim($split[1]));
+                            $where = end($where);
+                            break;
+
+                        case 'DTSTART':
+                            foreach (explode(':', trim($split[1])) as $item)
+                            {
+                                if ($timeStart = strtotime($item))
+                                {
+                                    break;
+                                }
+                            }
+                            break;
+
+                        case 'DTEND':
+                            foreach (explode(':', trim($split[1])) as $item)
+                            {
+                                if ($timeEnd = strtotime($item))
+                                {
+                                    break;
+                                }
+                            }
+                            break;
+
                     }
             }
         }
