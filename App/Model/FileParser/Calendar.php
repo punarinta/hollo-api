@@ -59,6 +59,10 @@ class Calendar
                     $uid = $split[1];
                     break;
 
+                case 'ORGANIZER':
+                    $organizer = self::getPerson($split[1]);
+                    break;
+
                 default:
                     $split = explode(';', trim($row), 2);
 
@@ -111,11 +115,13 @@ class Calendar
 
         foreach ($keys as $k => $v)
         {
-            if (strpos($v, 'CN=') !== false)
+            if (stripos($v, 'CN=') !== false)
             {
                 $name = explode('=', $v);
                 $name = trim(@$name[1]);
             }
+
+            $v = strtolower($v);
 
             if ($v == 'mailto')
             {
