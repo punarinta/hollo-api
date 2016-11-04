@@ -289,6 +289,22 @@ class Message extends Generic
         $useFirebase = isset ($options['useFirebase']) ? $options['useFirebase'] : true;
         $useSocket = isset ($options['useSocket']) ? $options['useSocket'] : true;
 
+        // assure the message is not spammy shit
+        if (isset ($messageData['folders'])) foreach ($messageData['folders'] as $folder)
+        {
+            $folder = strtolower($folder);
+
+            if (in_array($folder, ['draft', 'chat', 'trash']))
+            {
+                $this->say("Notice: message has illegal label '$folder'");
+                return false;
+            }
+            if (strpos($folder, 'sent') !== false)
+            {
+                $notify = false;
+            }
+        }
+
         if (!$message = $this->findByRefIdAndExtId($user->id, $extId))
         {
             if (!isset ($messageData['addresses']['from']))
@@ -388,20 +404,6 @@ class Message extends Generic
             {
                 $this->say('Notice: message is muted');
                 return false;
-            }
-
-            // assure the message is not a draft
-            if (isset ($messageData['folders'])) foreach ($messageData['folders'] as $folder)
-            {
-                if (stripos($folder, 'draft') !== false)
-                {
-                    $this->say('Notice: message is a draft');
-                    return false;
-                }
-                if (stripos($folder, 'sent') !== false)
-                {
-                    $notify = false;
-                }
             }
 
             // === process the message content ===

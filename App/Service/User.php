@@ -244,7 +244,7 @@ class User extends Generic
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array
         (
             'topicName' => 'projects/hollo-1271/topics/gmail',
-            'labelIds'  => ['INBOX'],
+            'labelIds'  => [/*'INBOX'*/],
         )));
         $res = curl_exec($ch);
         curl_close($ch);
@@ -253,6 +253,8 @@ class User extends Generic
         {
             print_r($res);
         }
+
+        $res = json_decode($res, true) ?: [];
 
         $settings['historyId'] = $res['historyId'];
         $user->settings = json_encode($settings);
