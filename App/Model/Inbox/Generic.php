@@ -56,20 +56,22 @@ class Generic
      */
     protected function splitAddress($str)
     {
+        $names = [];
+
         foreach (explode(',', $str) as $name)
         {
             $str = explode('<', trim($name));
 
             if (count($str) == 1)
             {
-                return ['name' => null, 'email' => trim($str[0], '<>')];
+                $names[] = ['name' => null, 'email' => trim($str[0], '<>')];
             }
             else
             {
-                return ['name' => trim($str[0], ' "'), 'email' => trim($str[1], '>')];
+                $names[] = ['name' => trim($str[0], ' "'), 'email' => trim($str[1], '>')];
             }
         }
 
-        return null;
+        return $names;
     }
 }
