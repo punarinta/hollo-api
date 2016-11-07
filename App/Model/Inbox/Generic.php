@@ -33,17 +33,17 @@ class Generic
 
             if ($k == 'from')
             {
-                $addr['from'] = $this->splitAddress($v[0]);
+                $addr['from'] = $this->splitAddress($v[0])[0];
             }
             if ($k == 'to')
             {
                 if (!isset ($addr['to'])) $addr['to'] = [];
-                $addr['to'][] = $this->splitAddress($v[0]);
+                $addr['to'] = array_merge($addr['to'], $this->splitAddress($v[0]));
             }
             if ($k == 'cc')
             {
                 if (!isset ($addr['cc'])) $addr['cc'] = [];
-                $addr['cc'][] = $this->splitAddress($v[0]);
+                $addr['cc'] = array_merge($addr['cc'], $this->splitAddress($v[0]));
             }
         }
 
