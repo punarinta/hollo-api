@@ -61,12 +61,13 @@ class File extends Generic
             {
                 throw new \Exception('Message not found');
             }
-            if ($message->ref_id != \Auth::user()->id)
+
+            if (!\Sys::svc('Chat')->hasAccess($message->chat_id, \Auth::user()->id))
             {
-                throw new \Exception('Access denied');
+                throw new \Exception('Access denied.', 403);
             }
 
-            $inbox = Inbox::init(\Auth::user());
+            $inbox = Inbox::init($message->ref_id);
 
             if (!$messageData = $inbox->getMessage($message->ext_id))
             {
