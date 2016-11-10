@@ -91,7 +91,7 @@ class Smtp
                 {
                     $emailMessageId = $data['headers']['message-id'][0];
 
-                    $refs = $data['headers']['references'];
+                    $refs = isset ($data['headers']['references']) ? $data['headers']['references'] : [];
                     array_push($refs, $emailMessageId);
 
                     $this->mail->addCustomHeader('Message-ID: ' . \Text::GUID_v4() . '@' . \Sys::cfg('mailless.this_server'));
