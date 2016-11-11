@@ -198,12 +198,19 @@ class Smtp
 
         foreach ($attachments as $file)
         {
+            // support new and old field names
+            // TODO: remove after new frontend released
+            if (isset ($file['data']) && !isset ($file['b64']))
+            {
+                $file['b64'] = $file['data'];
+            }
+
             // save file first
             $path = tempnam('data/temp', 'upl-');
 
             $f = fopen($path, 'wb');
             stream_filter_append($f, 'convert.base64-decode');
-            fwrite($f, substr($file['data'], strpos($file['data'], ',') + 1));
+            fwrite($f, substr($file['b64'], strpos($file['b64'], ',') + 1));
             fclose($f);
 
             $tempFiles[] = $path;
