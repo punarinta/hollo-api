@@ -117,9 +117,10 @@ class Cron
      * Resync avatars for all the users
      *
      * @param null $userId
+     * @param null $qEmail
      * @return string
      */
-    public function updateAvatars($userId = null)
+    public function updateAvatars($userId = null, $qEmail = null)
     {
         $countAvas = 0;
         $countUsers = 0;
@@ -130,7 +131,7 @@ class Cron
         {
             echo "\nUser {$user->id}... ";
 
-            $countAvas += \Sys::svc('User')->updateAvatars($user);
+            $countAvas += \Sys::svc('User')->updateAvatars($user, $qEmail);
 
             ++$countUsers;
         }

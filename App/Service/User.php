@@ -267,9 +267,10 @@ class User extends Generic
      * Resync avatars for the User
      *
      * @param $user
+     * @param null $qEmail
      * @return int
      */
-    public function updateAvatars($user)
+    public function updateAvatars($user, $qEmail = null)
     {
         $countAvas = 0;
         $emailsPerUserLimit = 10000;
@@ -305,12 +306,19 @@ class User extends Generic
                 echo "PageStart = $pageStart\n";
             }
 
-            $ch = curl_init("https://www.google.com/m8/feeds/contacts/default/full?start-index=$pageStart&max-results=$pageSize&alt=json&v=3.0&oauth_token=" . $accessToken['access_token']);
+            $url = "https://www.google.com/m8/feeds/contacts/default/full?start-index=$pageStart&max-results=$pageSize&alt=json&v=3.0&oauth_token=" . $accessToken['access_token'];
+
+            if ($qEmail)
+            {
+                $url .= '&q=' . $qEmail;
+            }
+
+            $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $contacts = json_decode(curl_exec($ch), true) ?:[];
             curl_close($ch);
 
-            foreach ($contacts['feed']['entry'] as $contact)
+            if (isset ($contacts['feed']['entry'])) foreach ($contacts['feed']['entry'] as $contact)
             {
                 if (!$email = @$contact['gd$email'][0]['address'])
                 {
