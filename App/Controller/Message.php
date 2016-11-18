@@ -257,4 +257,54 @@ class Message extends Generic
 
         return \DB::rows('SELECT * FROM message WHERE chat_id=? AND body LIKE ?', [$chatId, $text]);
     }
+
+    /**
+     * Generates a list of last messages from unread chats
+     *
+     * @doc-var     (bool) muted        - Filter with muted flag.
+     *
+     * @throws \Exception
+     */
+    static public function buildQuickStack()
+    {
+        $items = [];
+        $filters = [['mode' => 'read', 'value' => 0]];
+
+        if (\Input::data('muted') !== null)
+        {
+            $filters[] = array
+            (
+                'mode'  => 'muted',
+                'value' => \Input::data('muted'),
+            );
+        }
+
+        // NB: newest are on the top
+        foreach (\Sys::svc('Chat')->findAllByUserId(\Auth::user()->id, $filters, 'lastTs') as $chat)
+        {
+            $lastMsgBody = null;
+            $lastMsgSubj = null;
+
+            if ($lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id))
+            {
+                $lastMsgSubj = $lastMsg->subject;
+                $lastMsgBody = $lastMsg->body;
+            }
+
+            $items[] = array
+            (
+                'id'        => $chat->id,
+                'name'      => $chat->name,
+                'muted'     => $chat->muted,    // keep this flag
+                'last'  => array
+                (
+                    'ts'    => $chat->last_ts,
+                    'msg'   => $lastMsgBody,
+                    'subj'  => $lastMsgSubj,
+                ),
+            );
+        }
+
+        return $items;
+    }
 }
