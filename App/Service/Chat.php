@@ -110,7 +110,7 @@ class Chat extends Generic
                     LEFT JOIN chat_user AS cu ON cu.chat_id = c.id
                     LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
                     LEFT JOIN `user` AS u ON cu2.user_id = u.id
-                    WHERE cu.user_id=?';
+                    WHERE cu.user_id=? AND cu2.user_id != cu.user_id';
         }
 
         $params = [$userId];
