@@ -280,29 +280,19 @@ class Message extends Generic
         }
 
         // NB: newest are on the top
+        // TODO: create a separate faster function for QS
         foreach (\Sys::svc('Chat')->findAllByUserId(\Auth::user()->id, $filters, 'lastTs') as $chat)
         {
-            $lastMsgBody = null;
-            $lastMsgSubj = null;
-
-            if ($lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id))
+            if ($message = \Sys::svc('Message')->getLastByChatId($chat->id))
             {
-                $lastMsgSubj = $lastMsg->subject;
-                $lastMsgBody = $lastMsg->body;
-            }
-
-            $items[] = array
-            (
-                'id'        => $chat->id,
-                'name'      => $chat->name,
-                'muted'     => $chat->muted,    // keep this flag
-                'last'  => array
+                $items[] = array
                 (
-                    'ts'    => $chat->last_ts,
-                    'msg'   => $lastMsgBody,
-                    'subj'  => $lastMsgSubj,
-                ),
-            );
+                    'id'        => $message->id,
+                    'body'      => $message->body,
+                    'subj'      => $message->subject,
+                    'chatId'    => $chat->id,               // the chat will already be in list, so just get all the data from there
+                );
+            }
         }
 
         return $items;
