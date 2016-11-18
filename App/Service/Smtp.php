@@ -163,6 +163,11 @@ class Smtp
                 $this->mail->Subject = $subject;
             }
         }
+        else
+        {
+            // no subject -> do not quote
+            $this->mail->Body = $body;
+        }
 
         $userIds = [];
 
