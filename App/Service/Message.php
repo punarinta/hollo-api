@@ -609,8 +609,8 @@ class Message extends Generic
             $item .= ':';
             if (stripos($subject, $item, 0) === 0)
             {
-                $subject = str_ireplace($item, '', $subject);
-                break;
+                $subject = trim(str_ireplace($item, '', $subject));
+                // break;
             }
         }
 
