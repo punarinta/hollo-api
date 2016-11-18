@@ -289,7 +289,11 @@ class Message extends Generic
                 (
                     'id'        => $message->id,
                     'body'      => $message->body,
-                    'subj'      => $message->subject,
+                    'subject'   => $message->subject,
+                    'files'     => $message->files,
+                    'ts'        => $message->ts,
+                    'fromId'    => $message->user_id,
+                    'refId'     => $message->ref_id,
                     'chatId'    => $chat->id,               // the chat will already be in list, so just get all the data from there
                 );
             }
