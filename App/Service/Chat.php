@@ -127,6 +127,10 @@ class Chat extends Generic
                     $sql .= ' AND cu.muted=?';
                     break;
 
+                case 'read':
+                    $sql .= ' AND cu.read=?';
+                    break;
+
                 case 'email':
                     $sql .= ' AND u.email LIKE ?';
                     $filter['value'] = '%' . $filter['value'] . '%';
