@@ -332,14 +332,14 @@ class Gmail extends Generic implements InboxInterface
 
         return array
         (
-        //    'message_id' => $messageId,
-        //    'subject'    => @$headers['subject'][0] ?: '',      // subject may be absent sometimes
-        //    'addresses'  => $this->getAddresses($headers),
+            'message_id' => $messageId,
+            'subject'    => @$headers['subject'][0] ?: '',      // subject may be absent sometimes
+            'addresses'  => $this->getAddresses($headers),
             'body'       => $bodies,
-        //    'headers'    => $headers,
+            'headers'    => $headers,
             'files'      => $files,
             'date'       => $date,
-        //    'folders'    => $raw['labelIds'],
+            'folders'    => $raw['labelIds'],
         );
     }
 
