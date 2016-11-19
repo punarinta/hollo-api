@@ -286,13 +286,27 @@ class Gmail extends Generic implements InboxInterface
             {
                 if ($bodiesEmpty)
                 {
-                    // this is most probably a normal body
-                    $bodies[] = array
-                    (
-                        'type'      => $part['mimeType'],
-                        'size'      => $part['body']['size'],
-                        'content'   => $this->base64_decode(@$part['body']['data']),
-                    );
+                    if (!isset ($part['body']['attachmentId']))
+                    {
+                        // this is most probably a normal body
+                        $bodies[] = array
+                        (
+                            'type'      => $part['mimeType'],
+                            'size'      => $part['body']['size'],
+                            'content'   => $this->base64_decode(@$part['body']['data']),
+                        );
+                    }
+                    else
+                    {
+                        $files[] = array
+                        (
+                            'type'      => $part['mimeType'],
+                            'name'      => $part['filename'],
+                            'size'      => $part['body']['size'],
+                            // 'content'   => $this->getAttachmentData($messageId, $part['body']['attachmentId']),
+                            'file_id'   => @$part['body']['attachmentId'],
+                        );
+                    }
                 }
                 elseif ($part['mimeType'] != 'multipart/alternative')
                 {
@@ -318,14 +332,14 @@ class Gmail extends Generic implements InboxInterface
 
         return array
         (
-            'message_id' => $messageId,
-            'subject'    => @$headers['subject'][0] ?: '',      // subject may be absent sometimes
-            'addresses'  => $this->getAddresses($headers),
+        //    'message_id' => $messageId,
+        //    'subject'    => @$headers['subject'][0] ?: '',      // subject may be absent sometimes
+        //    'addresses'  => $this->getAddresses($headers),
             'body'       => $bodies,
-            'headers'    => $headers,
+        //    'headers'    => $headers,
             'files'      => $files,
             'date'       => $date,
-            'folders'    => $raw['labelIds'],
+        //    'folders'    => $raw['labelIds'],
         );
     }
 
