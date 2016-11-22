@@ -147,7 +147,7 @@ class Message extends Generic
             return false;
         }
 
-        return $data['body'][0]['content'];
+        return $data['body'][0];
     }
 
     /**
