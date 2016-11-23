@@ -96,6 +96,7 @@ def restart():
 
 
 def cleanup():
+    print "\033[91m USE WITH CARE: worker and app are deployed separately \033[0m\n"
     current = os.path.basename(current_env())
     old_entries = set(sudo('ls -1 {}'.format(env.deployed_dir)).splitlines()) - {'current', current, 'cron', 'files', 'log', 'tmp', 'php.sock', 'nohup.out', 'error.log', 'access.log'}
     if old_entries:
