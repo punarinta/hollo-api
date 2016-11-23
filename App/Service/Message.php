@@ -329,6 +329,12 @@ class Message extends Generic
                 $names[$cc['email']] = @$cc['name'];
             }
 
+            if (isset ($messageData['addresses']['bcc'])) foreach ($messageData['addresses']['bcc'] as $bcc)
+            {
+                $emails[] = $bcc['email'];
+                $names[$bcc['email']] = @$bcc['name'];
+            }
+
             // we don't need duplicates
             $emails = array_unique($emails);
 
