@@ -43,7 +43,8 @@ class Chat extends Generic
                 }
                 elseif ($lastMsg->files)
                 {
-                    $lastMsgBody = '📎';
+                    $files = json_decode($lastMsg->files, true);
+                    $lastMsgBody = '📎 ' . $files[0]['name'];
                 }
                 else
                 {
