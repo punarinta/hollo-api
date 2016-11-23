@@ -26,9 +26,9 @@ class SyncContacts extends Generic
             return false;
         }
 
-        if (!$user->ext_id)
+        if (!$user->roles)
         {
-            echo "No account connected. User ID = {$user->id}\n";
+            echo "No user role for ID = {$user->id}. Is this user real?\n";
             return false;
         }
 
