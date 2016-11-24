@@ -131,6 +131,7 @@ class Calendar
     {
         $email = '';
         $name = '';
+        $stat = '';
         $keys = [];
 
         $items1 = explode(';', $line);
@@ -145,6 +146,18 @@ class Calendar
 
         foreach ($keys as $k => $v)
         {
+        /*    if (stripos($v, 'ROLE=') !== false)
+            {
+                $role = explode('=', $v);
+                $role = trim(@$role[1]);
+            }*/
+
+            if (stripos($v, 'PARTSTAT=') !== false)
+            {
+                $stat = explode('=', $v);
+                $stat = trim(@$stat[1]);
+            }
+
             if (stripos($v, 'CN=') !== false)
             {
                 $name = explode('=', $v);
@@ -159,6 +172,6 @@ class Calendar
             }
         }
 
-        return [$email, $name];
+        return [$email, $name, $stat];
     }
 }
