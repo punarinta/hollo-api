@@ -94,13 +94,15 @@ class Cron
     /**
      * Update GMail subscriptions
      *
+     * @param null $userId
      * @return string
      */
-    public function refreshGmailSubscription()
+    public function refreshGmailSubscription($userId = null)
     {
         $count = 0;
+        $users = $userId ? [\Sys::svc('User')->findById($userId)] : \Sys::svc('User')->findAllReal();
 
-        foreach (\Sys::svc('User')->findAllReal() as $user)
+        foreach ($users as $user)
         {
             echo "User {$user->id}... ";
             $res = \Sys::svc('User')->subscribeToGmail($user);
