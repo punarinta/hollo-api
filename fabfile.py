@@ -29,7 +29,7 @@ def setup(name):
         env.deployed_dir = '/apps/mls-api'
         env.worker = False
     elif name == 'w':
-        env.hosts = fab_hosts = ['deathstar.s.coursio.com', ]
+        env.hosts = fab_hosts = ['ig-03.s.coursio.com', ]
         env.user = 'root'
         env.deployed = '/apps/mls-api/{}'
         env.deployed_dir = '/apps/mls-api'
@@ -96,7 +96,6 @@ def restart():
 
 
 def cleanup():
-    print "\033[91m USE WITH CARE: worker and app are deployed separately \033[0m\n"
     current = os.path.basename(current_env())
     old_entries = set(sudo('ls -1 {}'.format(env.deployed_dir)).splitlines()) - {'current', current, 'cron', 'files', 'log', 'tmp', 'php.sock', 'nohup.out', 'error.log', 'access.log'}
     if old_entries:
