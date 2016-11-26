@@ -19,7 +19,7 @@ class MailService extends Generic
     {
         if (!is_object($mailService))
         {
-            if (!$mailService = $this->findById($mailService))
+            if (!$mailService = $this->findOne(['_id' => $mailService]))
             {
                 throw new \Exception('Mail service does not exist');
             }
@@ -27,11 +27,11 @@ class MailService extends Generic
 
         if ($dir == 'in')
         {
-            return json_decode($mailService->cfg_in, true) ?:[];
+            return $mailService->cfgIn;
         }
         else
         {
-            return json_decode($mailService->cfg_out, true) ?:[];
+            return $mailService->cfgOut;
         }
     }
 
@@ -62,8 +62,8 @@ class MailService extends Generic
         (
             'name'      => $domain,
             'domains'   => "|$domain|",
-            'cfg_in'    => json_encode(['type'=>'imap', 'oauth' => false, 'host' => $imapCfg['host'], 'port' => $imapCfg['port'], 'enc' => $imapCfg['encryption']]),
-            'cfg_out'   => json_encode(['type'=>'smtp', 'oauth' => false, 'host' => $smtpCfg['host'], 'port' => $smtpCfg['port'], 'enc' => $smtpCfg['encryption']]),
+            'cfgIn'     => json_encode(['type' => 'imap', 'oauth' => false, 'host' => $imapCfg['host'], 'port' => $imapCfg['port'], 'enc' => $imapCfg['encryption']]),
+            'cfgOut'    => json_encode(['type' => 'smtp', 'oauth' => false, 'host' => $smtpCfg['host'], 'port' => $smtpCfg['port'], 'enc' => $smtpCfg['encryption']]),
         ));
     }
 
@@ -75,7 +75,7 @@ class MailService extends Generic
      */
     public function findByDomain($domain)
     {
-        return \DB::row('SELECT * FROM mail_service WHERE domains LIKE ? LIMIT 1', ['%|' . $domain . '|%']);
+        return $this->findOne(['domains' => ['$elemMatch' => ['$eq' => $domain]]]);
     }
 
     /**
