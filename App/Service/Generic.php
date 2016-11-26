@@ -91,11 +91,12 @@ class Generic
      * Finds the object by its ID
      *
      * @param array $filter
+     * @param array $options
      * @return null
      */
-    public function findOne($filter = [])
+    public function findOne($filter = [], $options = [])
     {
-        $rows = \DB::query($this->class_name, $filter);
+        $rows = \DB::query($this->class_name, $filter, $options);
 
         foreach ($rows as $row)
         {
@@ -114,13 +115,14 @@ class Generic
      * Use with care as it may generate tons of data
      *
      * @param array $filter
+     * @param array $options
      * @return array
      */
-    public function findAll($filter = [])
+    public function findAll($filter = [], $options = [])
     {
         $rows = [];
 
-        foreach (\DB::query($this->class_name, $filter) as $row)
+        foreach (\DB::query($this->class_name, $filter, $options) as $row)
         {
             if (is_object($row->_id))
             {
