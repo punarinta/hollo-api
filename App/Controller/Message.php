@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller;
+use MongoDB\BSON\ObjectID;
 
 /**
  * Class Message
@@ -26,37 +27,68 @@ class Message extends Generic
             throw new \Exception('Chat ID not provided.');
         }
 
-        if (!\Sys::svc('Chat')->hasAccess($chatId, \Auth::user()->id))
-        {
-            throw new \Exception('Access denied.', 403);
-        }
-
-        if (!$chat = \Sys::svc('Chat')->findById($chatId))
+        $muted = 0;
+        $scanIds = [];
+        $hasAccess = false;
+        if (!$chat = \Sys::svc('Chat')->findOne(['_id' => ['$in' => [new ObjectID($chatId)]]]))
         {
             throw new \Exception('Chat does not exist.');
         }
 
-        $msgs = \Sys::svc('Message')->findByChatId($chat->id, \Input::data('subject'));
-        $flags = \Sys::svc('Chat')->getFlags($chat->id, \Auth::user()->id);
-
-        if (!$flags->read && $msgs && !\Input::data('ninja'))
+        foreach ($chat->users as $userItem)
         {
-            \Sys::svc('Chat')->setReadFlag($chatId, \Auth::user()->id, 1);
+            if ($userItem->id == \Auth::user()->_id)
+            {
+                $hasAccess = true;
+                $muted = $userItem->muted;
+            }
+            else
+            {
+                $scanIds[] = new ObjectID($userItem->id);
+            }
         }
 
-        // do not limit users if pagination is on
-        \DB::$pageStart = null;
+        if (!$hasAccess)
+        {
+            throw new \Exception('Access denied.', 403);
+        }
+
+        $users = [];
+        foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
+        {
+            $users[$user->_id] = array
+            (
+                'id'    => $user->_id,
+                'name'  => $user->name,
+                'email' => $user->email,
+            );
+        }
+
+        foreach ($chat->messages as $k => $message)
+        {
+            if (isset ($users[$message->userId]))
+            {
+                $chat->messages[$k]->from = $users[$message->userId];
+            }
+            else
+            {
+                // TODO: use one more cache, do not mix with $users
+                $chat->messages[$k]->from = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->userId)]);
+            }
+        }
+
+        // TODO: mark this chat as read by me
 
         return array
         (
             'chat'   => array
             (
-                'id'    => $chat->id,
+                'id'    => $chat->_id,
                 'name'  => $chat->name,
-                'muted' => $flags->muted,
-                'users' => \Sys::svc('User')->findByChatId($chat->id, true, \Auth::user()->id),
+                'muted' => $muted,
+                'users' => $users,
             ),
-            'messages'  => $msgs,
+            'messages'  => $chat->messages,
         );
     }
 
