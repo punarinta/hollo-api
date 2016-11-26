@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller;
+use MongoDB\BSON\ObjectID;
 
 /**
  * Class Chat
@@ -24,18 +25,19 @@ class Chat extends Generic
     static public function find()
     {
         $items = [];
-        $myId = \Auth::user()->id;
+        $myId = \Auth::user()->_id;
         $filters = \Input::data('filters') ?:[];
 
         foreach (\Sys::svc('Chat')->findAllByUserId($myId, $filters, \Input::data('sortBy'), \Input::data('sortMode')) as $chat)
         {
-            \DB::$pageStart = null;
-
+            $lastMsg = null;
             $lastMsgBody = null;
-            $lastMsgSubj = null;
+            $msgCount = count($chat->messages);
 
-            if ($lastMsg = \Sys::svc('Message')->getLastByChatId($chat->id))
+            if ($msgCount)
             {
+                $lastMsg = $chat->messages[$msgCount - 1];
+
                 // TODO: move the logic below onto frontend
                 if ($lastMsg->body)
                 {
@@ -43,30 +45,55 @@ class Chat extends Generic
                 }
                 elseif ($lastMsg->files)
                 {
-                    $files = json_decode($lastMsg->files, true);
-                    $lastMsgBody = '📎 ' . $files[0]['name'];
+                    $lastMsgBody = '📎 ' . $lastMsg->files[0]->name;
                 }
                 else
                 {
                     $lastMsgBody = '';
                 }
+            }
 
-                $lastMsgSubj = $lastMsg->subject;
+            $read = 1;
+            $muted = 0;
+            $scanIds = [];
+
+            foreach ($chat->users as $userItem)
+            {
+                if ($userItem->id == $myId)
+                {
+                    $read = $userItem->read;
+                    $muted = $userItem->muted;
+                }
+                else
+                {
+                    $scanIds[] = new ObjectID($userItem->id);
+                }
+            }
+
+            $users = [];
+            foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
+            {
+                $users[] = array
+                (
+                    'id'    => $user->_id,
+                    'name'  => $user->name,
+                    'email' => $user->email,
+                );
             }
 
             $items[] = array
             (
-                'id'        => $chat->id,
+                'id'        => $chat->_id,
                 'name'      => $chat->name,
-                'muted'     => $chat->muted,
-                'read'      => $chat->read,
-                'last'  => array
-                (
-                    'ts'    => $chat->last_ts,
+                'muted'     => $muted,
+                'read'      => $read,
+                'last'      => $msgCount ?
+                [
+                    'ts'    => $lastMsg->ts,
                     'msg'   => $lastMsgBody,
-                    'subj'  => $lastMsgSubj,
-                ),
-                'users'     => \Sys::svc('User')->findByChatId($chat->id, true, $myId),
+                    'subj'  => $lastMsg->subj,
+                ] : [],
+                'users'     => $users,
             );
 
             foreach ($filters as $filter)

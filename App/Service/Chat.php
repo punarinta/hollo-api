@@ -100,7 +100,13 @@ class Chat extends Generic
      */
     public function findAllByUserId($userId, $filters = [], $sortBy = null, $sortMode = null)
     {
-        $sql = 'SELECT c.id, c.name, c.last_ts, cu.`read`, cu.muted
+        return \Sys::svc('Chat')->findAll
+        (
+            ['users' => ['$elemMatch' => ['id' => $userId] ]],
+            ['projection' => ['messages' => ['$slice' => -1]]]      // show last message only
+        );
+
+    /*    $sql = 'SELECT c.id, c.name, c.last_ts, cu.`read`, cu.muted
                 FROM chat AS c LEFT JOIN chat_user AS cu ON cu.chat_id=c.id WHERE cu.user_id=?';
 
         // TODO: rewrite in a proper way
@@ -161,7 +167,7 @@ class Chat extends Generic
             $sql .= ' ORDER BY `read` ASC, `name` ASC';
         }
 
-        return \DB::rows($sql, $params);
+        return \DB::rows($sql, $params);*/
     }
 
     /**

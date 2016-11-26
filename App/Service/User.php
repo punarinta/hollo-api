@@ -24,28 +24,11 @@ class User extends Generic
     }
 
     /**
-     * Overwritten as User uses custom ID field name
-     *
-     * @param $id
-     * @param bool $reRead
-     * @return mixed
-     */
-    public function findById($id, $reRead = false)
-    {
-        if (!isset ($this->cache[$id]) || $reRead)
-        {
-            $this->cache[$id] = \DB::row('SELECT * FROM user WHERE id = ? LIMIT 1', [$id]);
-        }
-
-        return $this->cache[$id];
-    }
-
-    /**
      * @return array
      */
     public function findAllReal()
     {
-        return \DB::rows('SELECT * FROM `user` WHERE roles > 0');
+        return $this->findAll(['roles' => ['$gt' => 0]]);
     }
 
     /**
@@ -53,17 +36,17 @@ class User extends Generic
      *
      * @param $email
      * @param bool $realOnly
-     * @return null|\StdClass
+     * @return array
      */
     public function findByEmail($email, $realOnly = false)
     {
         if ($realOnly)
         {
-            return \DB::row('SELECT * FROM `user` WHERE email=? AND roles > 0 LIMIT 1', [$email]);
+            return $this->findOne(['email' => $email, 'roles' => ['$gt' => 0]]);
         }
         else
         {
-            return \DB::row('SELECT * FROM `user` WHERE email=? LIMIT 1', [$email]);
+            return $this->findOne(['email' => $email]);
         }
     }
 
@@ -75,7 +58,7 @@ class User extends Generic
      * @param int $exceptId
      * @return array
      */
-    public function findByChatId($chatId, $forContacts = false, $exceptId = 0)
+    /*public function findByChatId($chatId, $forContacts = false, $exceptId = 0)
     {
         if ($forContacts)
         {
@@ -86,7 +69,7 @@ class User extends Generic
         {
             return \DB::rows('SELECT * FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=?', [$chatId]);
         }
-    }
+    }*/
 
     /**
      * Lists Users known by specified User
@@ -95,7 +78,7 @@ class User extends Generic
      * @param array $filters
      * @return array
      */
-    public function findKnownBy($userId, $filters = [])
+    /*public function findKnownBy($userId, $filters = [])
     {
         $sql = 'SELECT DISTINCT u.id, u.email, u.name FROM `user` AS u 
                 LEFT JOIN chat_user AS cu1 ON cu1.user_id = u.id
@@ -121,7 +104,7 @@ class User extends Generic
         $sql .= ' ORDER BY u.email';
 
         return \DB::rows($sql, $params);
-    }
+    }*/
 
     /**
      * Checks if one User is known by another User
@@ -130,7 +113,7 @@ class User extends Generic
      * @param $user2
      * @return bool
      */
-    public function isKnownBy($user1, $user2)
+    /*public function isKnownBy($user1, $user2)
     {
         $sql = 'SELECT 1 FROM chat_user AS cu1
                 LEFT JOIN chat AS c ON c.id = cu1.chat_id
@@ -138,7 +121,7 @@ class User extends Generic
                 WHERE cu1.user_id = ? AND cu2.user_id = ? LIMIT 1';
 
         return (bool) \DB::row($sql, [$user1, $user2]);
-    }
+    }*/
 
     /**
      * Checks if one User is known by another User via first one's email
@@ -147,7 +130,7 @@ class User extends Generic
      * @param $user
      * @return bool
      */
-    public function isKnownByEmail($email, $user)
+    /*public function isKnownByEmail($email, $user)
     {
         $sql = 'SELECT 1 FROM user AS u
                 LEFT JOIN chat_user AS cu1 ON cu1.user_id = u.id
@@ -156,7 +139,7 @@ class User extends Generic
                 WHERE u.email = ? AND cu2.user_id = ? LIMIT 1';
 
         return (bool) \DB::row($sql, [$email, $user]);
-    }
+    }*/
 
     /**
      * Returns a particular User setting
@@ -174,13 +157,13 @@ class User extends Generic
         }
         else if (!is_object($user))
         {
-            if (!$user = $this->findById($user))
+            if (!$user = $this->findOne(['_id' => $user]))
             {
                 throw new \Exception('User does not exist');
             }
         }
 
-        return \Sys::aPath(json_decode(@$user->settings, true) ?:[], $path);
+        return \Sys::aPath((array)$user->settings, $path);
     }
 
     /**
@@ -198,15 +181,13 @@ class User extends Generic
         }
         else if (!is_object($user))
         {
-            if (!$user = $this->findById($user))
+            if (!$user = $this->findOne(['_id' => $user]))
             {
                 throw new \Exception('User does not exist');
             }
         }
 
-        $s = json_decode(@$user->settings, true) ?:[];
-
-        return trim(@$s['firstName'] . ' ' . @$s['lastName']);
+        return trim($user->settings->firstName . ' ' . $user->settings->lastName);
     }
 
     /**
@@ -217,14 +198,11 @@ class User extends Generic
      */
     public function subscribeToGmail($user)
     {
-        $settings = json_decode($user->settings, true) ?: [];
+        // TODO: test with non-Gmail
 
-        if ($settings['svc'] != 1)
-        {
-            return false;
-        }
+        $settings = $user->settings;
 
-        if (!$token = $settings['token'])
+        if (!$token = $settings->token)
         {
             return false;
         }
@@ -256,8 +234,8 @@ class User extends Generic
 
         $res = json_decode($res, true) ?: [];
 
-        $settings['historyId'] = $res['historyId'];
-        $user->settings = json_encode($settings);
+        $settings->historyId = $res['historyId'];
+        $user->settings = $settings;
         \Sys::svc('User')->update($user);
 
         return true;
@@ -275,9 +253,7 @@ class User extends Generic
         $countAvas = 0;
         $emailsPerUserLimit = 10000;
 
-        $settings = json_decode($user->settings, true) ?: [];
-
-        if (!$token = @$settings['token'])
+        if (!$token = $user->settings->token)
         {
             if (@$GLOBALS['-SYS-VERBOSE'])
             {
