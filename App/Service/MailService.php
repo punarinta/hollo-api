@@ -98,7 +98,7 @@ class MailService extends Generic
     }
 
     /**
-     * Discovers IMAP settings for a specified email. Returns 'cfg_in'.
+     * Discovers IMAP settings for a specified email. Returns 'cfgIn'.
      *
      * @param $email
      * @return array|bool
