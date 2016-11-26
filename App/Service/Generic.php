@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use MongoDB\BSON\ObjectID;
+use \MongoDB\Driver\BulkWrite;
+
 class Generic
 {
     protected $ClassName;
@@ -22,104 +25,111 @@ class Generic
      * Creates an object in the database
      *
      * @param $array
-     * @return \StdClass
-     * @throws \Exception
+     * @return mixed
      */
     public function create($array)
     {
-        $qms = [];
-        $keys = [];
-        $values = [];
+        $bulk = new BulkWrite();
+        $document = new \stdClass();
+        $array['_id'] = $bulk->insert($array)->__toString();
+        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . $this->class_name, $bulk);
 
         foreach ($array as $k => $v)
         {
-            $qms[] = '?';
-            $keys[] = $k;
-            $values[] = $v;
+            $document->$k = $v;
         }
 
-        $stmt = \DB::prepare('INSERT INTO `' . $this->class_name . '` (`' . implode('`,`', $keys) . '`) VALUES (' . implode(',', $qms) . ')', $values);
-        $stmt->execute();
-
-        $array['id'] = \DB::lastInsertId();
-        $stmt->close();
-
-        return \DB::toObject($array);
+        return $document;
     }
 
     /**
      * Updates the object in the database
      *
-     * @param $object
-     * @return mixed
-     * @throws \Exception
+     * @param object $document
+     * @param array $set
      */
-    public function update($object)
+    public function update($document, $set = [])
     {
-        $values = [];
-        $array = (array) $object;
+        $bulk = new BulkWrite();
+        $id = new ObjectID($document->_id);
+        $tempId = $document->_id;
+        unset ($document->_id);
 
-        $id = $array['id'];
-        unset ($array['id']);
-
-        $pairs = [];
-        foreach ($array as $k => $v)
+        if ($set)
         {
-            $pairs[] = "`$k`" . '=?';
-            $values[] = $v;
+            $document = ['$set' => $set];
         }
 
-        $values[] = $id;
-
-        $stmt = \DB::prepare('UPDATE ' . $this->class_name . ' SET ' . implode(', ', $pairs) . ' WHERE id=? LIMIT 1', $values);
-        $stmt->execute();
-        $stmt->close();
-
-        return $object;
+        $bulk->update(['_id' => $id], $document);
+        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . $this->class_name, $bulk);
+        $document->_id = $tempId;
     }
 
     /**
      * Deletes an object from the database
      *
-     * @param $object
-     * @return mixed
-     * @throws \Exception
+     * @param object $document
+     * @return bool
      */
-    public function delete($object)
+    public function delete($document)
     {
-        $stmt = \DB::prepare('DELETE FROM `' . $this->class_name . '` WHERE id=? LIMIT 1', [is_object($object) ? $object->id : $object]);
-        $stmt->execute();
-        $stmt->close();
+        if (!$document || !$document->_id)
+        {
+            return false;
+        }
 
-        return $object;
+        $bulk = new BulkWrite();
+        $id = new ObjectID($document->_id);
+
+        $bulk->delete(['_id' => $id], ['limit' => 1]);
+        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . $this->class_name, $bulk);
+
+        return true;
     }
 
     /**
      * Finds the object by its ID
      *
-     * @param $id
-     * @return null|\StdClass
+     * @param array $filter
+     * @return null
      */
-    public function findById($id)
+    public function findOne($filter = [])
     {
-        return \DB::row('SELECT * FROM `' . $this->class_name . '` WHERE id=? LIMIT 1', [$id]);
+        $rows = \DB::query($this->class_name, $filter);
+
+        foreach ($rows as $row)
+        {
+            if (is_object($row->_id))
+            {
+                $row->_id = $row->_id->__toString();
+            }
+
+            return $row;
+        }
+
+        return null;
     }
 
     /**
      * Use with care as it may generate tons of data
      *
+     * @param array $filter
      * @return array
      */
-    public function findAll()
+    public function findAll($filter = [])
     {
-        $all = [];
-        $array = \DB::exec($stmt, 'SELECT * FROM `' . $this->class_name . '`');
+        $rows = [];
 
-        while ($stmt->fetch())
+        foreach (\DB::query($this->class_name, $filter) as $row)
         {
-            $all[] = \DB::toObject($array);
+            if (is_object($row->_id))
+            {
+                $row->_id = $row->_id->__toString();
+            }
+
+            $rows[] = $row;
         }
 
-        return $all;
+        return $rows;
     }
 }
