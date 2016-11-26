@@ -70,6 +70,9 @@ class Chat extends Generic
                 }
             }
 
+            // no pagination
+            \DB::$pageLength = 0;
+
             $users = [];
             foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
             {
