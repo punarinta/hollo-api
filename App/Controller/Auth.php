@@ -28,11 +28,11 @@ class Auth extends Generic
         (
             'user'      => \Auth::check() ? array
             (
-                'id'        => \Auth::user()->id,
+                'id'        => \Auth::user()->_id,
                 'email'     => \Auth::user()->email,
                 'name'      => \Auth::user()->name,
                 'ava'       => @$_SESSION['-AUTH']['avatar'],
-                'settings'  => json_decode(\Auth::user()->settings),
+                'settings'  => \Auth::user()->settings,
             ) : null,
             'sessionId' => session_id(),
         );

@@ -11,7 +11,7 @@ class Auth
      */
     public function user()
     {
-        if (isset ($_SESSION['-AUTH']['user']) && isset ($_SESSION['-AUTH']['user']->id))
+        if (isset ($_SESSION['-AUTH']['user']) && isset ($_SESSION['-AUTH']['user']->_id))
         {
             return $_SESSION['-AUTH']['user'];
         }
@@ -28,9 +28,9 @@ class Auth
     {
         // some checks
         if (!isset ($_SESSION['-AUTH']['user'])) return false;
-        if (!$userId = $_SESSION['-AUTH']['user']->id) return false;
+        if (!$userId = $_SESSION['-AUTH']['user']->_id) return false;
 
-        if (!$user = \Sys::svc('User')->findById($userId))
+        if (!$user = \Sys::svc('User')->findOne(['_id' => $userId]))
         {
             return false;
         }
@@ -49,10 +49,8 @@ class Auth
      */
     public function loginImap($user, $password)
     {
-        $cfg = json_decode($user->settings, true) ?:[];
-
         // mail service is known
-        if (!$in = \Sys::svc('MailService')->getCfg($cfg['svc']))
+        if (!$in = \Sys::svc('MailService')->getCfg($user->settings->svc))
         {
             // bullshit, but we don't want to say 'unsupported'
             throw new \Exception('Mail service provider did not respond.');
@@ -60,7 +58,7 @@ class Auth
 
         // TODO support non-SSL login
 
-        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $user->email, $password))
+        if (!$box = imap_open('{' . $in->host . ':' . $in->port . '/imap/ssl/novalidate-cert/readonly}', $user->email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
@@ -68,8 +66,7 @@ class Auth
         imap_close($box);
 
         $key = \Sys::cfg('sys.imap_hash');
-        $cfg['hash'] = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key);
-        $user->settings = json_encode($cfg);
+        $user->settings->hash = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key);
         \Sys::svc('User')->update($user);
 
         $_SESSION['-AUTH']['user'] = $user;
@@ -104,7 +101,7 @@ class Auth
 
         // TODO support non-SSL login
 
-        if (!$box = imap_open('{' . $in['host'] . ':' . $in['port'] . '/imap/ssl/novalidate-cert/readonly}', $email, $password))
+        if (!$box = imap_open('{' . $in->host . ':' . $in->port . '/imap/ssl/novalidate-cert/readonly}', $email, $password))
         {
             throw new \Exception('Incorrect username or password.');
         }
@@ -112,7 +109,7 @@ class Auth
         imap_close($box);
 
         $key = \Sys::cfg('sys.imap_hash');
-        $settings = ['svc' => (int) $mailService->id, 'hash' => openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key)];
+        $settings = ['svc' => $mailService->_id, 'hash' => openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key)];
 
         if ($locale != 'en_US')
         {
@@ -120,14 +117,14 @@ class Auth
         }
 
         // create Hollo account or use an existing dummy one
-        if (!$user = \Sys::svc('User')->findByEmail($email))
+        if (!$user = \Sys::svc('User')->findOne(['email' => $email]))
         {
             $user = \Sys::svc('User')->create(array
             (
                 // 'name' is unknown for a standard IMAP
                 'email'     => $email,
                 'roles'     => \Auth::USER,
-                'settings'  => json_encode($settings),
+                'settings'  => $settings,
             ));
         }
         else
@@ -138,16 +135,16 @@ class Auth
                 throw new \Exception('User already exists');
             }
             $user->roles = \Auth::USER;
-            $user->settings = json_encode($settings);
+            $user->settings = $settings;
             \Sys::svc('User')->update($user);
         }
 
-        if (!$user->id)
+        if (!$user->_id)
         {
             throw new \Exception('Cannot add user');
         }
 
-        \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
+        \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->_id]);
 
 
         $_SESSION['-AUTH']['user'] = $user;
@@ -223,56 +220,43 @@ class Auth
         $name = $oauthData['name'];
 
         // Now we only have Google working with OAuth
-        $mailService = \Sys::svc('MailService')->findById(1);
-        $user = \Sys::svc('User')->findByEmail($email);
+        $mailService = \Sys::svc('MailService')->findOne(['name' => 'Gmail']);
+        $user = \Sys::svc('User')->findOne(['email' => $email]);
 
         if (!$user || !$user->roles)
         {
             // no user -> register
-            $settings = ['svc' => (int) $mailService->id, 'token' => $token];
+            $settings = ['svc' => $mailService->_id, 'token' => $token];
 
-            \DB::begin();
-
-            try
+            if (!$user)
             {
-                if (!$user)
-                {
-                    // create Hollo account
-                    $user = \Sys::svc('User')->create(array
-                    (
-                        'name'      => $name,
-                        'email'     => $email,
-                        'roles'     => \Auth::USER,
-                        'settings'  => json_encode($settings),
-                    ));
-                }
-                else
-                {
-                    $user->roles = \Auth::USER;
-                    $user->settings = json_encode($settings);
-                    \Sys::svc('User')->update($user);
-                }
-
-                if (!$user->id)
-                {
-                    throw new \Exception('Cannot add user');
-                }
+                // create Hollo account
+                $user = \Sys::svc('User')->create(array
+                (
+                    'name'      => $name,
+                    'email'     => $email,
+                    'roles'     => \Auth::USER,
+                    'settings'  => $settings,
+                ));
             }
-            catch (\Exception $e)
+            else
             {
-                \DB::rollback();
+                $user->roles = \Auth::USER;
+                $user->settings = $settings;
+                \Sys::svc('User')->update($user);
             }
 
-            \DB::commit();
+            if (!$user->_id)
+            {
+                throw new \Exception('Cannot add user');
+            }
 
-            \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->id]);
+            \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->_id]);
         }
         else
         {
             // save updated refresh token on every login
-            $settings = json_decode($user->settings, true) ?: [];
-            $settings['token'] = $token;
-            $user->settings = json_encode($settings);
+            $user->settings->token = $token;
             \Sys::svc('User')->update($user);
         }
 
@@ -305,7 +289,7 @@ class Auth
             throw new \Exception('You need to be logged-in to incarnate.');
         }
 
-        if (!$newUser = \Sys::svc('User')->findById($userId))
+        if (!$newUser = \Sys::svc('User')->findOne(['_id' => $userId]))
         {
             throw new \Exception('User not found. ID = ' . $userId);
         }
