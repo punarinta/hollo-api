@@ -30,7 +30,11 @@ class Message extends Generic
         $muted = 0;
         $scanIds = [];
         $hasAccess = false;
-        if (!$chat = \Sys::svc('Chat')->findOne(['_id' => ['$in' => [new ObjectID($chatId)]]]))
+        if (!$chat = \Sys::svc('Chat')->findOne
+        (
+            ['_id' => ['$in' => [new ObjectID($chatId)]]],
+            ['projection' => ['messages.refId' => 0]]
+        ))
         {
             throw new \Exception('Chat does not exist.');
         }
@@ -75,6 +79,7 @@ class Message extends Generic
                 // TODO: use one more cache, do not mix with $users
                 $chat->messages[$k]->from = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->userId)]);
             }
+            unset($chat->messages[$k]->userId);
         }
 
         // TODO: mark this chat as read by me
@@ -86,7 +91,7 @@ class Message extends Generic
                 'id'    => $chat->_id,
                 'name'  => $chat->name,
                 'muted' => $muted,
-                'users' => $users,
+                'users' => array_values($users),
             ),
             'messages'  => $chat->messages,
         );
