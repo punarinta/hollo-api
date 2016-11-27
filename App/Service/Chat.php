@@ -173,94 +173,149 @@ class Chat extends Generic
     }
 
     /**
-     * Returns a Chat assuring User access.
-     *
-     * @param $id
-     * @param $userId
-     * @return null|\StdClass
-     */
-    public function findByIdAndUserId($id, $userId)
-    {
-        return \DB::row('SELECT c.* FROM chat AS c LEFT JOIN chat_user AS cu ON c.id=cu.chat_id WHERE c.id=? AND cu.user_id=? LIMIT 1', [$id, $userId]);
-    }
-
-    /**
      * Gets 'read' and 'muted' flags for given Chat and User
      *
-     * @param $chatId
+     * @param $chat
      * @param $userId
-     * @return null|\StdClass
+     * @return null
      */
-    public function getFlags($chatId, $userId)
+    public function getFlags($chat, $userId)
     {
-        return \DB::row('SELECT `read`, muted FROM chat_user WHERE chat_id=? AND user_id=?', [$chatId, $userId]);
+        if (!is_object($chat))
+        {
+            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+        }
+
+        foreach ($chat->users as $userItem)
+        {
+            if ($userItem->id == $userId)
+            {
+                unset ($userItem->id);
+                return $userItem;
+            }
+        }
+
+        return null;
     }
 
     /**
      * Sets 'read' or/and 'muted' flags for given Chat and User
      *
-     * @param $chatId
+     * @param $chat
      * @param $userId
      * @param $flags
+     * @return bool
      */
-    public function setFlags($chatId, $userId, $flags)
+    public function setFlags($chat, $userId, $flags)
     {
-        $stmt = \DB::prepare('UPDATE chat_user SET muted=?, `read`=? WHERE chat_id=? AND user_id=? LIMIT 1', [$flags->muted, $flags->read, $chatId, $userId]);
-        $stmt->execute();
-        $stmt->close();
+        if (!is_object($chat))
+        {
+            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+        }
+
+        $chatUsers = $chat->users;
+
+        foreach ($chatUsers as $k => $userRow)
+        {
+            if ($userRow->id == $userId)
+            {
+                $chatUsers[$k]->read = $flags->read;
+                $chatUsers[$k]->muted = $flags->muted;
+                \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Sets 'muted' flag for given Chat and User
      *
-     * @param $chatId
+     * @param $chat
      * @param $userId
      * @param $muted
+     * @return bool
      */
-    public function setMutedFlag($chatId, $userId, $muted)
+    public function setMutedFlag($chat, $userId, $muted)
     {
-        $stmt = \DB::prepare('UPDATE chat_user SET muted=? WHERE chat_id=? AND user_id=? LIMIT 1', [$muted, $chatId, $userId]);
-        $stmt->execute();
-        $stmt->close();
+        if (!is_object($chat))
+        {
+            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+        }
+
+        $chatUsers = $chat->users;
+
+        foreach ($chatUsers as $k => $userRow)
+        {
+            if ($userRow->id == $userId)
+            {
+                $chatUsers[$k]->muted = $muted;
+                \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Sets 'read' flag for given Chat and User
      *
-     * @param $chatId
+     * @param $chat
      * @param $userId
      * @param $read
      */
-    public function setReadFlag($chatId, $userId, $read)
+    public function setReadFlag($chat, $userId, $read)
     {
-        if ($userId > 0)
+        if (!is_object($chat))
         {
-            $stmt = \DB::prepare('UPDATE chat_user SET `read`=? WHERE chat_id=? AND user_id=? LIMIT 1', [$read, $chatId, $userId]);
-        }
-        else if ($userId < 0)
-        {
-            $stmt = \DB::prepare('UPDATE chat_user SET `read`=? WHERE chat_id=? AND user_id!=?', [$read, $chatId, -$userId]);
-        }
-        else
-        {
-            $stmt = \DB::prepare('UPDATE chat_user SET `read`=? WHERE chat_id=?', [$read, $chatId]);
+            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
-        $stmt->execute();
-        $stmt->close();
+        $chatUsers = $chat->users;
+
+        foreach ($chatUsers as $k => $userRow)
+        {
+            if ($userId > 0)
+            {
+                if ($userRow->id == $userId)
+                {
+                    $chatUsers[$k]->read = $read;
+                }
+            }
+            else if ($userId < 0)
+            {
+                if ($userRow->id != $userId)
+                {
+                    $chatUsers[$k]->read = $read;
+                }
+            }
+            else
+            {
+                $chatUsers[$k]->read = $read;
+            }
+        }
+
+        \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
     }
 
     /**
      * Counts Users in the Chat
      *
-     * @param $chatId
+     * @param $chat
      * @return mixed
      */
-    public function countUsers($chatId)
+    public function countUsers($chat)
     {
-        $x = \DB::row('SELECT count(0) AS c FROM chat_user WHERE chat_id=?', [$chatId]);
+        if (!is_object($chat))
+        {
+            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+        }
 
-        return $x->c;
+        return count($chat->users);
     }
 
     /**
