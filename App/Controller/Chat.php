@@ -80,7 +80,7 @@ class Chat extends Generic
                 $users[] = array
                 (
                     'id'    => $user->_id,
-                    'name'  => $user->name,
+                    'name'  => @$user->name,
                     'email' => $user->email,
                 );
             }
