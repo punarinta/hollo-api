@@ -369,7 +369,7 @@ class Message extends Generic
                         return false;
                     }
 
-                    $chat = \Sys::svc('Chat')->init($emails, [$user->id], $names);
+                    $chat = \Sys::svc('Chat')->init($emails, $names);
                 }
                 else
                 {
