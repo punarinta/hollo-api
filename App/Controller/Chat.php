@@ -200,11 +200,6 @@ class Chat extends Generic
             throw new \Exception('No chat ID provided.');
         }
 
-        if (!$chat = \Sys::svc('Chat')->findByIdAndUserId($id, \Auth::user()->id))
-        {
-            throw new \Exception('Chat not found.');
-        }
-
-        return \Sys::svc('Chat')->dropUser($chat->id, \Auth::user()->id);
+        return \Sys::svc('Chat')->dropUser($id, \Auth::user()->id);
     }
 }
