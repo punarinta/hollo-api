@@ -95,6 +95,11 @@ class Message extends Generic
             unset ($chat->messages[$k]->subj);
         }
 
+        usort($chat->messages, function ($a, $b)
+        {
+            return $b->ts <=> $a->ts;
+        });
+
         return array
         (
             'chat'   => array
