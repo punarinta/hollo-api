@@ -87,7 +87,7 @@ class Generic
      *
      * @param array $filter
      * @param array $options
-     * @return null
+     * @return null|mixed
      */
     public function findOne($filter = [], $options = [])
     {
