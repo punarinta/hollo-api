@@ -266,13 +266,21 @@ class Chat extends Generic
     /**
      * Check is User has access to Chat
      *
-     * @param $chatId
+     * @param $chat
      * @param $userId
      * @return bool
      */
-    public function hasAccess($chatId, $userId)
+    public function hasAccess($chat, $userId)
     {
-        return (bool) \DB::row('SELECT 1 FROM chat_user WHERE chat_id=? AND user_id=?', [$chatId, $userId]);
+        foreach ($chat->users as $userItem)
+        {
+            if ($userItem->id == $userId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

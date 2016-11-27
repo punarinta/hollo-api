@@ -29,7 +29,7 @@ class Message extends Generic
 
         $muted = 0;
         $scanIds = [];
-        $hasAccess = false;
+
         if (!$chat = \Sys::svc('Chat')->findOne
         (
             ['_id' => ['$in' => [new ObjectID($chatId)]]],
@@ -39,13 +39,17 @@ class Message extends Generic
             throw new \Exception('Chat does not exist.');
         }
 
+        if (!\Sys::svc('Chat')->hasAccess($chat, \Auth::user()->_id))
+        {
+            throw new \Exception('Access denied.', 403);
+        }
+
         $chatUsers = $chat->users;
 
         foreach ($chatUsers as $k => $userItem)
         {
             if ($userItem->id == \Auth::user()->_id)
             {
-                $hasAccess = true;
                 $muted = $userItem->muted;
                 $chatUsers[$k]->read = 1;
             }
@@ -53,11 +57,6 @@ class Message extends Generic
             {
                 $scanIds[] = new ObjectID($userItem->id);
             }
-        }
-
-        if (!$hasAccess)
-        {
-            throw new \Exception('Access denied.', 403);
         }
 
         $users = [];
