@@ -152,21 +152,21 @@ class Message extends Generic
         }
 
         $message = \Sys::svc('Message')->getLastByChatId($chatId);
-        $user = \Sys::svc('User')->findById($message->user_id);
+        $user = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->userId)]);
 
         return array
         (
-            'id'        => $message->id,
+            'id'        => $message->_id,
             'ts'        => $message->ts,
             'body'      => $message->body,
             'subject'   => \Sys::svc('Message')->clearSubject($message->subject),
             'from'      => array
             (
-                'id'    => $user->id,
+                'id'    => $user->_id,
                 'email' => $user->email,
                 'name'  => $user->name,
             ),
-            'files'     => json_decode($message->files, true),
+            'files'     => $message->files,
         );
     }
 
@@ -185,17 +185,26 @@ class Message extends Generic
             throw new \Exception('Message ID not provided.');
         }
 
-        if (!$message = \Sys::svc('Message')->findById($id))
+        // TODO: passing down chat ID will save resources
+        if (!$chat = \Sys::svc('Chat')->findOne(['message.id' => $id]))
         {
             throw new \Exception('Message does not exist');
         }
 
-        if (!$data = \Sys::svc('Message')->getDataByRefIdAndExtId($message->ref_id, $message->ext_id))
+        foreach ($chat->messages ?? [] as $message)
         {
-            return false;
+            if ($message->id == $id)
+            {
+                if (!$data = \Sys::svc('Message')->getDataByRefIdAndExtId($message->refId, $message->extId))
+                {
+                    return false;
+                }
+
+                return $data['body'][0];
+            }
         }
 
-        return $data['body'][0];
+        return false;
     }
 
     /**
@@ -246,64 +255,43 @@ class Message extends Generic
             );
         }
 
-        $message = \Sys::svc('Message')->create(array
-        (
-            'ext_id'    => '',
-            'user_id'   => \Auth::user()->id,
-            'chat_id'   => $chatId,
+        $chat = \Sys::svc('Chat')->findOne(['_id' => new ObjectID($chatId)]);
+
+        $messageStructure =
+        [
+            'id'        => (new ObjectID())->__toString(),
+            'userId'    => \Auth::user()->_id,
             'subject'   => \Input::data('subject'),
             'body'      => $body,
-            'files'     => empty ($dbFiles) ? '' : json_encode($dbFiles),
+            'files'     => $dbFiles,
             'ts'        => time(),
-        ));
+        ];
 
-        // mark chat as read for everyone except you
-        \Sys::svc('Chat')->setReadFlag($chatId, -\Auth::user()->id, 0);
+        $chat->messages = $chat->messages ?? [];
+        array_unshift($chat->messages, $messageStructure);
+
+        // mark chat as unread for everyone except you
+        \Sys::svc('Chat')->setReadFlag($chatId, -\Auth::user()->_id, 0);
 
         // mark chat as just updated
-        $chat = \Sys::svc('Chat')->findById($chatId);
-        $chat->last_ts = time();
-        \Sys::svc('Chat')->update($chat);
+        $chat->lastTs = time();
+        \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs]);
 
         // check if you are chatting with a bot
-        if ($bots = \DB::rows("SELECT u.* FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id = u.id WHERE cu.chat_id=? AND u.email LIKE '%@bot.hollo.email' ", [$chatId]))
-        {
-            foreach ($bots as $bot)
-            {
-                \Sys::svc('Bot')->talk($bot, $chatId, $body);
-            }
-        }
-        else
-        {
-            \Sys::svc('Smtp')->setupThread(\Auth::user()->id, $chatId, $message->id);
+    //    if ($bots = \DB::rows("SELECT u.* FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id = u.id WHERE cu.chat_id=? AND u.email LIKE '%@bot.hollo.email' ", [$chatId]))
+    //    {
+    //        foreach ($bots as $bot)
+    //        {
+    //            \Sys::svc('Bot')->talk($bot, $chatId, $body);
+    //        }
+    //    }
+    //    else
+    //    {
+            \Sys::svc('Smtp')->setupThread(\Auth::user()->_id, $chatId, $messageStructure['id']);
             $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
-        }
+    //    }
 
         return true; // $res;
-    }
-
-    /**
-     * Finds a message with given text within a specified Chat
-     *
-     * @doc-var     (int) chatId        - Chat ID.
-     * @doc-var     (string) text       - Text extract to find by.
-     *
-     * @throws \Exception
-     */
-    static public function findByText()
-    {
-        if (!$chatId = \Input::data('chatId'))
-        {
-            throw new \Exception('Chat ID not provided.');
-        }
-        if (!$text = \Input::data('text'))
-        {
-            throw new \Exception('Text is not provided.');
-        }
-
-        $text = '%' . $text . '%';
-
-        return \DB::rows('SELECT * FROM message WHERE chat_id=? AND body LIKE ?', [$chatId, $text]);
     }
 
     /**
@@ -337,12 +325,12 @@ class Message extends Generic
                 (
                     'id'        => $message->id,
                     'body'      => $message->body,
-                    'subject'   => $message->subject,
+                    'subject'   => $message->subj,
                     'files'     => $message->files,
                     'ts'        => $message->ts,
-                    'fromId'    => $message->user_id,
-                    'refId'     => $message->ref_id,
-                    'chatId'    => $chat->id,               // the chat will already be in list, so just get all the data from there
+                    'fromId'    => $message->userId,
+                    'refId'     => $message->refId,
+                    'chatId'    => $chat->_id,               // the chat will already be in list, so just get all the data from there
                 );
             }
         }
