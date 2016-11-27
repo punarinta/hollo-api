@@ -55,12 +55,7 @@ class Generic
         $tempId = $document->_id;
         unset ($document->_id);
 
-        if ($set)
-        {
-            $document = ['$set' => $set];
-        }
-
-        $bulk->update(['_id' => $id], $document);
+        $bulk->update(['_id' => $id], $set ? ['$set' => $set] : $document);
         $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . $this->class_name, $bulk);
         $document->_id = $tempId;
     }
