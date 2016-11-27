@@ -39,12 +39,15 @@ class Message extends Generic
             throw new \Exception('Chat does not exist.');
         }
 
-        foreach ($chat->users as $userItem)
+        $chatUsers = $chat->users;
+
+        foreach ($chatUsers as $k => $userItem)
         {
             if ($userItem->id == \Auth::user()->_id)
             {
                 $hasAccess = true;
                 $muted = $userItem->muted;
+                $chatUsers[$k]->read = 1;
             }
             else
             {
@@ -79,10 +82,10 @@ class Message extends Generic
                 // TODO: use one more cache, do not mix with $users
                 $chat->messages[$k]->from = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->userId)]);
             }
-            unset($chat->messages[$k]->userId);
+            unset ($chat->messages[$k]->userId);
         }
 
-        // TODO: mark this chat as read by me
+        \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
 
         return array
         (
