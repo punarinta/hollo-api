@@ -4,18 +4,19 @@ namespace App\Service;
 
 use App\Model\FileParser\Calendar;
 use App\Model\Inbox\Inbox;
+use MongoDB\BSON\ObjectID;
 
 class Message extends Generic
 {
     /**
      * Returns the last message from the chat
      *
-     * @param $chatId
+     * @param $chat
      * @return null|\StdClass
      */
-    public function getLastByChatId($chatId)
+    public function getLastByChat($chat)
     {
-        return \DB::row('SELECT * FROM message WHERE chat_id = ? ORDER BY ts DESC, id DESC LIMIT 1', [$chatId]);
+        return $chat->messages ? $chat->messages[0] : null;
     }
 
     /**
@@ -27,20 +28,18 @@ class Message extends Generic
      */
     public function findByRefIdAndExtId($refUserId, $extId)
     {
-        return \DB::row('SELECT * FROM message WHERE ref_id=? AND ext_id=? LIMIT 1', [$refUserId, $extId]);
+        return \Sys::svc('Chat')->findOne(['messages.refId' => $refUserId, 'messages.extId' => $extId]);
     }
 
     /**
      * Returns the total count of messages synced for this Chat
      *
-     * @param $chatId
+     * @param $chat
      * @return mixed
      */
-    public function countByChatId($chatId)
+    public function countByChatId($chat)
     {
-        $x = \DB::row('SELECT count(0) AS c FROM message WHERE chat_id=?', [$chatId]);
-
-        return $x->c;
+        return count($chat->messages);
     }
 
     /**
@@ -97,12 +96,21 @@ class Message extends Generic
     /**
      * Find last message in chat that is not
      *
-     * @param $chatId
+     * @param $chat
      * @return null|\StdClass
      */
-    public function findByLastRealByChatId($chatId)
+    public function findByLastRealByChat($chat)
     {
-        return \DB::row("SELECT * FROM message WHERE chat_id = ? AND ext_id != '' ORDER BY ts DESC LIMIT 1", [$chatId]);
+        // latest messages are at the top
+        foreach ($chat->messages ?:[] as $message)
+        {
+            if ($message->extId)
+            {
+                return $message;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -142,7 +150,7 @@ class Message extends Generic
      */
     public function syncAllByUserId($userId, $fetchMuted = false)
     {
-        if (!$user = \Sys::svc('User')->findById($userId))
+        if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userId)]))
         {
             throw new \Exception('User does not exist');
         }
@@ -154,9 +162,9 @@ class Message extends Generic
 
         $messageExtIds = $imap->getMessages(['ts_after' => time() - \Sys::cfg('sys.sync_period')]);
 
-        if (count($messageExtIds) && $messageExtIds[0] != $user->last_muid)
+        if (count($messageExtIds) && $messageExtIds[0] != $user->lastMuid)
         {
-            $user->last_muid = $messageExtIds[0];
+            $user->lastMuid = $messageExtIds[0];
             \Sys::svc('User')->update($user);
         }
 
@@ -168,7 +176,7 @@ class Message extends Generic
 
             $emailData = $imap->getMessage($messageExtId);
 
-            $count += 1 * !empty($this->processMessageSync($user, $emailData,
+            $count += 1 * !empty ($this->processMessageSync($user, $emailData,
             [
                 'fetchMuted'    => $fetchMuted,
                 'fetchAll'      => true,
@@ -195,7 +203,7 @@ class Message extends Generic
      */
     public function sync($userId, $messageExtId, $tryVerbose = true, $options = [])
     {
-        if (!$user = \Sys::svc('User')->findById($userId))
+        if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userId)]))
         {
             throw new \Exception('User does not exist.');
         }
@@ -305,298 +313,307 @@ class Message extends Generic
             }
         }
 
-        if (!$message = $this->findByRefIdAndExtId($user->id, $extId))
+        // first and foremost find associated chat
+
+        if (!isset ($messageData['addresses']['from']))
         {
-            if (!isset ($messageData['addresses']['from']))
+            $this->say('Error: no "from" address');
+            return false;
+        }
+
+        // collect emails and names from the message
+        $emails = [$messageData['addresses']['from']['email']];
+        $names = [$messageData['addresses']['from']['email'] => @$messageData['addresses']['from']['name']];
+
+        if (isset ($messageData['addresses']['to'])) foreach ($messageData['addresses']['to'] as $to)
+        {
+            $emails[] = $to['email'];
+            $names[$to['email']] = @$to['name'];
+        }
+
+        if (isset ($messageData['addresses']['cc'])) foreach ($messageData['addresses']['cc'] as $cc)
+        {
+            $emails[] = $cc['email'];
+            $names[$cc['email']] = @$cc['name'];
+        }
+
+        if (isset ($messageData['addresses']['bcc'])) foreach ($messageData['addresses']['bcc'] as $bcc)
+        {
+            $emails[] = $bcc['email'];
+            $names[$bcc['email']] = @$bcc['name'];
+        }
+
+        // we don't need duplicates
+        $emails = array_unique($emails);
+
+        // sometimes it may happen that user is not in the chat (e.g. stolen message), check this
+        if (!in_array($user->email, $emails))
+        {
+            $this->say('Error: user is not in the chat');
+            return false;
+        }
+
+        // try to clean emails
+        foreach ($emails as $k => $email)
+        {
+            $emails[$k] = trim($email, "'");
+        }
+
+        // chat may not exist -> init and mute if necessary
+        if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
+        {
+            if ($limitToChatId)
             {
-                $this->say('Error: no "from" address');
+                // chat does not exist while ID restriction is imposed -> leave
                 return false;
             }
 
-            // collect emails and names from the message
-            $emails = [$messageData['addresses']['from']['email']];
-            $names = [$messageData['addresses']['from']['email'] => @$messageData['addresses']['from']['name']];
-
-            if (isset ($messageData['addresses']['to'])) foreach ($messageData['addresses']['to'] as $to)
+            if (count($emails) < 2)
             {
-                $emails[] = $to['email'];
-                $names[$to['email']] = @$to['name'];
-            }
-
-            if (isset ($messageData['addresses']['cc'])) foreach ($messageData['addresses']['cc'] as $cc)
-            {
-                $emails[] = $cc['email'];
-                $names[$cc['email']] = @$cc['name'];
-            }
-
-            if (isset ($messageData['addresses']['bcc'])) foreach ($messageData['addresses']['bcc'] as $bcc)
-            {
-                $emails[] = $bcc['email'];
-                $names[$bcc['email']] = @$bcc['name'];
-            }
-
-            // we don't need duplicates
-            $emails = array_unique($emails);
-
-            // sometimes it may happen that user is not in the chat (e.g. stolen message), check this
-            if (!in_array($user->email, $emails))
-            {
-                $this->say('Error: user is not in the chat');
+                // the cannot be less than 2 people in chat
+                $this->say('Error: only one person in chat');
                 return false;
             }
 
-            // try to clean emails
-            foreach ($emails as $k => $email)
+            $chat = \Sys::svc('Chat')->init($emails, $names);
+        }
+        else
+        {
+            if ($limitToChatId && $chat->id != $limitToChatId)
             {
-                $emails[$k] = trim($email, "'");
-            }
-
-            try
-            {
-                // chat may not exist -> init and mute if necessary
-                if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
-                {
-                    if ($limitToChatId)
-                    {
-                        // chat does not exist while ID restriction is imposed -> leave
-                        return false;
-                    }
-
-                    if (count($emails) < 2)
-                    {
-                        // the cannot be less than 2 people in chat
-                        $this->say('Error: only one person in chat');
-                        return false;
-                    }
-
-                    $chat = \Sys::svc('Chat')->init($emails, $names);
-                }
-                else
-                {
-                    if ($limitToChatId && $chat->id != $limitToChatId)
-                    {
-                        // chat exists, but does not fulfill the ID requirement, used by moreByChatId
-                        return false;
-                    }
-                }
-            }
-            catch (\Exception $e)
-            {
-                $this->say('Error: cannot init chat or chat ID limitation is set');
+                // chat exists, but does not fulfill the ID requirement, used by moreByChatId
                 return false;
-            }
-
-
-            if (!$chat)
-            {
-                throw new \Exception('Chat does not exist');
-            }
-
-            // thus, allow a chat to be created first
-            if ($maxTimeBack > 0 && $messageData['date'] < time() - $maxTimeBack)
-            {
-                $this->say('Notice: message is too old');
-                return false;
-            }
-
-
-            $recipient = \Sys::svc('User')->findByEmail(@$messageData['addresses']['to'][0]['email']);
-            $flags = \Sys::svc('Chat')->getFlags($chat->id, @$recipient->id);
-
-            // check that you want any messages in this chat
-            // message sync on behalf of a bot will not happen
-
-            if (!$fetchMuted && $flags && $flags->muted)
-            {
-                $this->say('Notice: message is muted');
-                return false;
-            }
-
-            // === process the message content ===
-
-            $files = [];
-
-            if (isset ($messageData['files']))
-            {
-                foreach ($messageData['files'] as $file)
-                {
-                    $files[] = array
-                    (
-                        'name'  => $file['name'],
-                        'type'  => $file['type'],
-                        'size'  => $file['size'],
-                    );
-                }
-            }
-
-            if ((!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]['content'])) && empty ($files))
-            {
-                $this->say('Error: no payload');
-                return false;
-            }
-
-            if ($messageData['addresses']['from']['email'] == $user->email)
-            {
-                // the head user is the author
-                $senderId = $user->id;
-            }
-            else
-            {
-                $sender = \Sys::svc('User')->findByEmail($messageData['addresses']['from']['email']);
-                $senderId = $sender->id;
-            }
-
-
-            // avoid duplicating by user_id-chat_id-ts key
-            if (!$this->isUnique($senderId, $chat->id, $messageData['date']))
-            {
-                $this->say('Notice: duplicate message');
-                return false;
-            }
-
-            $content = $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content']);
-
-            // check for forwarded messages
-            if (stripos($messageData['subject'], 'FWD:', 0) === 0)
-            {
-                $content .= "[sys:fwd]";
-            }
-
-            if (!mb_strlen($content) && empty ($files))
-            {
-                // avoid empty replies
-                $this->say('Notice: message has no real content');
-                return false;
-            }
-
-            // check if this email refers to a temporary message and kill the latter with file
-            if ($tempMessageId = @$messageData['headers']['x-temporary-id'][0])
-            {
-                if ($tempMessage = $this->findById($tempMessageId))
-                {
-                    $this->delete($tempMessage);
-                    $temporaryMessageExisted = true;
-                }
-            }
-
-            $subject = mb_convert_encoding($this->clearSubject($messageData['subject']), 'UTF-8');
-            $body = mb_convert_encoding($content, 'UTF-8');
-
-            // check other bodies if they contain anything useful
-            foreach ($messageData['body'] as $item)
-            {
-                if ($item['type'] == 'text/calendar')
-                {
-                    // calendar found => remove all the attachments, adjust body and subject
-                    $files = null;
-                    $calendar = Calendar::parse($item['content']);
-                    $body = json_encode(array
-                    (
-                        'type'      => 'ics',
-                        'widget'    => $calendar,
-                    ));
-                    $subject = '';
-                }
-            }
-
-            if ($fetchMuted && $flags && $flags->muted)
-            {
-                // OK, the chat is muted
-                // allow fetching, but keep 1 message in the chat only => clear the whole chat before sync
-                \DB::query('DELETE FROM message WHERE chat_id=?', [$chat->id]);
-
-                $notify = false;
-            }
-
-            $message = $this->create(array
-            (
-                'ext_id'    => $extId,
-                'user_id'   => $senderId,
-                'chat_id'   => $chat->id,
-                'ref_id'    => $user->id,
-                'subject'   => $subject,
-                'body'      => $body,
-                'files'     => empty ($files) ? '' : json_encode($files),
-                'ts'        => $messageData['date'],
-             ));
-
-            // message received, update chat if it's a new one
-            $chat->last_ts = max($messageData['date'], $chat->last_ts);
-            \Sys::svc('Chat')->update($chat);
-
-            if ($senderId != $user->id && !$fetchAll)
-            {
-                // there were one or more new foreign messages and this is not a FetchAll mode -> reset 'read' flag
-                \Sys::svc('Chat')->setReadFlag($chat->id, $user->id, 0);
-            }
-
-            if (!$temporaryMessageExisted && $notify)
-            {
-                if ($useFirebase)
-                {
-                    $messageBody = $message->body;
-
-                    // make message notifiable
-                    if ($messageBody[0] == '{')
-                    {
-                        $messageBody = 'Tap to see calendar';
-                    }
-
-                    // safe to use Firebase
-                    \Sys::svc('Notify')->firebase(array
-                    (
-                        'to'           => '/topics/user-' . $user->id,
-                        'priority'     => 'high',
-
-                        'notification' => array
-                        (
-                            'title' => $message->subject,
-                            'body'  => $messageBody,
-                            'icon'  => 'fcm_push_icon'
-                        ),
-
-                        'data' => array
-                        (
-                            'authId' => $user->id,
-                            'cmd'    => 'show-chat',
-                            'chatId' => $message->chat_id,
-                        ),
-                    ));
-                }
-
-                if ($useSocket)
-                {
-                    \Sys::svc('Notify')->im(
-                    [
-                        'cmd'       => 'notify',
-                        'userIds'   => [$user->id],
-                        'chatId'    => $chat->id,
-                        'noMarks'   => $noMarks,
-                    ]);
-                }
-            }
-
-            // remove old messages if not explicitly instructed
-            if (!$keepOld)
-            {
-                $this->removeOldByRefId($user->id);
             }
         }
 
-        return $message;
+        if (!$chat)
+        {
+            throw new \Exception('Chat does not exist');
+        }
+
+        foreach ($chat->messages as $message)
+        {
+            if ($message->refId == $user->_id && $message->extId == $extId)
+            {
+                return $message;
+            }
+        }
+
+        if ($maxTimeBack > 0 && $messageData['date'] < time() - $maxTimeBack)
+        {
+            $this->say('Notice: message is too old');
+            return false;
+        }
+
+        $recipient = \Sys::svc('User')->findOne(['email' => @$messageData['addresses']['to'][0]['email']]);
+        $flags = \Sys::svc('Chat')->getFlags($chat, $recipient ? $recipient->_id : 0);
+
+        // check that you want any messages in this chat
+        // message sync on behalf of a bot will not happen
+
+        if (!$fetchMuted && $flags && $flags->muted)
+        {
+            $this->say('Notice: message is muted');
+            return false;
+        }
+
+
+        // === process the message content ===
+
+        $files = [];
+
+        if (isset ($messageData['files']))
+        {
+            foreach ($messageData['files'] as $file)
+            {
+                $files[] = array
+                (
+                    'name'  => $file['name'],
+                    'type'  => $file['type'],
+                    'size'  => $file['size'],
+                );
+            }
+        }
+
+        if ((!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]['content'])) && empty ($files))
+        {
+            $this->say('Error: no payload');
+            return false;
+        }
+
+        if ($messageData['addresses']['from']['email'] == $user->email)
+        {
+            // the head user is the author
+            $senderId = $user->_id;
+        }
+        else
+        {
+            $sender = \Sys::svc('User')->findOne(['email' => $messageData['addresses']['from']['email']]);
+            $senderId = $sender->_id;
+        }
+
+
+        // avoid duplicating by user_id-chat-ts key
+        if (!$this->isUnique($senderId, $chat, $messageData['date']))
+        {
+            $this->say('Notice: duplicate message');
+            return false;
+        }
+
+        $content = $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content']);
+
+        // check for forwarded messages
+        if (stripos($messageData['subject'], 'FWD:', 0) === 0)
+        {
+            $content .= "[sys:fwd]";
+        }
+
+        if (!mb_strlen($content) && empty ($files))
+        {
+            // avoid empty replies
+            $this->say('Notice: message has no real content');
+            return false;
+        }
+
+        // check if this email refers to a temporary message and kill the latter with file
+        if ($tempMessageId = @$messageData['headers']['x-temporary-id'][0])
+        {
+            foreach ($chat->messages ?:[] as $k => $message)
+            {
+                if ($message->tempId == $tempMessageId)
+                {
+                    unset ($chat->messages[$k]);
+                    $temporaryMessageExisted = true;
+                    break;
+                }
+            }
+        }
+
+        $subject = mb_convert_encoding($this->clearSubject($messageData['subject']), 'UTF-8');
+        $body = mb_convert_encoding($content, 'UTF-8');
+
+        // check other bodies if they contain anything useful
+        foreach ($messageData['body'] as $item)
+        {
+            if ($item['type'] == 'text/calendar')
+            {
+                // calendar found => remove all the attachments, adjust body and subject
+                $files = null;
+                $calendar = Calendar::parse($item['content']);
+                $body = json_encode(array
+                (
+                    'type'      => 'ics',
+                    'widget'    => $calendar,
+                ));
+                $subject = '';
+            }
+        }
+
+        if ($fetchMuted && $flags && $flags->muted)
+        {
+            // OK, the chat is muted
+            // allow fetching, but keep 1 message in the chat only => clear the whole chat before sync
+            $chat->messages = [];
+            $notify = false;
+        }
+
+        $messageData =
+        [
+            'extId'     => $extId,
+            'userId'    => $senderId,
+            'refId'     => $user->_id,
+            'subj'      => $subject,
+            'body'      => $body,
+            'files'     => $files,
+            'ts'        => $messageData['date'],
+        ];
+
+        // TODO: insert messages
+
+        // message received, update chat if it's a new one
+        $chat->lastTs = max($messageData['date'], $chat->lastTs);
+        \Sys::svc('Chat')->update($chat);
+
+        if ($senderId != $user->id && !$fetchAll)
+        {
+            // there were one or more new foreign messages and this is not a FetchAll mode -> reset 'read' flag
+            \Sys::svc('Chat')->setReadFlag($chat, $user->_id, 0);
+        }
+
+        if (!$temporaryMessageExisted && $notify)
+        {
+            if ($useFirebase)
+            {
+                $messageBody = $body;
+
+                // make message notifiable
+                if ($messageBody[0] == '{')
+                {
+                    $messageBody = 'Tap to see calendar';
+                }
+
+                // safe to use Firebase
+                \Sys::svc('Notify')->firebase(array
+                (
+                    'to'           => '/topics/user-' . $user->_id,
+                    'priority'     => 'high',
+
+                    'notification' => array
+                    (
+                        'title' => $subject,
+                        'body'  => $messageBody,
+                        'icon'  => 'fcm_push_icon'
+                    ),
+
+                    'data' => array
+                    (
+                        'authId' => $user->_id,
+                        'cmd'    => 'show-chat',
+                        'chatId' => $chat->_id,
+                    ),
+                ));
+            }
+
+            if ($useSocket)
+            {
+                \Sys::svc('Notify')->im(
+                [
+                    'cmd'       => 'notify',
+                    'userIds'   => [$user->_id],
+                    'chatId'    => $chat->_id,
+                    'noMarks'   => $noMarks,
+                ]);
+            }
+        }
+
+        // remove old messages if not explicitly instructed
+        if (!$keepOld)
+        {
+            // TODO
+            // $this->removeOldByRefId($user->_id);
+        }
+
+        return true;
     }
 
     /**
      * Assures there are no duplicates by user-chat-ts among the real messages
      *
      * @param $userId
-     * @param $chatId
+     * @param $chat
      * @param $ts
      * @return bool
      */
-    protected function isUnique($userId, $chatId, $ts)
+    protected function isUnique($userId, $chat, $ts)
     {
-        return !\DB::row('SELECT id FROM message WHERE user_id=? AND chat_id=? AND ts=? AND ext_id IS NOT NULL LIMIT 1', [$userId, $chatId, $ts]);
+        foreach ($chat->messages ?:[] as $message)
+        {
+            if ($message->userId == $userId && $message->ts == $ts)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
