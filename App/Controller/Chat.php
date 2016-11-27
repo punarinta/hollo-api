@@ -117,7 +117,7 @@ class Chat extends Generic
     /**
      * Adds a Chat with emails
      *
-     * @doc-var     (array) emails         - List of emails. Yours is included.
+     * @doc-var     (array) emails         - List of emails. Yours is auto-included.
      *
      * @return mixed
      * @throws \Exception
@@ -151,38 +151,46 @@ class Chat extends Generic
             throw new \Exception('No ID provided.');
         }
 
-        $userId = \Auth::user()->id;
-
-        if (!$chat = \Sys::svc('Chat')->findByIdAndUserId($id, $userId))
+        if (!$chat = \Sys::svc('Chat')->findOne(['_id' => new ObjectID($id)]))
         {
             throw new \Exception('Chat not found.');
         }
 
+        $doUpdate = false;
+
         if (($name = \Input::data('name')) !== null)
         {
             $chat->name = trim($name);
+            $doUpdate = true;
+        }
+
+        if (($muted = \Input::data('muted')) !== null)
+        {
+            foreach ($chat->users as $k => $userItem)
+            {
+                if ($userItem->id == \Auth::user()->_id)
+                {
+                    $chat->users[$k]->muted = $muted;
+                    $doUpdate = true;
+                }
+            }
+        }
+
+        if (($read = \Input::data('read')) !== null)
+        {
+            foreach ($chat->users as $k => $userItem)
+            {
+                if ($userItem->id == \Auth::user()->_id)
+                {
+                    $chat->users[$k]->read = $read;
+                    $doUpdate = true;
+                }
+            }
+        }
+
+        if ($doUpdate)
+        {
             \Sys::svc('Chat')->update($chat);
-        }
-
-        // a bit more logic here may save some DB requests in the future
-        if (\Input::data('muted') !== null && \Input::data('read') !== null)
-        {
-            $flags = new \stdClass();
-            $flags->read = \Input::data('read');
-            $flags->muted = \Input::data('muted');
-            \Sys::svc('Chat')->setFlags($id, $userId, $flags);
-        }
-        else
-        {
-            if (\Input::data('muted') !== null)
-            {
-                \Sys::svc('Chat')->setMutedFlag($id, $userId, \Input::data('muted'));
-            }
-
-            if (\Input::data('read') !== null)
-            {
-                \Sys::svc('Chat')->setReadFlag($id, $userId, \Input::data('read'));
-            }
         }
     }
 
