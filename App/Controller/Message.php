@@ -45,6 +45,7 @@ class Message extends Generic
         }
 
         $chatUsers = $chat->users;
+        $chat->messages = $chat->messages ?? [];
 
         foreach ($chatUsers as $k => $userItem)
         {

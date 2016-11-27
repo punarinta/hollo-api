@@ -32,6 +32,7 @@ class Chat extends Generic
         {
             $lastMsg = null;
             $lastMsgBody = null;
+            $chat->messages = $chat->messages ?? [];
             $msgCount = count($chat->messages);
 
             if ($msgCount)
