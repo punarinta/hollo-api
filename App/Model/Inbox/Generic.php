@@ -8,7 +8,7 @@ namespace App\Model\Inbox;
  */
 class Generic
 {
-    protected $userId = null;
+    protected $user = null;
 
     /**
      * @param $str
@@ -44,6 +44,11 @@ class Generic
             {
                 if (!isset ($addr['cc'])) $addr['cc'] = [];
                 $addr['cc'] = array_merge($addr['cc'], $this->splitAddress($v[0]));
+            }
+            if ($k == 'bcc')
+            {
+                if (!isset ($addr['bcc'])) $addr['bcc'] = [];
+                $addr['bcc'] = array_merge($addr['bcc'], $this->splitAddress($v[0]));
             }
         }
 

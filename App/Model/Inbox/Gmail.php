@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Model\Inbox;
+use MongoDB\BSON\ObjectID;
 
 /**
  * Class Gmail
@@ -20,18 +21,15 @@ class Gmail extends Generic implements InboxInterface
     {
         if (!is_object($user))
         {
-            $user = \Sys::svc('User')->findById($user);
+            $user = \Sys::svc('User')->findOne(['_id' => new ObjectID($user)]);
         }
 
-        $this->userId = $user->id;
-        $settings = json_decode($user->settings, true) ?: [];
-
-        if (!isset ($settings['token']) || !$settings['token'])
+        if (!$user->settings->token)
         {
             return;
         }
 
-        $token = $settings['token'];
+        $this->user = $user;
 
         $client = new \Google_Client();
         $client->setClientId(\Sys::cfg('oauth.google.clientId'));
@@ -39,7 +37,7 @@ class Gmail extends Generic implements InboxInterface
 
         try
         {
-            $client->refreshToken($token);
+            $client->refreshToken($user->settings->token);
             $accessToken = $client->getAccessToken();
             $this->accessToken = json_decode($accessToken, true);
         }
@@ -48,14 +46,13 @@ class Gmail extends Generic implements InboxInterface
             if (strpos($e->getMessage(), '"invalid_grant"'))
             {
                 // clear token
-                $settings['token'] = null;
-                $user->settings = json_encode($settings);
-                \Sys::svc('User')->update($user);
+                $user->settings->token = null;
+                \Sys::svc('User')->update($user, ['settings.token' => null]);
 
                 // ask to relogin
                 \Sys::svc('Notify')->firebase(array
                 (
-                    'to'           => '/topics/user-' . $user->id,
+                    'to'           => '/topics/user-' . $user->_id,
                     'priority'     => 'high',
 
                     'notification' => array
@@ -67,12 +64,12 @@ class Gmail extends Generic implements InboxInterface
 
                     'data' => array
                     (
-                        'authId'    => $user->id,
+                        'authId'    => $user->_id,
                         'cmd'       => 'logout',
                     ),
                 ));
 
-                \Sys::svc('Notify')->im(['cmd' => 'sys', 'userIds' => [$user->id], 'message' => 'logout']);
+                \Sys::svc('Notify')->im(['cmd' => 'sys', 'userIds' => [$user->_id], 'message' => 'logout']);
             }
         }
     }
@@ -84,7 +81,8 @@ class Gmail extends Generic implements InboxInterface
     {
         $res = $this->curl('messages?maxResults=1&fields=messages&labelIds=INBOX');
 
-        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->userId]);
+        // find the last_by_id message for this user
+        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->user->_id]);
 
         if (!isset ($res['messages'][0]['id']))
         {
@@ -109,15 +107,12 @@ class Gmail extends Generic implements InboxInterface
     public function listHistory($newHistoryId, $labelId = 'INBOX')
     {
         // get previous history ID
-        $user = \Sys::svc('User')->findById($this->userId);
-        $settings = json_decode($user->settings, true) ?: [];
-        $historyId = @$settings['historyId'] ?: $newHistoryId;
+        $historyId = $this->user->settings->historyId ?: $newHistoryId;
 
         $res = $this->curl('history?startHistoryId=' . $historyId . ($labelId ? '&labelId=INBOX' . $labelId : ''));
 
-        $settings['historyId'] = $newHistoryId;
-        $user->settings = json_encode($settings);
-        \Sys::svc('User')->update($user);
+        $this->user->settings->historyId = $newHistoryId;
+        \Sys::svc('User')->update($this->user, ['settings.historyId' => $newHistoryId]);
 
         return isset ($res['history']) ? $res['history'] : [];
     }
