@@ -30,7 +30,7 @@ class Inbox
             throw new \Exception('Cannot initialize mail layer for user. ID = ' . $user->_id);
         }
 
-        if ($svc == \Sys::svc('MailService')->findOne(['name' => 'Gmail'])->_id->__toString())
+        if ($svc == \Sys::svc('MailService')->findOne(['name' => 'Gmail'])->_id)
         {
             $class = '\App\Model\Inbox\Gmail';
         }
