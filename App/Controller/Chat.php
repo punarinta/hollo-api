@@ -87,7 +87,7 @@ class Chat extends Generic
             $items[] = array
             (
                 'id'        => $chat->_id,
-                'name'      => $chat->name,
+                'name'      => @$chat->name,
                 'muted'     => $muted,
                 'read'      => $read,
                 'last'      => $msgCount ?

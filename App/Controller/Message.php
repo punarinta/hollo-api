@@ -91,7 +91,7 @@ class Message extends Generic
             'chat'   => array
             (
                 'id'    => $chat->_id,
-                'name'  => $chat->name,
+                'name'  => @$chat->name,
                 'muted' => $muted,
                 'users' => array_values($users),
             ),
