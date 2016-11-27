@@ -154,7 +154,7 @@ class Chat extends Generic
             $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
-        foreach ($chat->users as $userItem)
+        foreach ($chat->users ?:[] as $userItem)
         {
             if ($userItem->id == $userId)
             {
@@ -183,7 +183,7 @@ class Chat extends Generic
 
         $chatUsers = $chat->users;
 
-        foreach ($chatUsers as $k => $userRow)
+        foreach ($chatUsers ?:[] as $k => $userRow)
         {
             if ($userRow->id == $userId)
             {
@@ -215,7 +215,7 @@ class Chat extends Generic
 
         $chatUsers = $chat->users;
 
-        foreach ($chatUsers as $k => $userRow)
+        foreach ($chatUsers ?:[] as $k => $userRow)
         {
             if ($userRow->id == $userId)
             {
@@ -245,7 +245,7 @@ class Chat extends Generic
 
         $chatUsers = $chat->users;
 
-        foreach ($chatUsers as $k => $userRow)
+        foreach ($chatUsers ?:[] as $k => $userRow)
         {
             if ($userId > 0)
             {
@@ -295,7 +295,7 @@ class Chat extends Generic
      */
     public function hasAccess($chat, $userId)
     {
-        foreach ($chat->users as $userItem)
+        foreach ($chat->users ?:[] as $userItem)
         {
             if ($userItem->id == $userId)
             {
@@ -322,7 +322,7 @@ class Chat extends Generic
 
         $chatUsers = $chat->users;
 
-        foreach ($chatUsers as $k => $userRow)
+        foreach ($chatUsers ?:[] as $k => $userRow)
         {
             if ($userRow->id == $userId)
             {
