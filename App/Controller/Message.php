@@ -87,6 +87,12 @@ class Message extends Generic
 
         \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
 
+        foreach ($chat->messages as $k => $v)
+        {
+            $chat->messages[$k]->subject = $chat->messages[$k]->subj;
+            unset ($chat->messages[$k]->subj);
+        }
+
         return array
         (
             'chat'   => array
