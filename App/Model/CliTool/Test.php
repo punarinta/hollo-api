@@ -82,6 +82,7 @@ class Test
         while (--$i) $messages[] =
         [
             "userId" => $u[$i%3],
+            "extId" => \Text::GUID_v4(),
             "refId" => $u[$i%3],
             "subj" => "test-" . mt_rand(1, 10),
             "body" => "some text " . mt_rand(1000, 9999),
