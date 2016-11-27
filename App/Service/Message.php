@@ -150,10 +150,14 @@ class Message extends Generic
      */
     public function syncAllByUserId($userId, $fetchMuted = false)
     {
-        if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userId)]))
+        if (!is_object($userId))
         {
-            throw new \Exception('User does not exist');
+            if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userId)]))
+            {
+                throw new \Exception('User does not exist');
+            }
         }
+        else $user = $userId;
 
         $count = 0;
 
@@ -391,8 +395,9 @@ class Message extends Generic
             throw new \Exception('Chat does not exist');
         }
 
-        foreach ($chat->messages as $message)
+        foreach ($chat->messages ?? [] as $message)
         {
+            // message with this extID for this User is already present
             if ($message->refId == $user->_id && $message->extId == $extId)
             {
                 return $message;
@@ -478,9 +483,9 @@ class Message extends Generic
         // check if this email refers to a temporary message and kill the latter with file
         if ($tempMessageId = @$messageData['headers']['x-temporary-id'][0])
         {
-            foreach ($chat->messages ?:[] as $k => $message)
+            foreach ($chat->messages ?? [] as $k => $message)
             {
-                if ($message->tempId == $tempMessageId)
+                if (@$message->tempId == $tempMessageId)
                 {
                     unset ($chat->messages[$k]);
                     $temporaryMessageExisted = true;
@@ -517,8 +522,9 @@ class Message extends Generic
             $notify = false;
         }
 
-        $messageData =
+        $messageStructure =
         [
+            'id'        => (new ObjectID())->__toString(),
             'extId'     => $extId,
             'userId'    => $senderId,
             'refId'     => $user->_id,
@@ -528,16 +534,17 @@ class Message extends Generic
             'ts'        => $messageData['date'],
         ];
 
-        // TODO: insert messages
+        $chat->messages = $chat->messages ?? [];
+        array_unshift($chat->messages, $messageStructure);
 
         // message received, update chat if it's a new one
-        $chat->lastTs = max($messageData['date'], $chat->lastTs);
-        \Sys::svc('Chat')->update($chat);
+        $chat->lastTs = max($messageData['date'], @$chat->lastTs);
+        \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs]);
 
-        if ($senderId != $user->id && !$fetchAll)
+        if ($senderId != $user->_id && !$fetchAll)
         {
             // there were one or more new foreign messages and this is not a FetchAll mode -> reset 'read' flag
-            \Sys::svc('Chat')->setReadFlag($chat, $user->_id, 0);
+    //        \Sys::svc('Chat')->setReadFlag($chat, $user->_id, 0);
         }
 
         if (!$temporaryMessageExisted && $notify)
@@ -606,7 +613,7 @@ class Message extends Generic
      */
     protected function isUnique($userId, $chat, $ts)
     {
-        foreach ($chat->messages ?:[] as $message)
+        foreach (@$chat->messages ?:[] as $message)
         {
             if ($message->userId == $userId && $message->ts == $ts)
             {
