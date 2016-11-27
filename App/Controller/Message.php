@@ -32,7 +32,7 @@ class Message extends Generic
 
         if (!$chat = \Sys::svc('Chat')->findOne
         (
-            ['_id' => ['$in' => [new ObjectID($chatId)]]],
+            ['_id' => new ObjectID($chatId)],
             ['projection' => ['messages.refId' => 0]]
         ))
         {
