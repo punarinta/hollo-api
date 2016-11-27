@@ -10,12 +10,10 @@ class Chat extends Generic
      * Initializes a new Chat with a specific set of participants
      *
      * @param array $emails
-     * @param null $muting      - array of participating user IDs
      * @param array $names
-     * @return bool|null|\StdClass
-     * @throws \Exception
+     * @return mixed|null
      */
-    public function init($emails = [], $muting = null, $names = [])
+    public function init($emails = [], $names = [])
     {
         $emails = array_unique($emails);
 
@@ -25,70 +23,40 @@ class Chat extends Generic
             return $chat;
         }
 
-        \DB::begin();
+        $muteThis = false;
+        $chatUsers = [];
 
-        try
+        foreach ($emails as $email)
         {
-            // create chat itself
-            $chat = $this->create(array
+            if (\Sys::svc('Contact')->isMuted($email))
+            {
+                $muteThis = true;
+            }
+        }
+
+        // create users first
+        foreach ($emails as $email)
+        {
+            if (!$user = \Sys::svc('User')->findOne(['email' => $email]))
+            {
+                $userStructure = ['email' => $email];
+                if (isset ($names[$email]) && $names[$email] != $email)
+                {
+                    $userStructure['name'] = $names[$email];
+                }
+
+                $user = \Sys::svc('User')->create($userStructure);
+            }
+
+            $chatUsers[] = array
             (
-                'name'      => null,
-                'last_ts'   => 0,
-            ));
-
-            $userIds = [];
-            $muteThis = false;
-
-            // assure that all users exist
-            foreach ($emails as $email)
-            {
-                if (!$user = \Sys::svc('User')->findByEmail($email))
-                {
-                    // create a dummy user
-                    $user = \Sys::svc('User')->create(array
-                    (
-                        'email'     => $email,
-                        'name'      => (isset ($names[$email]) && $names[$email] != $email) ? $names[$email] : null,
-                        'roles'     => \Auth::GUEST,
-                        'settings'  => '',
-                    ));
-                }
-
-                $userIds[] = $user->id;
-
-                if (\Sys::svc('Contact')->isMuted($email))
-                {
-                    $muteThis = true;
-                }
-            }
-
-
-            // link users into the chat
-            foreach ($userIds as $userId)
-            {
-                if ($muteThis)
-                {
-                    // it's the reference person, mute this chat for him by default
-                    $stmt = \DB::prepare('INSERT INTO chat_user (`chat_id`, `user_id`, `muted`) VALUES (?,?,?)', [$chat->id, $userId, 1]);
-                }
-                else
-                {
-                    $stmt = \DB::prepare('INSERT INTO chat_user (`chat_id`, `user_id`) VALUES (?,?)', [$chat->id, $userId]);
-                }
-
-                $stmt->execute();
-                $stmt->close();
-            }
-
-            \DB::commit();
-        }
-        catch (\Exception $e)
-        {
-            \DB::rollback();
-            throw $e;
+                'id'    => $user->_id,
+                'read'  => 1,
+                'muted' => $muteThis,
+            );
         }
 
-        return $chat;
+        return $this->create(['users' => $chatUsers]);
     }
 
     /**
