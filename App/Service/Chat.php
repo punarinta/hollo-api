@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use MongoDB\BSON\ObjectID;
+
 class Chat extends Generic
 {
     /**
@@ -282,74 +284,54 @@ class Chat extends Generic
      */
     public function dropUser($chatId, $userId)
     {
-        // remove the specified user first
-        $stmt = \DB::prepare('DELETE FROM chat_user WHERE chat_id=? AND user_id=? LIMIT 1', [$chatId, $userId]);
-        $stmt->execute();
-        $stmt->close();
-
-        if ($this->countUsers($chatId) < 2)
+        if (!$chat = $this->findOne(['_id' => new ObjectID($chatId)]))
         {
-            // there's only one person left, remove that link too
-            $stmt = \DB::prepare('DELETE FROM chat_user WHERE chat_id=? LIMIT 1', [$chatId]);
-            $stmt->execute();
-            $stmt->close();
-
-            // kill the chat
-            $this->delete($chatId);
-
             return false;
         }
 
-        return true;
+        $chatUsers = $chat->users;
+
+        foreach ($chatUsers as $k => $userRow)
+        {
+            if ($userRow->id == $userId)
+            {
+                if (count($chatUsers) <= 2)
+                {
+                    // one of them were User => kill the whole chat
+                    $this->delete($chat);
+                }
+                else
+                {
+                    unset ($chatUsers[$k]);
+                    \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+                }
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Finds a Chat by emails of all its participants
      *
      * @param array $emails
-     * @return bool|null
+     * @return mixed|null
      */
     public function findByEmails($emails = [])
     {
-        $sql = 'SELECT c.* FROM chat AS c';
-        $params = [];
-        $where = ' WHERE 1=1';
-        $counter = 0;
-        $emailCount = count($emails);
+        $ids = [];
 
         foreach ($emails as $email)
         {
-            if (!$user = \Sys::svc('User')->findByEmail($email))
+            if (!$user = \Sys::svc('User')->findOne(['email' => $email]))
             {
-                // this user doesn't even exist
-                return false;
+                return null;
             }
 
-            $sql .= " LEFT JOIN chat_user AS cu{$counter} ON cu{$counter}.chat_id=c.id";
-            $where .= " AND cu{$counter}.user_id=?";
-            $params[] = $user->id;
-
-            ++$counter;
+            $ids[] = $user->_id;
         }
 
-        try
-        {
-            if ($counter)
-            {
-                foreach (\DB::rows($sql . $where, $params) as $chat)
-                {
-                    if ($this->countUsers($chat->id) == $emailCount)
-                    {
-                        return $chat;
-                    }
-                }
-            }
-        }
-        catch (\Exception $e)
-        {
-            echo "Strange things happen: " . $e->getMessage();
-        }
-
-        return null;
+        return $this->findOne(['users.id' => ['$all' => $ids]]);
     }
 }
