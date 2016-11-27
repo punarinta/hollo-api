@@ -80,7 +80,9 @@ class Message extends Generic
             else
             {
                 // TODO: use one more cache, do not mix with $users
-                $chat->messages[$k]->from = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->userId)]);
+                $chat->messages[$k]->from = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->userId)], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]);
+                $chat->messages[$k]->from->id = $chat->messages[$k]->from->_id;
+                unset ($chat->messages[$k]->from->_id);
             }
             unset ($chat->messages[$k]->userId);
         }
