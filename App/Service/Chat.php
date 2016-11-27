@@ -104,8 +104,8 @@ class Chat extends Generic
     {
         return \Sys::svc('Chat')->findAll
         (
-            ['users' => ['$elemMatch' => ['id' => $userId] ]],
-            ['projection' => ['messages' => ['$slice' => -1]]]      // show last message only
+            ['users.id' => $userId],
+            ['projection' => ['messages' => ['$slice' => -1]]]      // get last message only
         );
 
     /*    $sql = 'SELECT c.id, c.name, c.last_ts, cu.`read`, cu.muted
