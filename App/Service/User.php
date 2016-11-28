@@ -55,23 +55,63 @@ class User extends Generic
     /**
      * Returns all the users participating in the Chat
      *
-     * @param $chatId
+     * @param $chat
      * @param bool $forContacts
      * @param int $exceptId
      * @return array
      */
-    /*public function findByChatId($chatId, $forContacts = false, $exceptId = 0)
+    public function findByChat($chat, $forContacts = false, $exceptId = 0)
     {
+        $read = 0;
+        $muted = 0;
+        $users = [];
+        $scanIds = [];
+
+        foreach ($chat->users as $userItem)
+        {
+            if ($exceptId)
+            {
+                if ($userItem->id == $exceptId) continue;
+            }
+            else
+            {
+                $read = $userItem->read;
+                $muted = $userItem->muted;
+            }
+
+            $scanIds[] = new ObjectID($userItem->id);
+        }
+
         if ($forContacts)
         {
-            // skip yourself, feed only basic data
-            return \DB::rows('SELECT id, email, `name` FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=? AND u.id!=?', [$chatId, $exceptId]);
+            $usersData = \Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]);
+
+            foreach ($usersData as $usersDataRow)
+            {
+                $users[] = array
+                (
+                    'id'    => $usersDataRow->_id,
+                    'name'  => @$usersDataRow->name,
+                    'email' => $usersDataRow->email,
+                );
+            }
         }
         else
         {
-            return \DB::rows('SELECT * FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id=u.id WHERE cu.chat_id=?', [$chatId]);
+            foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]]) as $usersDataRow)
+            {
+                $id = $usersDataRow->_id;
+                unset ($usersDataRow->_id);
+                $usersDataRow->id = $id;
+                $usersDataRow->read = $read;
+                $usersDataRow->muted = $muted;
+
+                $users[] = $usersDataRow;
+            }
         }
-    }*/
+
+        return $users;
+    }
 
     /**
      * Lists Users known by specified User

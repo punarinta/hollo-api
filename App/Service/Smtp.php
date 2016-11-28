@@ -23,12 +23,12 @@ class Smtp
      * Sets up message sending for a particular thread
      *
      * @param $userId
-     * @param null $chatId
+     * @param null $chat
      * @param null $tempMsgId
      * @return bool
      * @throws \Exception
      */
-    public function setupThread($userId, $chatId = null, $tempMsgId = null)
+    public function setupThread($userId, $chat = null, $tempMsgId = null)
     {
         if (!$user = \Sys::svc('User')->findById($userId))
         {
@@ -70,10 +70,10 @@ class Smtp
             $this->mail->addCustomHeader('X-Temporary-ID: ' . $tempMsgId);
         }
         
-        if ($chatId)
+        if ($chat)
         {
             // get external message ID
-            if (!$message = \Sys::svc('Message')->findByLastRealByChatId($chatId))
+            if (!$message = \Sys::svc('Message')->findByLastRealByChat($chat))
             {
                 throw new \Exception('Message does not exist');
             }
@@ -132,14 +132,14 @@ class Smtp
     /**
      * Sends a message, can add more recipients
      *
-     * @param $chatId
+     * @param $chat
      * @param $body
      * @param null $subject
      * @param array $attachments
      * @return array
      * @throws \Exception
      */
-    public function send($chatId, $body, $subject = null, $attachments = [])
+    public function send($chat, $body, $subject = null, $attachments = [])
     {
         $tempFiles = [];
 
@@ -171,16 +171,16 @@ class Smtp
 
         $userIds = [];
 
-        foreach (\Sys::svc('User')->findByChatId($chatId, true, \Auth::user()->id) as $user)
+        foreach (\Sys::svc('User')->findByChat($chat, true, \Auth::user()->_id) as $user)
         {
             $this->mail->addAddress($user->email, $user->name);
 
             // collect user IDs for IM notification
-            $userIds[] = $user->id;
+            $userIds[] = $user->_id;
 
             \Sys::svc('Notify')->firebase(array
             (
-                'to'           => '/topics/user-' . $user->id,
+                'to'           => '/topics/user-' . $user->_id,
                 'priority'     => 'high',
 
                 'notification' => array
@@ -192,14 +192,14 @@ class Smtp
 
                 'data' => array
                 (
-                    'authId' => $user->id,
+                    'authId' => $user->_id,
                     'cmd'    => 'show-chat',
-                    'chatId' => $chatId,
+                    'chatId' => $chat->_id,
                 ),
             ));
         }
 
-        \Sys::svc('Notify')->im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chatId]);
+        \Sys::svc('Notify')->im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chat->_id]);
 
         foreach ($attachments as $file)
         {

@@ -297,8 +297,8 @@ class Message extends Generic
     //    }
     //    else
     //    {
-            \Sys::svc('Smtp')->setupThread(\Auth::user()->_id, $chatId, $messageStructure['id']);
-            $res = \Sys::svc('Smtp')->send($chatId, $body, \Input::data('subject'), $files);
+            \Sys::svc('Smtp')->setupThread(\Auth::user()->_id, $chat, $messageStructure['id']);
+            $res = \Sys::svc('Smtp')->send($chat, $body, \Input::data('subject'), $files);
     //    }
 
         return true; // $res;
