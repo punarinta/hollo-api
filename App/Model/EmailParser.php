@@ -173,6 +173,27 @@ class EmailParser
                         );
                     }
                 }
+                else if (@$topPartData['headers']['content-type'][0] == 'text/plain')
+                {
+                    $contentEncoding = $topPartData['headers']['content-transfer-encoding'];
+                    $content = $topPartData['content'];
+
+                    if ($contentEncoding[0] == 'quoted-printable')
+                    {
+                        $content = quoted_printable_decode($content);
+                        $content = strtr($content, ["=\n" => '']);
+                    }
+                    if ($contentEncoding[0] == 'base64')
+                    {
+                        $content = base64_decode(strtr($content, ['-' => '+', '_' => '/']));
+                    }
+
+                    $bodies[] = array
+                    (
+                        'type'      => 'text/plain',
+                        'content'   => $content,
+                    );
+                }
             }
         }
 
