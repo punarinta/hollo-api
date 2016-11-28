@@ -2,6 +2,7 @@
 
 use \MongoDB\Driver\Manager;
 use \MongoDB\Driver\Query;
+use \MongoDB\Driver\Command;
 
 class DB
 {
@@ -35,6 +36,22 @@ class DB
         return $GLOBALS['-DB-L']->executeQuery('hollo.' . $collection, $query);
     }
 
+    /**
+     * Execute an arbitrary command on DB server
+     *
+     * @param array $command
+     * @return mixed
+     */
+    static function command($command = [])
+    {
+        return $GLOBALS['-DB-L']->executeCommand('hollo', new Command($command));
+    }
+
+    /**
+     * @param $collection
+     * @param $field
+     * @return mixed
+     */
     static function max($collection, $field)
     {
         $query = new Query([], ['sort' => [$field => -1], 'limit' => 1, 'projection' => [$field => 1]]);
