@@ -51,7 +51,7 @@ class Message extends Generic
     public function findByLastRealByChat($chat)
     {
         // latest messages are at the top
-        foreach ($chat->messages ?:[] as $message)
+        foreach ($chat->messages ?? [] as $message)
         {
             if ($message->extId)
             {
@@ -162,18 +162,22 @@ class Message extends Generic
     }
 
     /**
-     * Removes excessive messages by a reference User ID
+     * Removes excessive messages from a message array
      *
-     * @param $userId
-     * @return int
+     * @param array $messages
+     * @return array $messages
      */
-    public function removeOldByRefId($userId)
+    public function removeOld($messages)
     {
-        $stmt = \DB::prepare('DELETE FROM message WHERE ref_id=? AND ts<?', [$userId, time() - \Sys::cfg('sys.sync_period')]);
-        $stmt->execute();
-        $stmt->close();
+        foreach ($messages ?? [] as $k => $v)
+        {
+            if ($v->ts < time() - \Sys::cfg('sys.sync_period'))
+            {
+                unset ($messages[$k]);
+            }
+        }
 
-        return \DB::l()->affected_rows;
+        return $messages;
     }
 
     /**
@@ -436,12 +440,19 @@ class Message extends Generic
             }
         }
 
+        $chat->messages = $chat->messages ?? [];
+
         if ($fetchMuted && $flags && $flags->muted)
         {
             // OK, the chat is muted
             // allow fetching, but keep 1 message in the chat only => clear the whole chat before sync
             $chat->messages = [];
             $notify = false;
+        }
+        else if (!$keepOld)
+        {
+            // remove old messages if not explicitly instructed
+            $chat->messages = $this->removeOld($chat->messages);
         }
 
         $messageStructure =
@@ -456,7 +467,6 @@ class Message extends Generic
             'ts'        => $messageData['date'],
         ];
 
-        $chat->messages = $chat->messages ?? [];
         array_unshift($chat->messages, $messageStructure);
 
         if ($senderId != $user->_id && !$fetchAll)
@@ -469,8 +479,9 @@ class Message extends Generic
             }
         }
 
-        // message received, update chat if it's a new one
-        $chat->lastTs = max($messageData['date'], @$chat->lastTs);
+        $chat->lastTs = max($messageData['date'], $chat->lastTs ?? 0);
+
+        // run chat update
         \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs, 'users' => $chat->users]);
 
         if (!$temporaryMessageExisted && $notify)
@@ -517,13 +528,6 @@ class Message extends Generic
                     'noMarks'   => $noMarks,
                 ]);
             }
-        }
-
-        // remove old messages if not explicitly instructed
-        if (!$keepOld)
-        {
-            // TODO
-            // $this->removeOldByRefId($user->_id);
         }
 
         return true;
