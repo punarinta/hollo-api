@@ -130,7 +130,7 @@ class Auth
         else
         {
             // user exists and it's real, not good
-            if ($user->roles)
+            if (isset ($user->roles))
             {
                 throw new \Exception('User already exists');
             }
@@ -223,7 +223,7 @@ class Auth
         $mailService = \Sys::svc('MailService')->findOne(['name' => 'Gmail']);
         $user = \Sys::svc('User')->findOne(['email' => $email]);
 
-        if (!$user || !$user->roles)
+        if (!$user || !isset ($user->roles))
         {
             // no user -> register
             $settings = ['svc' => $mailService->_id, 'token' => $token];
@@ -241,6 +241,10 @@ class Auth
             }
             else
             {
+                if (!isset ($user->name))
+                {
+                    $user->name = $name;
+                }
                 $user->roles = \Auth::USER;
                 $user->settings = $settings;
                 \Sys::svc('User')->update($user);

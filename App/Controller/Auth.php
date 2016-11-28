@@ -30,7 +30,7 @@ class Auth extends Generic
             (
                 'id'        => \Auth::user()->_id,
                 'email'     => \Auth::user()->email,
-                'name'      => \Auth::user()->name,
+                'name'      => @\Auth::user()->name,
                 'ava'       => @$_SESSION['-AUTH']['avatar'],
                 'settings'  => \Auth::user()->settings,
             ) : null,
@@ -64,7 +64,7 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No password was provided.'));
         }
 
-        if ($user = \Sys::svc('User')->findByEmail($email, true))
+        if (($user = \Sys::svc('User')->findByEmail($email, true)) && $user->settings->svc)
         {
             // login
             \Sys::svc('Auth')->loginImap($user, $password);

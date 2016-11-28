@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Model\ContextIO\ContextIO;
 use EmailAuth\Discover;
+use MongoDB\BSON\ObjectID;
 
 class MailService extends Generic
 {
@@ -19,7 +20,7 @@ class MailService extends Generic
     {
         if (!is_object($mailService))
         {
-            if (!$mailService = $this->findOne(['_id' => $mailService]))
+            if (!$mailService = $this->findOne(['_id' => new ObjectID($mailService)]))
             {
                 throw new \Exception('Mail service does not exist');
             }
@@ -58,13 +59,13 @@ class MailService extends Generic
         $domain = explode('@', $email);
         $domain = $domain[1];
 
-        return $this->create(array
-        (
+        return $this->create(
+        [
             'name'      => $domain,
-            'domains'   => "|$domain|",
-            'cfgIn'     => json_encode(['type' => 'imap', 'oauth' => false, 'host' => $imapCfg['host'], 'port' => $imapCfg['port'], 'enc' => $imapCfg['encryption']]),
-            'cfgOut'    => json_encode(['type' => 'smtp', 'oauth' => false, 'host' => $smtpCfg['host'], 'port' => $smtpCfg['port'], 'enc' => $smtpCfg['encryption']]),
-        ));
+            'domains'   => [$domain],
+            'cfgIn'     => (object) ['type' => 'imap', 'oauth' => 0, 'host' => $imapCfg['host'], 'port' => $imapCfg['port'], 'enc' => $imapCfg['encryption']],
+            'cfgOut'    => (object) ['type' => 'smtp', 'oauth' => 0, 'host' => $smtpCfg['host'], 'port' => $smtpCfg['port'], 'enc' => $smtpCfg['encryption']],
+        ]);
     }
 
     /**
