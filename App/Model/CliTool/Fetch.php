@@ -24,15 +24,18 @@ class Fetch
 
         foreach ($chat->messages as $message)
         {
-            $fileName = 'data/temp/fetched';
-            $inbox = Inbox::init($message->refId);
+            if ($message->id == $messageId)
+            {
+                $fileName = 'data/temp/fetched';
+                $inbox = Inbox::init($message->refId);
 
-            file_put_contents($fileName, $inbox->getFileData($message->extId, $offset));
+                file_put_contents($fileName, $inbox->getFileData($message->extId, $offset));
 
-            return "File saved to '$fileName'.\n";
+                return "File saved to '$fileName'.\n";
+            }
         }
 
-        return 'ERR';
+        return "Error\n";
     }
 
     /**
