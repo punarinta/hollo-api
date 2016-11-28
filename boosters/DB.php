@@ -17,6 +17,12 @@ class DB
         $GLOBALS['-DB-L'] = new Manager('mongodb://127.0.0.1:27017/hollo');
     }
 
+    static function disconnect()
+    {
+        // TODO: check if that is enough
+        unset ($GLOBALS['-DB-L']);
+    }
+
     /**
      * @param $collection
      * @param array $filter
