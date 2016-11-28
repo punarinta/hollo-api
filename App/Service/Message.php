@@ -124,7 +124,7 @@ class Message extends Generic
      * @param $messageExtId
      * @param bool $tryVerbose
      * @param array $options
-     * @return bool|null|\StdClass
+     * @return bool|object
      * @throws \Exception
      */
     public function sync($userId, $messageExtId, $tryVerbose = true, $options = [])
@@ -211,7 +211,7 @@ class Message extends Generic
      * @param $user                 -- recipient user
      * @param $messageData
      * @param array $options
-     * @return bool|null|\StdClass
+     * @return bool | object
      * @throws \Exception
      */
     protected function processMessageSync($user, $messageData, $options = [])
@@ -534,7 +534,7 @@ class Message extends Generic
             }
         }
 
-        return true;
+        return (object) $messageStructure;
     }
 
     /**
