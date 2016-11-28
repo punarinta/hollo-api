@@ -94,10 +94,23 @@ class Imap extends Generic implements InboxInterface
             return false;
         }
 
-        // find the last_by_id message for this user
-        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->user->_id]);
+        $latestTs = 0;
+        $latestExtId = null;
 
-        return !$row || $row->ext_id != $ids[0];
+        // find all chats where this user's messages are present
+        foreach (\Sys::svc('Chat')->findAll(['messages.refId' => $this->user->_id]) as $chat)
+        {
+            foreach ($chat->messages as $message)
+            {
+                if ($message->ts > $latestTs)
+                {
+                    $latestTs = $message->ts;
+                    $latestExtId = $message->extId;
+                }
+            }
+        }
+
+        return $latestExtId != $ids[0];
     }
 
     /**

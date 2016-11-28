@@ -81,8 +81,21 @@ class Gmail extends Generic implements InboxInterface
     {
         $res = $this->curl('messages?maxResults=1&fields=messages&labelIds=INBOX');
 
-        // find the last_by_id message for this user
-        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->user->_id]);
+        $latestTs = 0;
+        $latestExtId = null;
+
+        // find all chats where this user's messages are present
+        foreach (\Sys::svc('Chat')->findAll(['messages.refId' => $this->user->_id]) as $chat)
+        {
+            foreach ($chat->messages as $message)
+            {
+                if ($message->ts > $latestTs)
+                {
+                    $latestTs = $message->ts;
+                    $latestExtId = $message->extId;
+                }
+            }
+        }
 
         if (!isset ($res['messages'][0]['id']))
         {
@@ -93,10 +106,10 @@ class Gmail extends Generic implements InboxInterface
                 return false;
             }
 
-            return !$row || $row->ext_id != $res['messages'][0]['id'];
+            return $latestExtId != $res['messages'][0]['id'];
         }
 
-        return !$row || $row->ext_id != $res['messages'][0]['id'];
+        return $latestExtId != $res['messages'][0]['id'];
     }
 
     /**
@@ -111,6 +124,7 @@ class Gmail extends Generic implements InboxInterface
 
         $res = $this->curl('history?startHistoryId=' . $historyId . ($labelId ? '&labelId=INBOX' . $labelId : ''));
 
+        // update if anyone else decides to use that var
         $this->user->settings->historyId = $newHistoryId;
         \Sys::svc('User')->update($this->user, ['settings.historyId' => $newHistoryId]);
 
