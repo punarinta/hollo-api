@@ -43,57 +43,6 @@ class Message extends Generic
     }
 
     /**
-     * Returns messages associated with a chat. May filter by subject.
-     *
-     * @param $contactId
-     * @param null $subject
-     * @param int $offset
-     * @return array
-     */
-    public function findByChatId($contactId, $subject = null, $offset = 0)
-    {
-        $items = [];
-
-        $sql = 'SELECT m.*, u.id AS u_id, u.name AS u_name, u.email AS u_email FROM message AS m LEFT JOIN `user` AS u ON u.id=m.user_id WHERE chat_id = ?';
-        $params = [$contactId];
-
-        if ($subject)
-        {
-            $sql .= ' AND m.subject LIKE ?';
-            $params[] = '%' . $subject . '%';
-        }
-
-        $sql .= ' ORDER BY ts DESC, id DESC';
-
-        if ($offset)
-        {
-            $sql .= ' LIMIT 100 OFFSET ?';      // Anyway, 100 is a limit in Context.IO
-            $params[] = $offset;
-        }
-
-        foreach (\DB::rows($sql, $params) as $item)
-        {
-            $items[] = \DB::toObject(array
-            (
-                'id'        => $item->id,
-                'ts'        => $item->ts,
-                'body'      => $item->body,
-                'refId'     => $item->ref_id,
-                'subject'   => $this->clearSubject($item->subject),
-                'from'      => array
-                (
-                    'id'    => $item->u_id,
-                    'email' => $item->u_email,
-                    'name'  => $item->u_name,
-                ),
-                'files'     => json_decode($item->files, true),
-            ));
-        }
-
-        return $items;
-    }
-
-    /**
      * Find last message in chat that is not
      *
      * @param $chat
@@ -111,33 +60,6 @@ class Message extends Generic
         }
 
         return null;
-    }
-
-    /**
-     * Gets more messages into the Chat
-     *
-     * @param $chat
-     * @param $user         -- current user
-     * @return array
-     */
-    public function moreByChat($chat, $user)
-    {
-        // TODO: t.b.d.
-
-        $oldCount = $this->countByChatId($chat->id);
-
-        // get more messages for this chat starting from chat's last sync
-        foreach (\Sys::svc('User')->findByChatId($chat->id) as $participant)
-        {
-            //
-        }
-
-        // return with offset from DB
-        $messages = $this->findByChatId($chat->id);
-
-        $count = count($messages) - $oldCount;
-
-        return $count > 0 ? array_slice($messages, 0, $count) : [];
     }
 
     /**
@@ -617,7 +539,7 @@ class Message extends Generic
      */
     protected function isUnique($userId, $chat, $ts)
     {
-        foreach (@$chat->messages ?:[] as $message)
+        foreach ($chat->messages ?? [] as $message)
         {
             if ($message->userId == $userId && $message->ts == $ts)
             {
