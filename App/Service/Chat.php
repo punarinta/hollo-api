@@ -48,12 +48,12 @@ class Chat extends Generic
                 $user = \Sys::svc('User')->create($userStructure);
             }
 
-            $chatUsers[] = array
-            (
+            $chatUsers[] = (object)
+            [
                 'id'    => $user->_id,
                 'read'  => 1,
                 'muted' => $muteThis,
-            );
+            ];
         }
 
         return $this->create(['users' => $chatUsers]);
@@ -152,6 +152,11 @@ class Chat extends Generic
      */
     public function getFlags($chat, $userId)
     {
+        if (!$userId)
+        {
+            return null;
+        }
+
         if (!is_object($chat))
         {
             $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
@@ -161,8 +166,10 @@ class Chat extends Generic
         {
             if ($userItem->id == $userId)
             {
-                unset ($userItem->id);
-                return $userItem;
+                $flags = new \stdClass;
+                $flags->read = $userItem->read;
+                $flags->muted = $userItem->muted;
+                return $flags;
             }
         }
 

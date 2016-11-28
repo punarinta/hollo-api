@@ -537,15 +537,19 @@ class Message extends Generic
         $chat->messages = $chat->messages ?? [];
         array_unshift($chat->messages, $messageStructure);
 
-        // message received, update chat if it's a new one
-        $chat->lastTs = max($messageData['date'], @$chat->lastTs);
-        \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs]);
-
         if ($senderId != $user->_id && !$fetchAll)
         {
-            // there were one or more new foreign messages and this is not a FetchAll mode -> reset 'read' flag
-    //        \Sys::svc('Chat')->setReadFlag($chat, $user->_id, 0);
+            // there were one or more new foreign messages and this is not a FetchAll mode
+            //  -> mark this chat as unread for everyone except User
+            foreach ($chat->users as $k => $userRow)
+            {
+                $chat->users[$k]->read = 0;
+            }
         }
+
+        // message received, update chat if it's a new one
+        $chat->lastTs = max($messageData['date'], @$chat->lastTs);
+        \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs, 'users' => $chat->users]);
 
         if (!$temporaryMessageExisted && $notify)
         {
