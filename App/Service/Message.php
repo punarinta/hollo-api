@@ -88,7 +88,7 @@ class Message extends Generic
 
         $messageExtIds = $imap->getMessages(['ts_after' => time() - \Sys::cfg('sys.sync_period')]);
 
-        if (count($messageExtIds) && $messageExtIds[0] != $user->lastMuid)
+        if (count($messageExtIds) && $messageExtIds[0] != @$user->lastMuid)
         {
             $user->lastMuid = $messageExtIds[0];
             \Sys::svc('User')->update($user);
