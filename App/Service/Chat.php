@@ -64,83 +64,40 @@ class Chat extends Generic
      *
      * @param $userId
      * @param array $filters
-     * @param null $sortBy
-     * @param null $sortMode
      * @return array
      */
-    public function findAllByUserId($userId, $filters = [], $sortBy = null, $sortMode = null)
+    public function findAllByUserId($userId, $filters = [])
     {
+        $mongoFilter = ['users.id' => $userId];
+
+        foreach ($filters as $filter)
+        {
+            if ($filter['mode'] == 'muted')
+            {
+                $mongoFilter['users.muted'] = $filter['value'];
+            }
+
+            if ($filter['mode'] == 'read')
+            {
+                $mongoFilter['users.read'] = $filter['value'];
+            }
+
+            if ($filter['mode'] == 'name')
+            {
+                $mongoFilter['name'] = $filter['value'];
+            }
+        }
+
+        // TODO: filter moce 'email'
+
         return \Sys::svc('Chat')->findAll
         (
-            ['users.id' => $userId],
+            $mongoFilter,
             [
                 'projection' => ['messages' => ['$slice' => -1]],   // get last message only
                 'sort' => ['lastTs' => -1],
             ]
         );
-
-    /*    $sql = 'SELECT c.id, c.name, c.last_ts, cu.`read`, cu.muted
-                FROM chat AS c LEFT JOIN chat_user AS cu ON cu.chat_id=c.id WHERE cu.user_id=?';
-
-        // TODO: rewrite in a proper way
-        if (@$filters[0]['mode'] == 'email' || @$filters[1]['mode'] == 'email')
-        {
-            $sql = 'SELECT DISTINCT c.id, c.name, c.last_ts, cu.read, cu.muted FROM chat AS c
-                    LEFT JOIN chat_user AS cu ON cu.chat_id = c.id
-                    LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
-                    LEFT JOIN `user` AS u ON cu2.user_id = u.id
-                    WHERE cu.user_id=? AND cu2.user_id != cu.user_id';
-        }
-
-        $params = [$userId];
-
-        foreach ($filters as $filter)
-        {
-            switch ($filter['mode'])
-            {
-                case 'name':
-                    $sql .= ' AND `name` LIKE ?';
-                    break;
-
-                case 'muted':
-                    $sql .= ' AND cu.muted=?';
-                    break;
-
-                case 'read':
-                    $sql .= ' AND cu.read=?';
-                    break;
-
-                case 'email':
-                    $sql .= ' AND u.email LIKE ?';
-                    $filter['value'] = '%' . $filter['value'] . '%';
-                    break;
-            }
-
-            $params[] = $filter['value'];
-        }
-
-        if ($sortBy)
-        {
-            if ($sortBy == 'name')
-            {
-                $sql .= ' ORDER BY cu.read ASC, `name`';
-            }
-            elseif ($sortBy == 'lastTs')
-            {
-                $sql .= ' ORDER BY cu.read ASC, last_ts DESC';
-            }
-
-            if ($sortMode == 'desc')
-            {
-                $sql .= ' DESC';
-            }
-        }
-        else
-        {
-            $sql .= ' ORDER BY `read` ASC, `name` ASC';
-        }
-
-        return \DB::rows($sql, $params);*/
     }
 
     /**

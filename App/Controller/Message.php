@@ -327,7 +327,7 @@ class Message extends Generic
 
         // NB: newest are on the top
         // TODO: create a separate faster function for QS
-        foreach (\Sys::svc('Chat')->findAllByUserId(\Auth::user()->id, $filters, 'lastTs') as $chat)
+        foreach (\Sys::svc('Chat')->findAllByUserId(\Auth::user()->id, $filters) as $chat)
         {
             if ($message = \Sys::svc('Message')->getLastByChatId($chat->id))
             {

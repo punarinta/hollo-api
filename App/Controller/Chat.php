@@ -13,8 +13,6 @@ class Chat extends Generic
     /**
      * Lists your chats
      *
-     * @doc-var     (string) sortBy         - Sorting key. Options are 'name', 'lastTs'.
-     * @doc-var     (string) sortMode       - Sorting mode. Options are 'asc', 'desc'.
      * @doc-var     (array) filters         - Array of 'filter'.
      * @doc-var     (string) filter[].mode  - Filtering mode. Options are 'muted', 'name', 'email'.
      * @doc-var     (string) filter[].value - Filter string.
@@ -28,7 +26,7 @@ class Chat extends Generic
         $myId = \Auth::user()->_id;
         $filters = \Input::data('filters') ?:[];
 
-        foreach (\Sys::svc('Chat')->findAllByUserId($myId, $filters, \Input::data('sortBy'), \Input::data('sortMode')) as $chat)
+        foreach (\Sys::svc('Chat')->findAllByUserId($myId, $filters) as $chat)
         {
             $lastMsg = null;
             $lastMsgBody = null;
