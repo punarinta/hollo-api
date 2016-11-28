@@ -129,10 +129,14 @@ class Message extends Generic
      */
     public function sync($userId, $messageExtId, $tryVerbose = true, $options = [])
     {
-        if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userId)]))
+        if (!is_object($userId))
         {
-            throw new \Exception('User does not exist.');
+            if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userId)]))
+            {
+                throw new \Exception('User does not exist');
+            }
         }
+        else $user = $userId;
 
         $imap = Inbox::init($user);
         $data = $imap->getMessage($messageExtId);
