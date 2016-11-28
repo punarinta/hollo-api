@@ -74,7 +74,7 @@ class Chat extends Generic
         {
             if ($filter['mode'] == 'muted')
             {
-                $mongoFilter['users.muted'] = $filter['value'];
+                $mongoFilter['users.muted'] = (bool) $filter['value'];
             }
 
             if ($filter['mode'] == 'read')
@@ -155,7 +155,7 @@ class Chat extends Generic
             if ($userRow->id == $userId)
             {
                 $chatUsers[$k]->read = $flags->read;
-                $chatUsers[$k]->muted = $flags->muted;
+                $chatUsers[$k]->muted = (bool) $flags->muted;
                 \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
 
                 return true;
@@ -186,7 +186,7 @@ class Chat extends Generic
         {
             if ($userRow->id == $userId)
             {
-                $chatUsers[$k]->muted = $muted;
+                $chatUsers[$k]->muted = (bool) $muted;
                 \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
 
                 return true;
