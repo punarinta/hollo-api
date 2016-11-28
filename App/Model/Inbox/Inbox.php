@@ -27,7 +27,7 @@ class Inbox
 
         if (!$svc = $user->settings->svc)
         {
-            throw new \Exception('Cannot initialize mail layer for user. ID = ' . $user->_id);
+            throw new \Exception('No service ID for user. ID = ' . $user->_id);
         }
 
         if ($svc == \Sys::svc('MailService')->findOne(['name' => 'Gmail'])->_id)
