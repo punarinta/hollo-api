@@ -13,7 +13,7 @@ class Message extends Generic
     /**
      * Returns messages within a Chat
      *
-     * @doc-var     (int) chatId        - Chat ID.
+     * @doc-var     (string) chatId     - Chat ID.
      * @doc-var     (string) subject    - Filter by subject.
      * @doc-var     (bool) ninja        - Ninja mode, set 'true' to keep messages unread.
      *
@@ -116,7 +116,7 @@ class Message extends Generic
     /**
      * Returns N more messages for a Chat
      *
-     * @doc-var     (int) chatId!        - Chat ID
+     * @doc-var     (string) chatId!        - Chat ID
      *
      * @return mixed
      * @throws \Exception
@@ -128,23 +128,23 @@ class Message extends Generic
             throw new \Exception('Email not provided.');
         }
 
-        if (!\Sys::svc('Chat')->hasAccess($chatId, \Auth::user()->id))
-        {
-            throw new \Exception('Access denied.', 403);
-        }
-
-        if (!$chat = \Sys::svc('Chat')->findById($chatId))
+        if (!$chat = \Sys::svc('Chat')->findOne(['_id' => new ObjectID($chatId)]))
         {
             throw new \Exception('Chat does not exist.');
         }
 
-        return \Sys::svc('Message')->moreByChat($chat, \Auth::user());
+        if (!\Sys::svc('Chat')->hasAccess($chat, \Auth::user()->_id))
+        {
+            throw new \Exception('Access denied.', 403);
+        }
+
+        return []; // \Sys::svc('Message')->moreByChat($chat, \Auth::user());
     }
 
     /**
      * Returns last message in the Chat
      *
-     * @doc-var     (int) chatId!       - Chat ID
+     * @doc-var     (string) chatId!        - Chat ID
      *
      * @return mixed
      * @throws \Exception
@@ -164,13 +164,13 @@ class Message extends Generic
             'id'        => $message->_id,
             'ts'        => $message->ts,
             'body'      => $message->body,
-            'subject'   => \Sys::svc('Message')->clearSubject($message->subject),
-            'from'      => array
-            (
+            'subject'   => \Sys::svc('Message')->clearSubject($message->subj),
+            'from'      =>
+            [
                 'id'    => $user->_id,
                 'email' => $user->email,
                 'name'  => $user->name,
-            ),
+            ],
             'files'     => $message->files,
         );
     }
@@ -178,7 +178,7 @@ class Message extends Generic
     /**
      * Show the original message
      *
-     * @doc-var     (int) id!       - Message ID
+     * @doc-var     (string) id!       - Message ID
      *
      * @return mixed
      * @throws \Exception
@@ -191,9 +191,14 @@ class Message extends Generic
         }
 
         // TODO: passing down chat ID will save resources
-        if (!$chat = \Sys::svc('Chat')->findOne(['message.id' => $id]))
+        if (!$chat = \Sys::svc('Chat')->findOne(['messages.id' => $id]))
         {
             throw new \Exception('Message does not exist');
+        }
+
+        if (!\Sys::svc('Chat')->hasAccess($chat, \Auth::user()->_id))
+        {
+            throw new \Exception('Access denied.', 403);
         }
 
         foreach ($chat->messages ?? [] as $message)
@@ -216,8 +221,8 @@ class Message extends Generic
      * Reply to a message or compose a new one
      *
      * @doc-var     (string) body!          - Message body.
-     * @doc-var     (int) chatId!           - Chat ID, used for temporary message referencing and notifications.
-     * @doc-var     (int) messageId         - Hollo's message ID to reply to.
+     * @doc-var     (string) chatId!        - Chat ID, used for temporary message referencing and notifications.
+     * @doc-var     (string) messageId      - Hollo's message ID to reply to.
      * @doc-var     (string) subject        - Message subject.
      * @doc-var     (array) files           - Message attachments.
      * @doc-var     (string) file[].name    - File name.
