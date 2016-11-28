@@ -169,7 +169,7 @@ class Chat extends Generic
             {
                 if ($userItem->id == \Auth::user()->_id)
                 {
-                    $chat->users[$k]->muted = $muted;
+                    $chat->users[$k]->muted = (int) $muted;
                     $doUpdate = true;
                 }
             }
@@ -181,7 +181,7 @@ class Chat extends Generic
             {
                 if ($userItem->id == \Auth::user()->_id)
                 {
-                    $chat->users[$k]->read = $read;
+                    $chat->users[$k]->read = (int) $read;
                     $doUpdate = true;
                 }
             }

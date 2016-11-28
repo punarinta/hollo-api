@@ -52,7 +52,7 @@ class Chat extends Generic
             [
                 'id'    => $user->_id,
                 'read'  => 1,
-                'muted' => $muteThis,
+                'muted' => (int) $muteThis,
             ];
         }
 
@@ -74,12 +74,12 @@ class Chat extends Generic
         {
             if ($filter['mode'] == 'muted')
             {
-                $mongoFilter['users.muted'] = (bool) $filter['value'];
+                $mongoFilter['users.muted'] = (int) $filter['value'];
             }
 
             if ($filter['mode'] == 'read')
             {
-                $mongoFilter['users.read'] = $filter['value'];
+                $mongoFilter['users.read'] = (int) $filter['value'];
             }
 
             if ($filter['mode'] == 'name')
@@ -88,7 +88,7 @@ class Chat extends Generic
             }
         }
 
-        // TODO: filter moce 'email'
+        // TODO: filter mode 'email'
 
         return \Sys::svc('Chat')->findAll
         (
@@ -124,8 +124,8 @@ class Chat extends Generic
             if ($userItem->id == $userId)
             {
                 $flags = new \stdClass;
-                $flags->read = $userItem->read;
-                $flags->muted = $userItem->muted;
+                $flags->read = (int) $userItem->read;
+                $flags->muted = (int) $userItem->muted;
                 return $flags;
             }
         }
@@ -154,8 +154,8 @@ class Chat extends Generic
         {
             if ($userRow->id == $userId)
             {
-                $chatUsers[$k]->read = $flags->read;
-                $chatUsers[$k]->muted = (bool) $flags->muted;
+                $chatUsers[$k]->read = (int) $flags->read;
+                $chatUsers[$k]->muted = (int) $flags->muted;
                 \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
 
                 return true;
@@ -186,7 +186,7 @@ class Chat extends Generic
         {
             if ($userRow->id == $userId)
             {
-                $chatUsers[$k]->muted = (bool) $muted;
+                $chatUsers[$k]->muted = (int) $muted;
                 \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
 
                 return true;
@@ -218,19 +218,19 @@ class Chat extends Generic
             {
                 if ($userRow->id == $userId)
                 {
-                    $chatUsers[$k]->read = $read;
+                    $chatUsers[$k]->read = (int) $read;
                 }
             }
             else if ($userId < 0)
             {
                 if ($userRow->id != $userId)
                 {
-                    $chatUsers[$k]->read = $read;
+                    $chatUsers[$k]->read = (int) $read;
                 }
             }
             else
             {
-                $chatUsers[$k]->read = $read;
+                $chatUsers[$k]->read = (int) $read;
             }
         }
 
