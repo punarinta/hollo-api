@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use MongoDB\BSON\ObjectID;
+
 class User extends Generic
 {
     protected $cache = [];
@@ -107,41 +109,6 @@ class User extends Generic
     }*/
 
     /**
-     * Checks if one User is known by another User
-     *
-     * @param $user1
-     * @param $user2
-     * @return bool
-     */
-    /*public function isKnownBy($user1, $user2)
-    {
-        $sql = 'SELECT 1 FROM chat_user AS cu1
-                LEFT JOIN chat AS c ON c.id = cu1.chat_id
-                LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
-                WHERE cu1.user_id = ? AND cu2.user_id = ? LIMIT 1';
-
-        return (bool) \DB::row($sql, [$user1, $user2]);
-    }*/
-
-    /**
-     * Checks if one User is known by another User via first one's email
-     *
-     * @param $email
-     * @param $user
-     * @return bool
-     */
-    /*public function isKnownByEmail($email, $user)
-    {
-        $sql = 'SELECT 1 FROM user AS u
-                LEFT JOIN chat_user AS cu1 ON cu1.user_id = u.id
-                LEFT JOIN chat AS c ON c.id = cu1.chat_id
-                LEFT JOIN chat_user AS cu2 ON cu2.chat_id = c.id
-                WHERE u.email = ? AND cu2.user_id = ? LIMIT 1';
-
-        return (bool) \DB::row($sql, [$email, $user]);
-    }*/
-
-    /**
      * Returns a particular User setting
      *
      * @param $user
@@ -157,7 +124,7 @@ class User extends Generic
         }
         else if (!is_object($user))
         {
-            if (!$user = $this->findOne(['_id' => $user]))
+            if (!$user = $this->findOne(['_id' => new ObjectID($user)]))
             {
                 throw new \Exception('User does not exist');
             }
@@ -175,13 +142,15 @@ class User extends Generic
      */
     public function name($user = null)
     {
+        // TODO: check if this function is necessary at all
+
         if (!$user)
         {
             $user = \Auth::user();
         }
         else if (!is_object($user))
         {
-            if (!$user = $this->findOne(['_id' => $user]))
+            if (!$user = $this->findOne(['_id' => new ObjectID($user)]))
             {
                 throw new \Exception('User does not exist');
             }
@@ -198,19 +167,16 @@ class User extends Generic
      */
     public function subscribeToGmail($user)
     {
-        // TODO: test with non-Gmail
-
-        $settings = $user->settings;
-
-        if (!$token = $settings->token)
+        if (!$user->settings->token)
         {
+            // will just exit for non-Gmail
             return false;
         }
 
         $client = new \Google_Client();
         $client->setClientId(\Sys::cfg('oauth.google.clientId'));
         $client->setClientSecret(\Sys::cfg('oauth.google.secret'));
-        $client->refreshToken($token);
+        $client->refreshToken($user->settings->token);
         $accessToken = $client->getAccessToken();
         $accessToken = json_decode($accessToken, true);
 
@@ -234,9 +200,7 @@ class User extends Generic
 
         $res = json_decode($res, true) ?: [];
 
-        $settings->historyId = $res['historyId'];
-        $user->settings = $settings;
-        \Sys::svc('User')->update($user);
+        \Sys::svc('User')->update($user, ['settings.historyId' => $res['historyId']]);
 
         return true;
     }
