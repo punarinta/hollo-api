@@ -10,34 +10,10 @@ use App\Model\Inbox\Inbox;
  */
 class File extends Generic
 {
-   /**
-     * Finds files related to this chat
-     *
-     * @doc-var     (int) chatId            - Chat ID.
-     * @doc-var     (bool) withImageUrl     - Whether to extract image URL or not.
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    static public function findByChatId()
-    {
-        if (!$chatId = \Input::data('chatId'))
-        {
-            throw new \Exception('Chat ID not provided.');
-        }
-
-        if (!\Sys::svc('Chat')->hasAccess($chatId, \Auth::user()->id))
-        {
-            throw new \Exception('Access denied.', 403);
-        }
-
-        return \Sys::svc('File')->findByChatId($chatId, \Input::data('withImageUrl'));
-    }
-
     /**
      * Download a file
      *
-     * @doc-var     (int) messageId         - Message ID.
+     * @doc-var     (string) messageId      - Message ID.
      * @doc-var     (int) offset            - File offset in the message.
      *
      * @return mixed
@@ -57,19 +33,29 @@ class File extends Generic
 
         try
         {
-            if (!$message = \Sys::svc('Message')->findById($messageId))
+            if (!$chat = \Sys::svc('Chat')->findOne(['messages.id' => $messageId]))
             {
                 throw new \Exception('Message not found');
             }
 
-            if (!\Sys::svc('Chat')->hasAccess($message->chat_id, \Auth::user()->id))
+            if (!\Sys::svc('Chat')->hasAccess($chat, \Auth::user()->_id))
             {
                 throw new \Exception('Access denied.', 403);
             }
 
-            $inbox = Inbox::init($message->ref_id);
+            $message = null;
+            foreach ($chat->messages as $messageRow)
+            {
+                if ($messageRow->id == $messageId)
+                {
+                    $message = $messageRow;
+                    break;
+                }
+            }
 
-            if (!$messageData = $inbox->getMessage($message->ext_id))
+            $inbox = Inbox::init($message->refId);
+
+            if (!$messageData = $inbox->getMessage($message->extId))
             {
                 throw new \Exception('Cannot retrieve message');
             }
@@ -81,7 +67,7 @@ class File extends Generic
             header("Content-type:{$file['type']}");
             header("Content-Disposition:attachment;filename='{$file['name']}'");
 
-            echo $inbox->getFileData($message->ext_id, $offset);
+            echo $inbox->getFileData($message->extId, $offset);
         }
         catch (\Exception $e)
         {
