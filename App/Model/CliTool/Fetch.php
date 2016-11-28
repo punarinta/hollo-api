@@ -17,17 +17,22 @@ class Fetch
      */
     public function file($messageId, $offset = 0)
     {
-        if (!$message = \Sys::svc('Message')->findById($messageId))
+        if (!$chat = \Sys::svc('Chat')->findOne(['messages.id' => $messageId]))
         {
             throw new \Exception('Message not found');
         }
 
-        $fileName = 'data/temp/fetched';
-        $inbox = Inbox::init($message->ref_id);
+        foreach ($chat->messages as $message)
+        {
+            $fileName = 'data/temp/fetched';
+            $inbox = Inbox::init($message->refId);
 
-        file_put_contents($fileName, $inbox->getFileData($message->ext_id, $offset));
+            file_put_contents($fileName, $inbox->getFileData($message->extId, $offset));
 
-        return "File saved to '$fileName'.\n";
+            return "File saved to '$fileName'.\n";
+        }
+
+        return 'ERR';
     }
 
     /**
