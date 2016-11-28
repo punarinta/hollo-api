@@ -88,8 +88,6 @@ class Chat extends Generic
             }
         }
 
-        // TODO: filter mode 'email'
-
         return \Sys::svc('Chat')->findAll
         (
             $mongoFilter,

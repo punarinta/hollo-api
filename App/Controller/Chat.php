@@ -23,8 +23,18 @@ class Chat extends Generic
     static public function find()
     {
         $items = [];
+        $emailFilter = null;
         $myId = \Auth::user()->_id;
         $filters = \Input::data('filters') ?:[];
+
+        foreach ($filters as $filter)
+        {
+            if ($filter['mode'] == 'email')
+            {
+                $emailFilter = $filter['value'];
+                break;
+            }
+        }
 
         foreach (\Sys::svc('Chat')->findAllByUserId($myId, $filters) as $chat)
         {
@@ -73,14 +83,25 @@ class Chat extends Generic
             \DB::$pageLength = 0;
 
             $users = [];
+            $match = false;
             foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
             {
+                if ($emailFilter && stripos($user->email, $emailFilter) !== false)
+                {
+                    $match = true;
+                }
+
                 $users[] = array
                 (
                     'id'    => $user->_id,
                     'name'  => @$user->name,
                     'email' => $user->email,
                 );
+            }
+
+            if ($emailFilter && !$match)
+            {
+                continue;
             }
 
             $items[] = array
