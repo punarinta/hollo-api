@@ -2,6 +2,7 @@
 
 namespace App\Model\CliTool;
 use App\Model\Inbox\Inbox;
+use MongoDB\BSON\ObjectID;
 
 /**
  * Class Cron
@@ -47,13 +48,15 @@ class Cron
     {
         $tsAfter = strtotime('yesterday');
 
+        $gmailSvcId = \Sys::svc('MailService')->findOne(['name' => 'Gmail'])->_id;
+
         foreach (\Sys::svc('User')->findAllReal() as $user)
         {
             microtime(100000);
 
-            $svc = json_decode($user->settings)->svc;
+            $svc = $user->settings->svc;
 
-            if (($type == 1 && $svc != 1) || ($type != 1 && $svc == 1))
+            if (($type == 1 && $svc != $gmailSvcId) || ($type != 1 && $svc == $gmailSvcId))
             {
                 continue;
             }
@@ -63,7 +66,7 @@ class Cron
             if ($inbox->checkNew())
             {
                 $count = 0;
-                echo "User {$user->id} has new messages. Syncing... ";
+                echo "User {$user->_id} has new messages. Syncing... ";
 
                 $messageIds = $inbox->getMessages(['ts_after' => $tsAfter]);
 
@@ -73,22 +76,21 @@ class Cron
 
                     foreach ($messageIds as $messageId)
                     {
-                        if ($messageId == $user->last_muid)
+                        if ($messageId == $user->lastMuid)
                         {
                             // we've reached
                             break;
                         }
 
                         // inform in any case
-                        $count += 1 * !empty(\Sys::svc('Message')->sync($user->id, $messageId, false));
+                        $count += 1 * !empty (\Sys::svc('Message')->sync($user, $messageId, false));
 
                         usleep(200000);
                     }
 
-                    if ($user->last_muid != $lastMuid)
+                    if ($user->lastMuid != $lastMuid)
                     {
-                        $user->last_muid = $lastMuid;
-                        \Sys::svc('User')->update($user);
+                        \Sys::svc('User')->update($user, ['lastMuid' => $lastMuid]);
                     }
                 }
 
@@ -108,11 +110,11 @@ class Cron
     public function refreshGmailSubscription($userId = null)
     {
         $count = 0;
-        $users = $userId ? [\Sys::svc('User')->findById($userId)] : \Sys::svc('User')->findAllReal();
+        $users = $userId ? [\Sys::svc('User')->findOne(['_id' => new ObjectID($userId)])] : \Sys::svc('User')->findAllReal();
 
         foreach ($users as $user)
         {
-            echo "User {$user->id}... ";
+            echo "User {$user->_id}... ";
             $res = \Sys::svc('User')->subscribeToGmail($user);
 
             echo ($res ? 'OK' : 'NOT OK') . "\n";
@@ -135,11 +137,11 @@ class Cron
         $countAvas = 0;
         $countUsers = 0;
 
-        $users = $userId ? [\Sys::svc('User')->findById($userId)] : \Sys::svc('User')->findAllReal();
+        $users = $userId ? [\Sys::svc('User')->findOne(['_id' => new ObjectID($userId)])] : \Sys::svc('User')->findAllReal();
 
         foreach ($users as $user)
         {
-            echo "\nUser {$user->id}... ";
+            echo "\nUser {$user->_id}... ";
 
             $countAvas += \Sys::svc('User')->updateAvatars($user, $qEmail);
 
