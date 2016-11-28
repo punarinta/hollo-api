@@ -395,7 +395,7 @@ class Message extends Generic
             return false;
         }
 
-        $content = $this->clearContent($messageData['body'][0]['type'], $messageData['body'][0]['content']);
+        $content = $this->clearContent(@$messageData['body'][0]['type'], @$messageData['body'][0]['content']);
 
         // check for forwarded messages
         if (stripos($messageData['subject'], 'FWD:', 0) === 0)

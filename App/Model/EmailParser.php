@@ -166,6 +166,12 @@ class EmailParser
                             continue;
                         }
 
+                        if (!isset ($partData['headers']['content-type'][0]))
+                        {
+                            // some really shitty email :/
+                            continue;
+                        }
+
                         $bodies[] = array
                         (
                             'type'      => $partData['headers']['content-type'][0],
