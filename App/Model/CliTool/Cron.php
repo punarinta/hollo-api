@@ -10,25 +10,33 @@ use App\Model\Inbox\Inbox;
 class Cron
 {
     /**
+     * Removes old messages using service-layer algorithm
+     *
      * @return string
      */
     public function removeOldMessages()
     {
-        $users = 0;
+        $steps = 0;
         $count = 0;
 
-        foreach (\Sys::svc('User')->findAllReal() as $user)
+        foreach (\Sys::svc('Chat')->findAll([], ['projection' => ['messsages' => 1]]) as $chat)
         {
-            ++$users;
-            $count += \Sys::svc('Message')->removeOldByRefId($user->id);
+            ++$steps;
 
-            if (!($users % 100))
+            $preCount = count($chat->messages);
+            $chat->messages = \Sys::svc('Message')->removeOld($chat->messages);
+            \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages]);
+            $postCount = count($chat->messages);
+
+            $count += ($preCount - $postCount);
+
+            if (!($steps % 100))
             {
                 echo "Purged: $count\n";
             }
         }
 
-        return "Total messaged purged: $count\n";
+        return "Total messages purged: $count\n";
     }
 
     /**
