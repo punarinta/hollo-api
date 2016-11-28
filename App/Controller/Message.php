@@ -271,7 +271,7 @@ class Message extends Generic
         [
             'id'        => (new ObjectID())->__toString(),
             'userId'    => \Auth::user()->_id,
-            'subject'   => \Input::data('subject'),
+            'subj'      => \Input::data('subject'),
             'body'      => $body,
             'files'     => $dbFiles,
             'ts'        => time(),
