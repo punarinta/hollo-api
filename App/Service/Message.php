@@ -313,7 +313,7 @@ class Message extends Generic
         }
         else
         {
-            if ($limitToChatId && $chat->id != $limitToChatId)
+            if ($limitToChatId && $chat->_id != $limitToChatId)
             {
                 // chat exists, but does not fulfill the ID requirement, used by moreByChatId
                 return false;
