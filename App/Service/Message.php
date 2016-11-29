@@ -435,11 +435,11 @@ class Message extends Generic
                 // calendar found => remove all the attachments, adjust body and subject
                 $files = null;
                 $calendar = Calendar::parse($item['content']);
-                $body = json_encode(array
-                (
+                $body =
+                [
                     'type'      => 'ics',
                     'widget'    => $calendar,
-                ));
+                ];
                 $subject = '';
             }
         }
