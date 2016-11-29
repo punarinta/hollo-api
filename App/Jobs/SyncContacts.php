@@ -13,9 +13,11 @@ class SyncContacts extends Generic
 {
     public function testSetup()
     {
+        $user = \Sys::svc('User')->findOne(['email' => 'hollo.email@gmail.com']);
+
         $this->args = array
         (
-            'user_id' => 1,
+            'user_id' => $user->_id,
         );
     }
 
