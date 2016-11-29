@@ -114,34 +114,6 @@ class Message extends Generic
     }
 
     /**
-     * Returns N more messages for a Chat
-     *
-     * @doc-var     (string) chatId!        - Chat ID
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    static public function moreByChatId()
-    {
-        if (!$chatId = \Input::data('chatId'))
-        {
-            throw new \Exception('Email not provided.');
-        }
-
-        if (!$chat = \Sys::svc('Chat')->findOne(['_id' => new ObjectID($chatId)]))
-        {
-            throw new \Exception('Chat does not exist.');
-        }
-
-        if (!\Sys::svc('Chat')->hasAccess($chat, \Auth::user()->_id))
-        {
-            throw new \Exception('Access denied.', 403);
-        }
-
-        return []; // \Sys::svc('Message')->moreByChat($chat, \Auth::user());
-    }
-
-    /**
      * Returns last message in the Chat
      *
      * @doc-var     (string) chatId!        - Chat ID
