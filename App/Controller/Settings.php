@@ -16,7 +16,7 @@ class Settings extends Generic
      */
     static public function read()
     {
-        $settings = json_decode(\Auth::user()->settings);
+        $settings = \Auth::user()->settings;
        
         return array
         (
@@ -42,25 +42,19 @@ class Settings extends Generic
     static public function update()
     {
         $user = \Auth::user();
-        $settings = json_decode($user->settings, true);
+        $settings = $user->settings;
 
-        if (\Input::data('firstName') !== null) $settings['firstName'] = \Input::data('firstName');
-        if (\Input::data('lastName') !== null) $settings['lastName'] = \Input::data('lastName');
-        if (\Input::data('signature') !== null) $settings['signature'] = \Input::data('signature');
+        if (\Input::data('firstName') !== null) $settings->firstName = \Input::data('firstName');
+        if (\Input::data('lastName') !== null) $settings->lastName = \Input::data('lastName');
+        if (\Input::data('signature') !== null) $settings->signature = \Input::data('signature');
 
         if ($flag = \Input::data('flag'))
         {
-            if (!isset ($settings['flags']))
-            {
-                $settings['flags'] = [];
-            }
-
-            $settings['flags'][$flag['name']] = $flag['value'];
+            $settings->flags->{$flag['name']} = $flag['value'];
         }
 
         // save settings back
-        $user->settings = json_encode($settings);
-        \Sys::svc('User')->update($user);
+        \Sys::svc('User')->update($user, ['settings' => $settings]);
         \Sys::svc('Auth')->sync();
 
         return $settings;
@@ -68,6 +62,6 @@ class Settings extends Generic
 
     static public function testNotification()
     {
-        \Sys::svc('Resque')->addJob('TestNotifications', ['user_id' => \Auth::user()->id]);
+        \Sys::svc('Resque')->addJob('TestNotifications', ['user_id' => \Auth::user()->_id]);
     }
 }
