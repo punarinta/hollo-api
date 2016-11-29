@@ -13,28 +13,39 @@ include_once 'vendor/colinmollenhour/credis/Client.php';
 
 // 2. Load namespaces
 
-$coursioLoaderClassMap = array();
+$loaderClassMap = [];
 
-$coursioLoaderPrefixesPsr0 = array
-(
+$autoClasses0 =
+[
     'App\\'         => '.',
 
     // 3rd parties
-//    'Predis'        => 'vendor/predis/predis/lib',
     'Resque'        => 'vendor/chrisboulton/php-resque/lib',
+    'Google'        => 'vendor/google/apiclient/src',
+    'SecurityLib'   => 'vendor/ircmaxell/security-lib/lib',
+    'RandomLib'     => 'vendor/ircmaxell/random-lib/lib',
     'Mandrill'      => 'vendor/mandrill/mandrill/src',
-//    'PHPExcel'      => 'vendor/os/php-excel/PHPExcel',
     'Psr\\Log'      => 'vendor/psr/log',
-);
+];
 
-spl_autoload_register(function($class) use ($coursioLoaderClassMap, $coursioLoaderPrefixesPsr0)
+$autoClasses4 =
+[
+    'League\\OAuth2\\Client\\'  => ['vendor/league/oauth2-client/src/', 'vendor/league/oauth2-google/src/'],
+    'Psr\\Http\\Message\\'      => 'vendor/psr/http-message/src/',
+    'GuzzleHttp\\Psr7\\'        => 'vendor/guzzlehttp/psr7/src/',
+    'GuzzleHttp\\Promise\\'     => 'vendor/guzzlehttp/promises/src/',
+    'GuzzleHttp\\'              => 'vendor/guzzlehttp/guzzle/src/',
+];
+
+spl_autoload_register(function($class) use ($loaderClassMap, $autoClasses0, $autoClasses4)
 {
     // class map lookup
-    if (isset ($coursioLoaderClassMap[$class]))
+    if (isset ($loaderClassMap[$class]))
     {
-        if ($coursioLoaderClassMap[$class])
+        if ($loaderClassMap[$class])
         {
-            include_once $coursioLoaderClassMap[$class];
+            include_once $loaderClassMap[$class];
+            return true;
         }
         else
         {
@@ -48,7 +59,7 @@ spl_autoload_register(function($class) use ($coursioLoaderClassMap, $coursioLoad
         return true;
     }
 
-    foreach ($coursioLoaderPrefixesPsr0 as $namespace => $dir)
+    foreach ($autoClasses0 as $namespace => $dir)
     {
         if (0 === strpos($class, $namespace))
         {
@@ -57,26 +68,48 @@ spl_autoload_register(function($class) use ($coursioLoaderClassMap, $coursioLoad
                 $class = strtr(strtr($class, $namespace . '_', ''), '_', '/');
             }
 
-            if (!file_exists($path = $dir . '/' . strtr($class, '\\', '/') . '.php'))
-            {
-                $path = str_replace($namespace . '/' . $namespace, $namespace, $path);
-            }
-
-            include_once $path;
+            include_once $dir . '/' . strtr($class, '\\', '/') . '.php';
             return true;
         }
     }
 
+    //echo "Namespace = $namespace\n";
+    //echo "Class = $class\n";
+
+    foreach ($autoClasses4 as $namespace => $dir)
+    {
+        if (0 === strpos($class, $namespace))
+        {
+            if (is_array($dir))
+            {
+                foreach ($dir as $dirry)
+                {
+                    $file = $dirry . strtr(str_replace($namespace, '', $class), '\\', '/') . '.php';
+                    if (file_exists($file))
+                    {
+                        include_once $file;
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                include_once $dir . strtr(str_replace($namespace, '', $class), '\\', '/') . '.php';
+                return true;
+            }
+        }
+    }
+
     // Remember that this class does not exist.
-    return $coursioLoaderClassMap[$class] = false;
+    return $loaderClassMap[$class] = false;
 
 }, true, true);
 
 
 // 3. Cleanup
 
-unset ($coursioLoaderPrefixesPsr0);
-unset ($coursioLoaderClassMap);
+unset ($autoClasses0);
+unset ($loaderClassMap);
 
 
 // 4. Run application
