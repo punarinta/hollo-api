@@ -13,6 +13,17 @@ class Sys
     {
         $GLOBALS['-CFG'] = $config;
 
+    /*    header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS')
+        {
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+            return null;
+        }
+
+        $_SERVER['REQUEST_URI'] = str_ireplace('/api-test/', '/api/', $_SERVER['REQUEST_URI']);*/
+
         // usual request starts
 
         DB::connect();
