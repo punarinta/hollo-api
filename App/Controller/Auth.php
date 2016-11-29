@@ -24,6 +24,14 @@ class Auth extends Generic
      */
     static function status()
     {
+        if (\Auth::check())
+        {
+            if (!isset (\Auth::user()->_id) || !\Auth::user()->_id)
+            {
+                \Sys::svc('Auth')->logout();
+            }
+        }
+
         return array
         (
             'user'      => \Auth::check() ? array
