@@ -14,7 +14,7 @@ class DB
      */
     static function connect()
     {
-        $GLOBALS['-DB-L'] = new Manager('mongodb://127.0.0.1:27017/hollo');
+        $GLOBALS['-DB-L'] = new Manager('mongodb://' . \Sys::cfg('db.mongo') . '/hollo');
     }
 
     static function disconnect()

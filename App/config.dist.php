@@ -14,6 +14,7 @@ return array
         'user'      => 'root',
         'pass'      => '',
         'database'  => '',
+        'mongo'     => '127.0.0.1:27017',
     ),
     'notifier' => array
     (
