@@ -26,6 +26,11 @@ class Sys
 
         // usual request starts
 
+        if (!DB::check())
+        {
+            throw new \Exception('Oops, the database is down');
+        }
+
         DB::connect();
 
         if (isset ($_SERVER['HTTP_TOKEN']) && $_SERVER['HTTP_TOKEN'] !== 'null')
