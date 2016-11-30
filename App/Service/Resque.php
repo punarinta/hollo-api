@@ -32,6 +32,8 @@ class Resque
                 return false;
             }
 
+            fclose($conn);
+
             // set v-verbosity on
             putenv('VVERBOSE=1');
 
