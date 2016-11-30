@@ -24,10 +24,30 @@ class DB
     }
 
     /**
+     * Check DB connection
+     *
+     * @return bool
+     */
+    static function check()
+    {
+        $cfg = explode(':', \Sys::cfg('db.mongo'));
+
+        if (!is_resource($conn = @fsockopen($cfg[0], $cfg[1], $a, $b, 5)))
+        {
+            return false;
+        }
+
+        fclose($conn);
+
+        return true;
+    }
+
+    /**
      * @param $collection
      * @param array $filter
      * @param array $options
      * @return mixed
+     * @throws Exception
      */
     static function query($collection, $filter = [], $options = [])
     {
@@ -39,7 +59,14 @@ class DB
 
         $query = new Query($filter, $options);
 
-        return $GLOBALS['-DB-L']->executeQuery('hollo.' . $collection, $query);
+        try
+        {
+            return $GLOBALS['-DB-L']->executeQuery('hollo.' . $collection, $query);
+        }
+        catch (\Exception $e)
+        {
+            throw new \Exception('');
+        }
     }
 
     /**
