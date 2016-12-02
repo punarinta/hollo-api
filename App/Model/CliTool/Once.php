@@ -75,7 +75,7 @@ class Once
                 'lastMuid'   => $element->last_muid,
             );
 
-            if (!$element->name) $array['name'] = $element->name;
+            if ($element->name) $array['name'] = $element->name;
 
             $bulk->insert($array);
         }
