@@ -230,7 +230,7 @@ class User extends Generic
         $countAvas = 0;
         $emailsPerUserLimit = 10000;
 
-        if (!$token = $user->settings->token)
+        if (!$token = @$user->settings->token)
         {
             if (@$GLOBALS['-SYS-VERBOSE'])
             {
