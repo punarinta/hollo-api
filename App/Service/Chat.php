@@ -208,31 +208,37 @@ class Chat extends Generic
             $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
-        $chatUsers = $chat->users;
+        $chatUsers = json_decode(json_encode($chat->users));
 
         foreach ($chatUsers ?? [] as $k => $userRow)
         {
-            if ($userId > 0)
-            {
-                if ($userRow->id == $userId)
-                {
-                    $chatUsers[$k]->read = (int) $read;
-                }
-            }
-            else if ($userId < 0)
-            {
-                if ($userRow->id != $userId)
-                {
-                    $chatUsers[$k]->read = (int) $read;
-                }
-            }
-            else
+            if (!$userId)
             {
                 $chatUsers[$k]->read = (int) $read;
             }
+            else
+            {
+                if ($userId[0] == '-')
+                {
+                    if ($userRow->id != $userId)
+                    {
+                        $chatUsers[$k]->read = (int) $read;
+                    }
+                }
+                else
+                {
+                    if ($userRow->id == $userId)
+                    {
+                        $chatUsers[$k]->read = (int) $read;
+                    }
+                }
+            }
         }
 
-        \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+        if ($chatUsers != $chat->users)
+        {
+            \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+        }
     }
 
     /**
