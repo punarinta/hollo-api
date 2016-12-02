@@ -91,7 +91,7 @@ class Contact extends Generic
 
             if (count($rows))
             {
-                if (!$rows[0]->user)
+                if (!@$rows[0]->user)
                 {
                     return true;
                 }
