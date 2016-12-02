@@ -53,7 +53,7 @@ class Message extends Generic
         // latest messages are at the top
         foreach ($chat->messages ?? [] as $message)
         {
-            if ($message->extId)
+            if (isset ($message->extId))
             {
                 return $message;
             }
