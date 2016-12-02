@@ -52,7 +52,7 @@ class Message extends Generic
             if ($userItem->id == \Auth::user()->_id)
             {
                 $muted = $userItem->muted;
-                $chatUsers[$k]->read = 1;
+            //    $chatUsers[$k]->read = 1;
             }
             else
             {
@@ -87,7 +87,7 @@ class Message extends Generic
             unset ($chat->messages[$k]->userId);
         }
 
-        \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+        \Sys::svc('Chat')->setReadFlag($chat, \Auth::user()->_id, 1);
 
         foreach ($chat->messages as $k => $v)
         {
