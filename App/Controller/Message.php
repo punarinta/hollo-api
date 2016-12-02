@@ -253,11 +253,17 @@ class Message extends Generic
         array_unshift($chat->messages, $messageStructure);
 
         // mark chat as unread for everyone except you
-        \Sys::svc('Chat')->setReadFlag($chatId, -\Auth::user()->_id, 0);
+        foreach ($chat->users as $k => $userRow)
+        {
+            if ($userRow->id != \Auth::user()->_id)
+            {
+                $chat->users[$k]->read = 0;
+            }
+        }
 
         // mark chat as just updated
         $chat->lastTs = time();
-        \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs]);
+        \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs, 'users' => $chat->users]);
 
         // check if you are chatting with a bot
     //    if ($bots = \DB::rows("SELECT u.* FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id = u.id WHERE cu.chat_id=? AND u.email LIKE '%@bot.hollo.email' ", [$chatId]))
