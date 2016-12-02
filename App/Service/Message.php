@@ -308,8 +308,14 @@ class Message extends Generic
                 $this->say('Error: only one person in chat');
                 return false;
             }
-
-            $chat = \Sys::svc('Chat')->init($emails, $names);
+            try
+            {
+                $chat = \Sys::svc('Chat')->init($emails, $names);
+            }
+            catch (\Exception $e)
+            {
+                return false;
+            }
         }
         else
         {
