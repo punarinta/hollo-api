@@ -14,7 +14,7 @@ class DB
      */
     static function connect()
     {
-        $GLOBALS['-DB-L'] = new Manager('mongodb://' . \Sys::cfg('db.mongo') . '/hollo');
+        $GLOBALS['-DB-L'] = new Manager('mongodb://' . implode(',', \Sys::cfg('db.mongo')) . '/hollo?replicaSet=rs1');
     }
 
     static function disconnect()
@@ -30,7 +30,14 @@ class DB
      */
     static function check()
     {
-        $cfg = explode(':', \Sys::cfg('db.mongo'));
+        $cfg = \Sys::cfg('db.mongo');
+
+        if (!is_array($cfg) || !count($cfg))
+        {
+            return false;
+        }
+
+        $cfg = explode(':', $cfg[0]);
 
         if (!is_resource($conn = @fsockopen($cfg[0], $cfg[1], $a, $b, 5)))
         {
