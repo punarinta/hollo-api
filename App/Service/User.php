@@ -320,7 +320,7 @@ class User extends Generic
                 }
             }
 
-            if (count($contacts['feed']['entry']) < $pageSize)
+            if (count(@$contacts['feed']['entry']) < $pageSize)
             {
                 break;
             }
