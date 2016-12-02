@@ -208,7 +208,7 @@ class Chat extends Generic
             $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
-        $chatUsers = json_decode(json_encode($chat->users));
+        $chatUsers = json_decode(json_encode($chat->users ?? []));
 
         foreach ($chatUsers ?? [] as $k => $userRow)
         {
