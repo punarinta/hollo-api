@@ -176,6 +176,11 @@ class Smtp
 
         foreach ($chat->users ?? [] as $userRow)
         {
+            if (\Auth::user()->_id == $userRow->id)
+            {
+                continue;
+            }
+
             $user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userRow->id)]);
             $this->mail->addAddress($user->email, @$user->name);
 
