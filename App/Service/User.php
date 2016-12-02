@@ -147,8 +147,6 @@ class User extends Generic
      */
     public function name($user = null)
     {
-        // TODO: check if this function is necessary at all
-
         if (!$user)
         {
             $user = \Auth::user();
@@ -161,7 +159,17 @@ class User extends Generic
             }
         }
 
-        return trim($user->settings->firstName . ' ' . $user->settings->lastName);
+        if (strlen($fullName = trim($user->settings->firstName . ' ' . $user->settings->lastName)))
+        {
+            return $fullName;
+        }
+
+        if (strlen(@$user->name))
+        {
+            return $user->name;
+        }
+
+        return explode('@', $user->email)[0];
     }
 
     /**
