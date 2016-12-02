@@ -159,7 +159,7 @@ class User extends Generic
             }
         }
 
-        if (strlen($fullName = trim($user->settings->firstName . ' ' . $user->settings->lastName)))
+        if (strlen($fullName = trim(@$user->settings->firstName . ' ' . @$user->settings->lastName)))
         {
             return $fullName;
         }
