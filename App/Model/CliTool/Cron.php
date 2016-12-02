@@ -20,14 +20,20 @@ class Cron
         $steps = 0;
         $count = 0;
 
-        foreach (\Sys::svc('Chat')->findAll([], ['projection' => ['messsages' => 1]]) as $chat)
+        foreach (\Sys::svc('Chat')->findAll([], ['projection' => ['messages' => 1]]) as $chat)
         {
             ++$steps;
 
-            $preCount = count($chat->messages);
-            $chat->messages = \Sys::svc('Message')->removeOld($chat->messages);
-            \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages]);
-            $postCount = count($chat->messages);
+            $messages = $chat->messages ?? [];
+
+            if (!$preCount = count($messages))
+            {
+                continue;
+            }
+
+            $messages = \Sys::svc('Message')->removeOld($messages);
+            \Sys::svc('Chat')->update($chat, ['messages' => $messages]);
+            $postCount = count($messages);
 
             $count += ($preCount - $postCount);
 
