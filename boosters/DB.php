@@ -14,7 +14,8 @@ class DB
      */
     static function connect()
     {
-        $GLOBALS['-DB-L'] = new Manager('mongodb://' . implode(',', \Sys::cfg('db.mongo')) . '/hollo?replicaSet=rs1');
+        $replica = \Sys::cfg('db.replica') ? '?replicaSet=' . \Sys::cfg('db.replica') : '';
+        $GLOBALS['-DB-L'] = new Manager('mongodb://' . implode(',', \Sys::cfg('db.mongo')) . '/hollo' . $replica);
     }
 
     static function disconnect()
