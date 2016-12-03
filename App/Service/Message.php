@@ -16,7 +16,7 @@ class Message extends Generic
      */
     public function getLastByChat($chat)
     {
-        return $chat->messages ? $chat->messages[0] : null;
+        return @$chat->messages ? $chat->messages[0] : null;
     }
 
     /**
