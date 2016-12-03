@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use MongoDB\BSON\ObjectID;
+
 /**
  * Class Contact
  * @package App\Controller
@@ -17,17 +19,42 @@ class Contact extends Generic
     static public function find()
     {
         $users = [];
+        $userIds = [];
+        $emailFilter = null;
 
-        foreach (\Sys::svc('User')->findKnownBy(\Auth::user()->id, \Input::data('filters') ?: []) as $user)
+        foreach (\Input::data('filters') ?? [] as $filter)
         {
-            $users[$user->id] = array
+            if ($filter['mode'] == 'email')
+            {
+                $emailFilter = $filter['value'];
+                break;
+            }
+        }
+
+        $chats = \Sys::svc('Chat')->findAllByUserId(\Auth::user()->_id);
+
+        foreach ($chats as $chat) foreach ($chat->users as $userRow)
+        {
+            // save ObjectIDs
+            if (isset ($userIds[$userRow->id])) continue;
+            $userIds[$userRow->id] = new ObjectID($userRow->id);
+        }
+
+        foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => array_values($userIds)]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
+        {
+            if ($emailFilter && stripos($user->email, $emailFilter) === false)
+            {
+                continue;
+            }
+
+            $users[] = array
             (
-                'id'    => $user->id,
+                'id'    => $user->_id,
                 'email' => $user->email,
-                'name'  => $user->name,
+                'name'  => @$user->name,
             );
         }
 
-        return array_values($users);
+        return $users;
     }
 }

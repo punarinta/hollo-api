@@ -2,6 +2,7 @@
 
 namespace App\Service;
 use App\Model\Inbox\Inbox;
+use MongoDB\BSON\ObjectID;
 
 require_once 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
 require_once 'vendor/guzzlehttp/promises/src/functions_include.php';
@@ -22,22 +23,24 @@ class Smtp
     /**
      * Sets up message sending for a particular thread
      *
-     * @param $userId
-     * @param null $chatId
+     * @param $user
+     * @param null $chat
      * @param null $tempMsgId
      * @return bool
      * @throws \Exception
      */
-    public function setupThread($userId, $chatId = null, $tempMsgId = null)
+    public function setupThread($user, $chat = null, $tempMsgId = null)
     {
-        if (!$user = \Sys::svc('User')->findById($userId))
+        if (!is_object($user))
         {
-            return false;
+            $user = \Sys::svc('User')->findOne(['_id' => new ObjectID($user)]);
         }
 
-        $out = \Sys::svc('MailService')->getCfg(\Sys::svc('User')->setting($user, 'svc'), 'out');
+        if (!$user) return false;
 
-        if ($out['oauth'])
+        $out = \Sys::svc('MailService')->getCfg($user->settings->svc, 'out');
+
+        if ($out->oauth)
         {
             $this->mail = new \PHPMailerOAuth();
             $this->mail->AuthType = 'XOAUTH2';
@@ -54,10 +57,10 @@ class Smtp
         }
 
         // TODO: support overridden host/port
-        $this->mail->Host = $out['host'];
-        $this->mail->Port = $out['port'];
+        $this->mail->Host = $out->host;
+        $this->mail->Port = $out->port;
 
-        $this->mail->SMTPSecure = $out['enc'];
+        $this->mail->SMTPSecure = $out->enc;
         $this->mail->SMTPAuth = true;
     //    $this->mail->SMTPDebug = 4;
         $this->mail->isSMTP();
@@ -70,24 +73,24 @@ class Smtp
             $this->mail->addCustomHeader('X-Temporary-ID: ' . $tempMsgId);
         }
         
-        if ($chatId)
+        if ($chat)
         {
             // get external message ID
-            if (!$message = \Sys::svc('Message')->findByLastRealByChatId($chatId))
+            if (!$message = \Sys::svc('Message')->findByLastRealByChat($chat))
             {
                 throw new \Exception('Message does not exist');
             }
 
-            $refUser = \Sys::svc('User')->findById($message->ref_id);
+            $refUser = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->refId)]);
 
             // temporary messages do not have external IDs and external Owner IDs
-            if ($message->ext_id && $refUser->roles)
+            if ($message->extId && $refUser->roles)
             {
                 // get original message data
 
                 $inbox = Inbox::init($refUser);
 
-                if ($data = $inbox->getMessage($message->ext_id))
+                if ($data = $inbox->getMessage($message->extId))
                 {
                     $emailMessageId = $data['headers']['message-id'][0];
 
@@ -120,7 +123,7 @@ class Smtp
             }
         }
 
-        $name = \Sys::svc('User')->name();
+        $name = \Sys::svc('User')->name($user);
         $this->mail->setFrom($user->email, $name);
         $this->mail->addReplyTo($user->email, $name);
 
@@ -132,14 +135,14 @@ class Smtp
     /**
      * Sends a message, can add more recipients
      *
-     * @param $chatId
+     * @param $chat
      * @param $body
      * @param null $subject
      * @param array $attachments
      * @return array
      * @throws \Exception
      */
-    public function send($chatId, $body, $subject = null, $attachments = [])
+    public function send($chat, $body, $subject = null, $attachments = [])
     {
         $tempFiles = [];
 
@@ -171,16 +174,22 @@ class Smtp
 
         $userIds = [];
 
-        foreach (\Sys::svc('User')->findByChatId($chatId, true, \Auth::user()->id) as $user)
+        foreach ($chat->users ?? [] as $userRow)
         {
-            $this->mail->addAddress($user->email, $user->name);
+            if (\Auth::user()->_id == $userRow->id)
+            {
+                continue;
+            }
+
+            $user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userRow->id)]);
+            $this->mail->addAddress($user->email, @$user->name);
 
             // collect user IDs for IM notification
-            $userIds[] = $user->id;
+            $userIds[] = $user->_id;
 
             \Sys::svc('Notify')->firebase(array
             (
-                'to'           => '/topics/user-' . $user->id,
+                'to'           => '/topics/user-' . $userRow->id,
                 'priority'     => 'high',
 
                 'notification' => array
@@ -192,14 +201,14 @@ class Smtp
 
                 'data' => array
                 (
-                    'authId' => $user->id,
+                    'authId' => $userRow->id,
                     'cmd'    => 'show-chat',
-                    'chatId' => $chatId,
+                    'chatId' => $chat->_id,
                 ),
             ));
         }
 
-        \Sys::svc('Notify')->im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chatId]);
+        \Sys::svc('Notify')->im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chat->_id]);
 
         foreach ($attachments as $file)
         {

@@ -13,21 +13,28 @@ class Fetch
      * @param $messageId
      * @param $offset
      * @return string
-     * @throws \Exception
      */
     public function file($messageId, $offset = 0)
     {
-        if (!$message = \Sys::svc('Message')->findById($messageId))
+        if (!$chat = \Sys::svc('Chat')->findOne(['messages.id' => $messageId]))
         {
-            throw new \Exception('Message not found');
+           return "Message not found\n";
         }
 
-        $fileName = 'data/temp/fetched';
-        $inbox = Inbox::init($message->ref_id);
+        foreach ($chat->messages as $message)
+        {
+            if ($message->id == $messageId)
+            {
+                $fileName = 'data/temp/fetched';
+                $inbox = Inbox::init($message->refId);
 
-        file_put_contents($fileName, $inbox->getFileData($message->ext_id, $offset));
+                file_put_contents($fileName, $inbox->getFileData($message->extId, $offset));
 
-        return "File saved to '$fileName'.\n";
+                return "File saved to '$fileName'.\n";
+            }
+        }
+
+        return "Error\n";
     }
 
     /**
@@ -38,14 +45,22 @@ class Fetch
      */
     public function message($userId, $messageExtId, $full = false)
     {
-        if (!$user = \Sys::svc('User')->findById($userId))
+        if (!$chat = \Sys::svc('Chat')->findOne(['messages.refId' => $userId, 'messages.extId' => $messageExtId]))
         {
-            return "User not found: $userId\n";
+            return "Message not found\n";
         }
 
-        $inbox = Inbox::init($user);
-        $data = $inbox->getMessage($messageExtId);
+        foreach ($chat->messages as $message)
+        {
+            if ($message->refId == $userId && $message->extId == $messageExtId)
+            {
+                $inbox = Inbox::init($userId);
+                $data = $inbox->getMessage($messageExtId);
 
-        return print_r($full ? $data : $data['body'][0]['content'], true);
+                return print_r($full ? $data : $data['body'][0]['content'], true);
+            }
+        }
+
+        return "Error\n";
     }
 }

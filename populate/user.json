@@ -1,0 +1,106 @@
+[
+  {
+    "id": "1",
+    "email": "hollo.email@gmail.com",
+    "name": "Hollo team",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/mJRkh3lpwQiuDVqA1gBMicXIehYWfrk9nIQE5E3LTJ8\",\"historyId\":\"30678\"}",
+    "last_muid": "157eb93d8ca1610f"
+  },
+  {
+    "id": "2",
+    "email": "cheaterx@yandex.ru",
+    "name": "Vladimir Osipov",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e72\",\"firstName\":\"Vladimir\",\"lastName\":\"Osipov\",\"hash\":null}",
+    "last_muid": "11881"
+  },
+  {
+    "id": "3",
+    "email": "fredrik.engblom@gmail.com",
+    "name": "Fredrik Engblom",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"flags\":{\"colorAvatars\":0,\"emojisReplace\":0,\"showNotes\":1},\"token\":\"1\\\/YKx_29PGnlVL5o4jz5Apz6VCJHZGvcpz44avxzh54Zc\",\"historyId\":2976247}",
+    "last_muid": "15809c9a6ee71283"
+  },
+  {
+    "id": "4",
+    "email": "felix.r.lange@gmail.com",
+    "name": "Felix Lange",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"flags\":{\"emojisReplace\":1,\"colorAvatars\":0},\"token\":\"1\\\/5VPANYpBiEEMbJusPSBP5CJ4E8fr1dXBye-mAjXJsx0\",\"historyId\":4360370}",
+    "last_muid": "158080577b6e7fe2"
+  },
+  {
+    "id": "5",
+    "email": "vladimir.g.osipov@gmail.com",
+    "name": "Vladimir Osipov",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/Q7l1uoKuQhnIiPZwe6cB_kF4CxhXaO77HxmHwSx_TIC8cUf22qukGeTGJVS9UMXP\",\"flags\":{\"emojisReplace\":1,\"colorAvatars\":1,\"showNotes\":1},\"historyId\":1858887}",
+    "last_muid": "15814c91d5d1a88b"
+  },
+  {
+    "id": "6",
+    "email": "haider.abdo@gmail.com",
+    "name": "Haider Abdo",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/PnnKDm1rxRsT77FCCcwkjkV4b86-6UQN11GkF6E0P3c\",\"historyId\":2069154,\"flags\":{\"colorAvatars\":1}}",
+    "last_muid": "15819a206b789e47"
+  },
+  {
+    "id": "7",
+    "email": "marcus.qviberg@gmail.com",
+    "name": "Marcus Qviberg",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/FVmPi5GjnnuxuBJgHWkbDqw98W4sACnHFmH3lSuZetI\",\"historyId\":1796064,\"flags\":{\"colorAvatars\":1}}",
+    "last_muid": "158199559e260600"
+  },
+  {
+    "id": "8",
+    "email": "dtms.se@gmail.com",
+    "name": "Marcus Pettersson",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/3hMeROZJOqg5XRo14RfAB5GaB84zKKGTpuTJ5IWjWP8\",\"historyId\":3479811}",
+    "last_muid": "1582a03f04dcd563"
+  },
+  {
+    "id": "9",
+    "email": "pepelucci@gmail.com",
+    "name": null,
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/6IpUPr9A0La5PEcgPLM25R647MdodLaDYC_8FZZCKSY\",\"flags\":{\"emojisReplace\":1},\"historyId\":6702068}",
+    "last_muid": "1582b0801b9728d1"
+  },
+  {
+    "id": "10",
+    "email": "merv138@gmail.com",
+    "name": "Mervan Yildiz",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/3yoZlcyxyYAQxRUhD75ZCd2znEuELOHQetg33-hXwfg\",\"historyId\":\"2360476\"}",
+    "last_muid": "1581752da06dd9fb"
+  },
+  {
+    "id": "1815",
+    "email": "d.schofld@gmail.com",
+    "name": "David Schofield",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/z9Ed45smIbvYYb6ycZx2e5d5XnBzcPUp1sgcOucyPIw\",\"historyId\":2850846}",
+    "last_muid": "158af280da2696ee"
+  },
+  {
+    "id": "42",
+    "email": "nesli.almufti@gmail.com",
+    "name": "Nesli Al Mufti",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/CH-neURChCoMGoaDDMD4qqFnTaBgF8SL4egND0_nVX0\",\"historyId\":200894}",
+    "last_muid": "158ae6c7a1193923"
+  },
+  {
+    "id": "1161",
+    "email": "contactwaxandgold@gmail.com",
+    "name": "Wax Gold",
+    "roles": "1",
+    "settings": "{\"svc\":\"58413e62f0210c65e1730e71\",\"token\":\"1\\\/7HmUCPMDdOwalUBKZRsGYt-Z36fJfB856t8UYJeti0c\",\"historyId\":\"1472\"}",
+    "last_muid": "15849a0c7e6fbc23"
+  }
+]

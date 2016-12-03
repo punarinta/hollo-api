@@ -8,8 +8,8 @@ import commands
 
 from fabric.api import sudo, cd, env, local, put
 
-DEPLOYED = '/apps/mls-api/{}'
-DEPLOYED_DIR = '/apps/mls-api'
+# DEPLOYED = '/apps/mls-api/{}'
+# DEPLOYED_DIR = '/apps/mls-api'
 FILES_DIR = '/apps/mls-api/files'
 packaged = False
 
@@ -22,7 +22,13 @@ def setup(name):
     # Notice check
     env.first_run = True
 
-    if name == 'x':
+    if name == 'p':
+        env.hosts = fab_hosts = ['hk-01.s.coursio.com', 'hk-02.s.coursio.com', ]
+        env.user = 'root'
+        env.deployed = '/apps/mls-api/{}'
+        env.deployed_dir = '/apps/mls-api'
+        env.worker = False
+    elif name == 't':
         env.hosts = fab_hosts = ['deathstar.s.coursio.com', ]
         env.user = 'root'
         env.deployed = '/apps/mls-api/{}'
@@ -121,9 +127,11 @@ def deploy():
     sudo('mv /tmp/deploy {}'.format(env.deploy))
 
     # Copy config files
-    if env.name == 'x':
+    if env.name == 'p':
         sudo('sed \'s/replaceString/{}/g\' /apps/mls-api.config.php > {}/App/config.php'.format(commithash, env.deploy));
     elif env.name == 'w':
+        sudo('sed \'s/replaceString/{}/g\' /apps/mls-api.config.php > {}/App/config.php'.format(commithash, env.deploy));
+    elif env.name == 't':
         sudo('sed \'s/replaceString/{}/g\' /apps/mls-api.config.php > {}/App/config.php'.format(commithash, env.deploy));
     else:
         raise ValueError('Invalid name')

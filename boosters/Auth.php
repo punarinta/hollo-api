@@ -60,7 +60,6 @@ class Auth
     {
         $texts = [];
 
-        if ($roles & self::DARK_ADMIN)  $texts[] = 'dark-admin';
         if ($roles & self::ADMIN)       $texts[] = 'admin';
         if ($roles & self::USER)        $texts[] = 'user';
         if ($roles & self::GUEST)       $texts[] = 'guest';

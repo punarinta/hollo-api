@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Model\ContextIO\ContextIO;
 use EmailAuth\Discover;
+use MongoDB\BSON\ObjectID;
 
 class MailService extends Generic
 {
@@ -19,7 +20,7 @@ class MailService extends Generic
     {
         if (!is_object($mailService))
         {
-            if (!$mailService = $this->findById($mailService))
+            if (!$mailService = $this->findOne(['_id' => new ObjectID($mailService)]))
             {
                 throw new \Exception('Mail service does not exist');
             }
@@ -27,11 +28,11 @@ class MailService extends Generic
 
         if ($dir == 'in')
         {
-            return json_decode($mailService->cfg_in, true) ?:[];
+            return $mailService->cfgIn;
         }
         else
         {
-            return json_decode($mailService->cfg_out, true) ?:[];
+            return $mailService->cfgOut;
         }
     }
 
@@ -58,13 +59,13 @@ class MailService extends Generic
         $domain = explode('@', $email);
         $domain = $domain[1];
 
-        return $this->create(array
-        (
+        return $this->create(
+        [
             'name'      => $domain,
-            'domains'   => "|$domain|",
-            'cfg_in'    => json_encode(['type'=>'imap', 'oauth' => false, 'host' => $imapCfg['host'], 'port' => $imapCfg['port'], 'enc' => $imapCfg['encryption']]),
-            'cfg_out'   => json_encode(['type'=>'smtp', 'oauth' => false, 'host' => $smtpCfg['host'], 'port' => $smtpCfg['port'], 'enc' => $smtpCfg['encryption']]),
-        ));
+            'domains'   => [$domain],
+            'cfgIn'     => (object) ['type' => 'imap', 'oauth' => 0, 'host' => $imapCfg['host'], 'port' => $imapCfg['port'], 'enc' => $imapCfg['encryption']],
+            'cfgOut'    => (object) ['type' => 'smtp', 'oauth' => 0, 'host' => $smtpCfg['host'], 'port' => $smtpCfg['port'], 'enc' => $smtpCfg['encryption']],
+        ]);
     }
 
     /**
@@ -75,7 +76,7 @@ class MailService extends Generic
      */
     public function findByDomain($domain)
     {
-        return \DB::row('SELECT * FROM mail_service WHERE domains LIKE ? LIMIT 1', ['%|' . $domain . '|%']);
+        return $this->findOne(['domains' => ['$elemMatch' => ['$eq' => $domain]]]);
     }
 
     /**
@@ -98,7 +99,7 @@ class MailService extends Generic
     }
 
     /**
-     * Discovers IMAP settings for a specified email. Returns 'cfg_in'.
+     * Discovers IMAP settings for a specified email. Returns 'cfgIn'.
      *
      * @param $email
      * @return array|bool

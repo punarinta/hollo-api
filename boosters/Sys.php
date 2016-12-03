@@ -22,7 +22,14 @@ class Sys
             return null;
         }
 
+        $_SERVER['REQUEST_URI'] = str_ireplace('/api-test/', '/api/', $_SERVER['REQUEST_URI']);
+
         // usual request starts
+
+        if (!DB::check())
+        {
+            throw new \Exception('Oops, the database is down');
+        }
 
         DB::connect();
 

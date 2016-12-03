@@ -27,10 +27,12 @@ class Resque
             $config = \Sys::cfg('redis');
 
             // Check if Redis is running
-            if (!is_resource($conn = fsockopen($config['host'], $config['port'], $a, $b, 5)))
+            if (!is_resource($conn = @fsockopen($config['host'], $config['port'], $a, $b, 5)))
             {
                 return false;
             }
+
+            fclose($conn);
 
             // set v-verbosity on
             putenv('VVERBOSE=1');

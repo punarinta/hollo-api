@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Jobs;
+use MongoDB\BSON\ObjectID;
 
 /**
  * This is basically called only one time -- when user is connected to Context
@@ -12,15 +13,17 @@ class SyncContacts extends Generic
 {
     public function testSetup()
     {
+        $user = \Sys::svc('User')->findOne(['email' => 'hollo.email@gmail.com']);
+
         $this->args = array
         (
-            'user_id' => 1,
+            'user_id' => $user->_id,
         );
     }
 
     public function perform()
     {
-        if (!$user = \Sys::svc('User')->findById($this->args['user_id']))
+        if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($this->args['user_id'])]))
         {
             echo "No user found (ID = {$this->args['user_id']}).\n";
             return false;
@@ -28,7 +31,7 @@ class SyncContacts extends Generic
 
         if (!$user->roles)
         {
-            echo "No user role for ID = {$user->id}. Is this user real?\n";
+            echo "No user role for ID = {$user->_id}. Is this user real?\n";
             return false;
         }
 
@@ -38,7 +41,7 @@ class SyncContacts extends Generic
         \Sys::svc('User')->subscribeToGmail($user);
 
         // fetch all the messages
-        \Sys::svc('Message')->syncAllByUserId($user->id, false);
+        \Sys::svc('Message')->syncAllByUserId($user, false);
 
         // fetch avatars
         \Sys::svc('User')->updateAvatars($user);

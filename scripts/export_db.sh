@@ -1,22 +1,20 @@
 #!/bin/bash
 
-echo "Copying from live to local."
-ssh root@178.62.247.169 '/apps/db_scripts/live_to_local.sh'
+cd "$(dirname "$0")/.."
 
-# Copy here
-scp root@178.62.247.169:/root/local.sql .
+echo 'Dumping the database and packing the result...'
+ssh root@db01 'mongodump --host=95.85.26.144 --db=hollo && tar -zcvf dump.tar.gz dump/ && rm -rf dump'
 
-# Drop old database
-mysqladmin -u root -p'password' -f drop hollo
+echo 'Copying to this machine...'
+scp root@db01:/root/dump.tar.gz data/
+tar -xvzf data/dump.tar.gz -C data
 
-# Create database
-mysqladmin -u root -p'password' create hollo
+echo 'Importing...'
+mongorestore --drop --dir=data/dump
 
-# Import
-mysql -uroot -p'password' -D hollo < local.sql
+echo 'Cleaning up...'
+ssh root@db01 'rm /root/dump.tar.gz'
+rm data/dump.tar.gz
+rm -rf data/dump
 
-# Remove remote
-ssh root@178.62.247.169 'rm /root/local.sql'
-
-# Remove local
-rm local.sql
+echo 'Done.'

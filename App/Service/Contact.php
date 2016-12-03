@@ -82,9 +82,16 @@ class Contact extends Generic
         {
             // lookup the email in the spam database and force 'muted' to 1 if found
 
-            if (count($rows = \DB::rows('SELECT * FROM muted WHERE domain=?', [$email[1]])))
+            $rows = [];
+            foreach (\DB::query('muted', ['domain' => $email[1]]) as $row)
             {
-                if (!$rows[0]->user)
+                unset ($row->_id);
+                $rows[] = $row;
+            }
+
+            if (count($rows))
+            {
+                if (!@$rows[0]->user)
                 {
                     return true;
                 }

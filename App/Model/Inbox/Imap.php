@@ -27,37 +27,35 @@ class Imap extends Generic implements InboxInterface
             $user = \Sys::svc('User')->findById($user);
         }
 
-        $this->userId = $user->id;
-        $settings = json_decode($user->settings, true) ?: [];
-
-        if (!$hash = @$settings['hash'])
+        if (!$user->settings->hash)
         {
             return;
         }
+
+        $this->user = $user;
 
         $key = \Sys::cfg('sys.imap_hash');
 
         $this->login = $user->email;
-        $this->password = openssl_decrypt($hash, 'aes-256-cbc', $key, 0, $key);
+        $this->password = openssl_decrypt($this->user->settings->hash, 'aes-256-cbc', $key, 0, $key);
 
-        if (!$this->in = \Sys::svc('MailService')->getCfg($settings['svc']))
+        if (!$this->in = \Sys::svc('MailService')->getCfg($this->user->settings->svc))
         {
             return;
         }
 
-        $this->connector = @imap_open('{' . $this->in['host'] . ':' . $this->in['port'] . '/imap/ssl/novalidate-cert/readonly}INBOX', $this->login, $this->password);
+        $this->connector = @imap_open('{' . $this->in->host . ':' . $this->in->port . '/imap/ssl/novalidate-cert/readonly}INBOX', $this->login, $this->password);
 
         if (!$this->connector)
         {
             // clear hash
-            $settings['hash'] = null;
-            $user->settings = json_encode($settings);
-            \Sys::svc('User')->update($user);
+            $user->settings->hash = null;
+            \Sys::svc('User')->update($user, ['settings.hash' => null]);
 
             // ask to relogin
             \Sys::svc('Notify')->firebase(array
             (
-                'to'           => '/topics/user-' . $user->id,
+                'to'           => '/topics/user-' . $user->_id,
                 'priority'     => 'high',
 
                 'notification' => array
@@ -69,12 +67,12 @@ class Imap extends Generic implements InboxInterface
 
                 'data' => array
                 (
-                    'authId'    => $user->id,
+                    'authId'    => $user->_id,
                     'cmd'       => 'logout',
                 ),
             ));
 
-            \Sys::svc('Notify')->im(['cmd' => 'sys', 'userIds' => [$user->id], 'message' => 'logout']);
+            \Sys::svc('Notify')->im(['cmd' => 'sys', 'userIds' => [$user->_id], 'message' => 'logout']);
         }
     }
 
@@ -96,9 +94,23 @@ class Imap extends Generic implements InboxInterface
             return false;
         }
 
-        $row = \DB::row('SELECT ext_id FROM message WHERE ref_id=? ORDER BY id DESC LIMIT 1', [$this->userId]);
+        $latestTs = 0;
+        $latestExtId = null;
 
-        return !$row || $row->ext_id != $ids[0];
+        // find all chats where this user's messages are present
+        foreach (\Sys::svc('Chat')->findAll(['messages.refId' => $this->user->_id]) as $chat)
+        {
+            foreach ($chat->messages as $message)
+            {
+                if ($message->ts > $latestTs)
+                {
+                    $latestTs = $message->ts;
+                    $latestExtId = $message->extId;
+                }
+            }
+        }
+
+        return $latestExtId != $ids[0];
     }
 
     /**

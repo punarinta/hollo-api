@@ -1,5 +1,9 @@
 <?php
 
+use \MongoDB\Driver\Manager;
+use \MongoDB\Driver\Query;
+use \MongoDB\Driver\Command;
+
 class DB
 {
     static $pageStart = null;
@@ -10,220 +14,89 @@ class DB
      */
     static function connect()
     {
-        $c = $GLOBALS['-CFG']['db'];
-        if (!$GLOBALS['-DB-L'] = @mysqli_connect($c['host'], $c['user'], $c['pass'], $c['database'], $c['port']))
-        {
-            throw new \Exception('Cannot connect to the DB');
-        }
-
-        mysqli_set_charset($GLOBALS['-DB-L'], 'utf8mb4');
+        $GLOBALS['-DB-L'] = new Manager('mongodb://' . implode(',', \Sys::cfg('db.mongo')) . '/hollo?replicaSet=rs1');
     }
 
-    /**
-     * Closes DB connection
-     */
     static function disconnect()
     {
-        mysqli_close($GLOBALS['-DB-L']);
+        // TODO: check if that is enough
+        unset ($GLOBALS['-DB-L']);
     }
 
     /**
-     * @return mixed
-     */
-    static function lastInsertId()
-    {
-        return $GLOBALS['-DB-L']->insert_id;
-    }
-
-    /**
-     * Returns a connection link
+     * Check DB connection
      *
-     * @return mixed
+     * @return bool
      */
-    static function l()
+    static function check()
     {
-        return $GLOBALS['-DB-L'];
+        $cfg = \Sys::cfg('db.mongo');
+
+        if (!is_array($cfg) || !count($cfg))
+        {
+            return false;
+        }
+
+        $cfg = explode(':', $cfg[0]);
+
+        if (!is_resource($conn = @fsockopen($cfg[0], $cfg[1], $a, $b, 5)))
+        {
+            return false;
+        }
+
+        fclose($conn);
+
+        return true;
     }
 
     /**
-     * Starts a transaction
-     */
-    static function begin()
-    {
-        mysqli_autocommit($GLOBALS['-DB-L'], false);
-    }
-
-    /**
-     * Ends a transaction with a commit
-     */
-    static function commit()
-    {
-        mysqli_commit($GLOBALS['-DB-L']);
-        mysqli_autocommit($GLOBALS['-DB-L'], true);
-    }
-
-    /**
-     * Ends a transaction with a rollback
-     */
-    static function rollback()
-    {
-        mysqli_rollback($GLOBALS['-DB-L']);
-        mysqli_autocommit($GLOBALS['-DB-L'], true);
-    }
-
-    /**
-     * @param $q
-     * @param null $params
+     * @param $collection
+     * @param array $filter
+     * @param array $options
      * @return mixed
      * @throws Exception
      */
-    static function prepare($q, $params = null)
+    static function query($collection, $filter = [], $options = [])
     {
-        $stmt = $GLOBALS['-DB-L']->prepare($q);
-
-        if ($stmt === false)
+        if (self::$pageLength)
         {
-            throw new \Exception('Invalid statement: ' . $q);
+            $options['skip'] = self::$pageStart;
+            $options['limit'] = self::$pageLength ?: 25;
         }
 
-        if ($params)
-        {
-            $parameters = [str_repeat('s', count($params))];
-            foreach ($params as $key => &$value) $parameters[] = &$value;
-            call_user_func_array(array($stmt, 'bind_param'), $parameters);
-        }
+        $query = new Query($filter, $options);
 
-        return $stmt;
+        try
+        {
+            return $GLOBALS['-DB-L']->executeQuery('hollo.' . $collection, $query);
+        }
+        catch (\Exception $e)
+        {
+            throw new \Exception('');
+        }
     }
 
     /**
-     * @param $array
-     * @return stdClass
-     */
-    static function toObject($array)
-    {
-        $obj = new \stdClass();
-
-        foreach ($array as $k => $v) $obj->{$k} = $v;
-
-        return $obj;
-    }
-
-    /**
-     * Full cycle to get 1 row
+     * Execute an arbitrary command on DB server
      *
-     * @param $q
-     * @param null $params
-     * @return null|StdClass
-     * @throws Exception
+     * @param array $command
+     * @return mixed
      */
-    static function row($q, $params = null)
+    static function command($command = [])
     {
-//        $GLOBALS['-DBG-SQL'][] = [$q, $params];
-
-        $stmt = self::prepare($q, $params);
-        $stmt->execute();
-        $stmt->store_result();
-
-        if (!$stmt->num_rows)
-        {
-            $stmt->close();
-            return null;
-        }
-
-        $row = self::stmtBindAssoc($stmt);
-        $stmt->fetch();
-        $stmt->close();
-
-        return self::toObject($row);
+        return $GLOBALS['-DB-L']->executeCommand('hollo', new Command($command));
     }
 
     /**
-     * Full cycle to get all the rows with pagination
-     *
-     * @param $q
-     * @param null $params
-     * @return array
+     * @param $collection
+     * @param $field
+     * @return mixed
      */
-    static function rows($q, $params = null)
+    static function max($collection, $field)
     {
-        $array = \DB::exec($stmt, $q . self::sqlPaging(), $params);
-        $rows = [];
+        $query = new Query([], ['sort' => [$field => -1], 'limit' => 1, 'projection' => [$field => 1]]);
+        $res = $GLOBALS['-DB-L']->executeQuery('hollo.' . $collection, $query)->toArray();
 
-        while ($stmt->fetch())
-        {
-            $rows[] = self::toObject($array);
-        }
-
-        $stmt->close();
-
-        return $rows;
-    }
-
-    /**
-     * Generates an SQL paging.
-     *
-     * @return string
-     */
-    static function sqlPaging()
-    {
-        if (\DB::$pageStart !== null)
-        {
-            $pageLength = \DB::$pageLength ? \DB::$pageLength : 25;
-            return ' LIMIT ' . $pageLength . ' OFFSET ' . \DB::$pageStart;
-        }
-
-        return '';
-    }
-
-    /**
-     * @param $stmt
-     * @param $q
-     * @param null $params
-     * @return array
-     * @throws Exception
-     */
-    static function exec(&$stmt, $q, $params = null)
-    {
-//        $GLOBALS['-DBG-SQL'][] = [$q, $params];
-
-        $stmt = self::prepare($q, $params);
-        $stmt->execute();
-        $stmt->store_result();
-
-        return self::stmtBindAssoc($stmt);
-    }
-
-    /**
-     * @param $q
-     * @param null $params
-     */
-    static function query($q, $params = null)
-    {
-        $stmt = self::prepare($q, $params);
-        $stmt->execute();
-        $stmt->close();
-    }
-
-    /**
-     * @param $stmt
-     * @return array
-     */
-    static function stmtBindAssoc(&$stmt)
-    {
-        $count  = 1;
-        $out    = [];
-        $fields = [$stmt];
-
-        $data = mysqli_stmt_result_metadata($stmt);
-
-        while ($field = mysqli_fetch_field($data))
-        {
-            $fields[$count] = &$out[$field->name];
-            ++$count;
-        }
-        call_user_func_array('mysqli_stmt_bind_result', $fields);
-
-        return $out;
+        return $res[0]->{$field};
     }
 }

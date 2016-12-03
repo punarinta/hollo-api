@@ -14,7 +14,7 @@ class Bot extends Generic
      */
     public function talk($bot, $chatId, $text)
     {
-        $message = null;
+    /*    $message = null;
         $botName = str_replace('@bot.hollo.email', '', $bot->email);
 
         if ($botName == 'ping')
@@ -41,6 +41,6 @@ class Bot extends Generic
             \Sys::svc('Notify')->im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chatId]);
         }
 
-        return $message;
+        return $message;*/
     }
 }

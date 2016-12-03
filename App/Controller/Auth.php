@@ -24,15 +24,23 @@ class Auth extends Generic
      */
     static function status()
     {
+        if (\Auth::check())
+        {
+            if (!isset (\Auth::user()->_id) || !\Auth::user()->_id)
+            {
+                \Sys::svc('Auth')->logout();
+            }
+        }
+
         return array
         (
             'user'      => \Auth::check() ? array
             (
-                'id'        => \Auth::user()->id,
+                'id'        => \Auth::user()->_id,
                 'email'     => \Auth::user()->email,
-                'name'      => \Auth::user()->name,
+                'name'      => @\Auth::user()->name,
                 'ava'       => @$_SESSION['-AUTH']['avatar'],
-                'settings'  => json_decode(\Auth::user()->settings),
+                'settings'  => \Auth::user()->settings,
             ) : null,
             'sessionId' => session_id(),
         );
@@ -64,7 +72,7 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No password was provided.'));
         }
 
-        if ($user = \Sys::svc('User')->findByEmail($email, true))
+        if (($user = \Sys::svc('User')->findByEmail($email, true)) && $user->settings->svc)
         {
             // login
             \Sys::svc('Auth')->loginImap($user, $password);

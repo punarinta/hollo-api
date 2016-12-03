@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Jobs;
+use MongoDB\BSON\ObjectID;
 
 /**
  * Class TestNotifications
@@ -10,15 +11,17 @@ class TestNotifications extends Generic
 {
     public function testSetup()
     {
+        $user = \Sys::svc('User')->findOne(['email' => 'hollo.email@gmail.com']);
+
         $this->args = array
         (
-            'user_id' => 1,
+            'user_id' => $user->_id,
         );
     }
 
     public function perform()
     {
-        if (!$user = \Sys::svc('User')->findById($this->args['user_id']))
+        if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($this->args['user_id'])]))
         {
             echo "No user found (ID = {$this->args['user_id']}).\n";
             return false;
@@ -26,7 +29,7 @@ class TestNotifications extends Generic
 
         $payload = array
         (
-            'to'           => '/topics/user-' . $user->id,
+            'to'           => '/topics/user-' . $user->_id,
             'priority'     => 'high',
 
             'notification' => array
@@ -38,7 +41,7 @@ class TestNotifications extends Generic
 
             'data' => array
             (
-                'authId' => $user->id,
+                'authId' => $user->_id,
                 'cmd'    => 'ping',
             ),
         );
