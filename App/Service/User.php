@@ -334,4 +334,21 @@ class User extends Generic
 
         return $countAvas;
     }
+
+    /**
+     * Checks is User has a particular mail service
+     *
+     * @param $user
+     * @param string $serviceName
+     * @return bool
+     */
+    public function isMailSvc($user, $serviceName = 'Gmail')
+    {
+        if (!isset ($user->settings->svc))
+        {
+            return false;
+        }
+
+        return $user->settings->svc == \Sys::svc('MailService')->findOne(['name' => $serviceName])->_id;
+    }
 }
