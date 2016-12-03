@@ -72,7 +72,7 @@ class Cron
             if ($inbox->checkNew())
             {
                 $count = 0;
-                echo "User {$user->_id} has new messages. Syncing... ";
+                echo "User {$user->email} has new messages. Syncing... ";
 
                 $messageIds = $inbox->getMessages(['ts_after' => $tsAfter]);
 
@@ -120,7 +120,12 @@ class Cron
 
         foreach ($users as $user)
         {
-            echo "User {$user->_id}... ";
+            if (!\Sys::svc('User')->isMailSvc($user))
+            {
+                continue;
+            }
+
+            echo "User {$user->email}... ";
             $res = \Sys::svc('User')->subscribeToGmail($user);
 
             echo ($res ? 'OK' : 'NOT OK') . "\n";
@@ -147,7 +152,12 @@ class Cron
 
         foreach ($users as $user)
         {
-            echo "\nUser {$user->_id}... ";
+            if (!\Sys::svc('User')->isMailSvc($user))
+            {
+                continue;
+            }
+
+            echo "\nUser {$user->email}... ";
 
             $countAvas += \Sys::svc('User')->updateAvatars($user, $qEmail);
 
