@@ -88,7 +88,7 @@ class Chat extends Generic
             }
         }
 
-        return \Sys::svc('Chat')->findAll
+        return $this->findAll
         (
             $mongoFilter,
             [
@@ -154,7 +154,7 @@ class Chat extends Generic
             {
                 $chatUsers[$k]->read = (int) $flags->read;
                 $chatUsers[$k]->muted = (int) $flags->muted;
-                \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+                $this->update($chat, ['users' => $chatUsers]);
 
                 return true;
             }
@@ -185,7 +185,7 @@ class Chat extends Generic
             if ($userRow->id == $userId)
             {
                 $chatUsers[$k]->muted = (int) $muted;
-                \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+                $this->update($chat, ['users' => $chatUsers]);
 
                 return true;
             }
@@ -237,7 +237,7 @@ class Chat extends Generic
 
         if ($chatUsers != $chat->users)
         {
-            \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+            $this->update($chat, ['users' => $chatUsers]);
         }
     }
 
@@ -305,7 +305,7 @@ class Chat extends Generic
                 else
                 {
                     unset ($chatUsers[$k]);
-                    \Sys::svc('Chat')->update($chat, ['users' => $chatUsers]);
+                    $this->update($chat, ['users' => $chatUsers]);
                 }
                 return true;
             }

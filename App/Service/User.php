@@ -84,7 +84,7 @@ class User extends Generic
 
         if ($forContacts)
         {
-            $usersData = \Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]);
+            $usersData = $this->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]);
 
             foreach ($usersData as $usersDataRow)
             {
@@ -98,7 +98,7 @@ class User extends Generic
         }
         else
         {
-            foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]]) as $usersDataRow)
+            foreach ($this->findAll(['_id' => ['$in' => $scanIds]]) as $usersDataRow)
             {
                 $id = $usersDataRow->_id;
                 unset ($usersDataRow->_id);
@@ -213,7 +213,7 @@ class User extends Generic
 
         $res = json_decode($res, true) ?: [];
 
-        \Sys::svc('User')->update($user, ['settings.historyId' => $res['historyId']]);
+        $this->update($user, ['settings.historyId' => $res['historyId']]);
 
         return true;
     }
