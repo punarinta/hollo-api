@@ -68,18 +68,18 @@ class Chat extends Generic
      */
     public function findAllByUserId($userId, $filters = [])
     {
-        $mongoFilter = ['users.id' => $userId];
+        $mongoFilter = ['users' => ['$elemMatch' => ['id' => $userId]]];
 
         foreach ($filters as $filter)
         {
             if ($filter['mode'] == 'muted')
             {
-                $mongoFilter['users.muted'] = (int) $filter['value'];
+                $mongoFilter['users']['$elemMatch']['muted'] = (int) $filter['value'];
             }
 
             if ($filter['mode'] == 'read')
             {
-                $mongoFilter['users.read'] = (int) $filter['value'];
+                $mongoFilter['users']['$elemMatch']['read'] = (int) $filter['value'];
             }
 
             if ($filter['mode'] == 'name')
