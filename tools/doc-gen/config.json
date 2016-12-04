@@ -14,8 +14,8 @@
     },
     "exclude":
     [
-        "ContextIO.php",
+        "GmailPush.php",
         "Generic.php",
-        "Upload.php"
+        "Sys.php"
     ]
 }
