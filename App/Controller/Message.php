@@ -66,7 +66,7 @@ class Message extends Generic
             $users[$user->_id] = array
             (
                 'id'    => $user->_id,
-                'name'  => $user->name,
+                'name'  => @$user->name,
                 'email' => $user->email,
             );
         }
