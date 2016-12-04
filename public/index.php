@@ -110,7 +110,7 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 28.10.16 @ 09:43:14 +0200
+// Built 04.12.16 @ 10:50:48 +0100
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
@@ -120,6 +120,7 @@ $GLOBALS['-R'] = [
 'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],
 'settings' => ['/api/settings', \Auth::USER, '\App\Controller\Settings', 'index'],
 'gmail-push' => ['/api/gmail-push', \Auth::GUEST, '\App\Controller\GmailPush', 'index'],
+'sys' => ['/api/sys', \Auth::USER, '\App\Controller\Sys', 'index'],
 ];
 
 // 5. Run application
