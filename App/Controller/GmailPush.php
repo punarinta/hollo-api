@@ -16,14 +16,14 @@ class GmailPush
 
     //    self::log("\n--- " . json_encode($json) . " ---:\n");
 
-        self::log(date('Y-m-d H:i:s') . '|');
+        self::log(date('d/m H:i:s') . '|');
 
         if (isset ($json['message']['data']))
         {
             $x = json_decode(base64_decode($json['message']['data']), true);
             $user = \Sys::svc('User')->findOne(['email' => $x['emailAddress']]);
 
-            self::log("{$user->email}|HID={$x['historyId']}|");
+            self::log("{$user->email}|H={$x['historyId']}|");
             self::syncNew($user, $x['historyId']);
             self::log("\n");
         }
@@ -57,10 +57,10 @@ class GmailPush
                     continue;
                 }
 
-                self::log("extID={$data['message']['id']}");
+                self::log("E={$data['message']['id']}");
 
                 $message = \Sys::svc('Message')->sync($user, $data['message']['id']);
-                self::log($message ? " MID={$message->id}," : ' [*],');
+                self::log($message ? " M={$message->id}," : ' [*],');
             }
         }
     }
