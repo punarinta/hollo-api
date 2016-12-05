@@ -16,7 +16,7 @@ class GmailPush
 
     //    self::log("\n--- " . json_encode($json) . " ---:\n");
 
-        self::log(date('d/m H:i:s') . '|');
+        self::log("\n" . date('d/m H:i:s') . '|');
 
         if (isset ($json['message']['data']))
         {
@@ -25,7 +25,6 @@ class GmailPush
 
             self::log("{$user->email}|H={$x['historyId']}|");
             self::syncNew($user, $x['historyId']);
-            self::log("\n");
         }
         else
         {
@@ -53,14 +52,20 @@ class GmailPush
                 if (in_array('CHAT', $data['message']['labelIds']))
                 {
                     // save resources
-            //        self::log('C,');
                     continue;
                 }
 
                 self::log("E={$data['message']['id']}");
 
-                $message = \Sys::svc('Message')->sync($user, $data['message']['id']);
-                self::log($message ? " M={$message->id}," : ' [*],');
+                try
+                {
+                    $message = \Sys::svc('Message')->sync($user, $data['message']['id']);
+                    self::log($message ? " M={$message->id}," : ' [*],');
+                }
+                catch (\Exception $e)
+                {
+                    self::log(print_r($e->getMessage(), true));
+                }
             }
         }
     }
