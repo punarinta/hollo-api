@@ -23,7 +23,7 @@ class GmailPush
             $x = json_decode(base64_decode($json['message']['data']), true);
             $user = \Sys::svc('User')->findOne(['email' => $x['emailAddress']]);
 
-            self::log("U={$user->_id}|HID={$x['historyId']}|");
+            self::log("{$user->email}|HID={$x['historyId']}|");
             self::syncNew($user, $x['historyId']);
             self::log("\n");
         }
