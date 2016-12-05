@@ -38,7 +38,7 @@ class Generic
         \DB::$pageStart  = \Input::json('pageStart');
         \DB::$pageLength = \Input::json('pageLength');
 
-    //    $_SESSION['-AUTH']['user'] = \Sys::svc('User')->findById(6);
+    //    $_SESSION['-AUTH']['user'] = \Sys::svc('User')->findOne(['email' => 'hollo.email@gmail.com']);
 
         return forward_static_call([get_called_class(), $method]);
     }
