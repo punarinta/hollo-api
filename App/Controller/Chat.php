@@ -151,7 +151,12 @@ class Chat extends Generic
 
         $emails[] = \Auth::user()->email;
 
-        return \Sys::svc('Chat')->init($emails);
+        $chat = \Sys::svc('Chat')->init($emails);
+
+        $chat->id = $chat->_id;
+        unset ($chat->_id);
+
+        return $chat;
     }
 
     /**
