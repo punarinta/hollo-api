@@ -5,21 +5,6 @@ namespace App\Service;
 class Auth
 {
     /**
-     * Returns a current logged-in user
-     *
-     * @return null
-     */
-    public function user()
-    {
-        if (isset ($_SESSION['-AUTH']['user']) && isset ($_SESSION['-AUTH']['user']->_id))
-        {
-            return $_SESSION['-AUTH']['user'];
-        }
-
-        return null;
-    }
-
-    /**
      * Resynchronizes session
      *
      * @return bool

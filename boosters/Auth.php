@@ -24,7 +24,12 @@ class Auth
      */
     static function user()
     {
-        return \Sys::svc('Auth')->user();
+        if (isset ($_SESSION['-AUTH']['user']) && isset ($_SESSION['-AUTH']['user']->_id))
+        {
+            return $_SESSION['-AUTH']['user'];
+        }
+
+        return null;
     }
 
     /**
