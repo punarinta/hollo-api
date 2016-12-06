@@ -69,7 +69,7 @@ class Test
 
     public function mongo()
     {
-        $users = \Sys::svc('Chat')->findByEmails(['cheaterx@yandex.ru', 'hollo.email@gmail.com']);
+        $users = \Sys::svc('Chat')->findByEmails(['felix.r.lange@gmail.com', 'fredrik.engblom@gmail.com']);
         print_r($users);
     }
 

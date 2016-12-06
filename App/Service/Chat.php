@@ -334,6 +334,6 @@ class Chat extends Generic
             $ids[] = $user->_id;
         }
 
-        return $this->findOne(['users.id' => ['$all' => $ids]]);
+        return $this->findOne(['users.id' => ['$all' => $ids], 'users' => ['$size' => count($emails)]]);
     }
 }
