@@ -110,7 +110,7 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 04.12.16 @ 10:50:48 +0100
+// Built 06.12.16 @ 20:07:15 +0100
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
@@ -128,7 +128,6 @@ $GLOBALS['-R'] = [
 $data    = null;
 $errMsg  = '';
 $isError = false;
-// $GLOBALS['-DBG-SQL'] = [];
 
 try
 {
@@ -140,19 +139,6 @@ catch (\Exception $e)
     $errMsg    = $e->getMessage();
     $errorCode = $e->getCode() ?: 500;
 
-/*    if ($errorCode == 500 && \Sys::cfg('release') != false)
-    {
-        // report to Santa about someone's bad behaviour
-        \Sys::svc('Resque')->addJob('ReportError',
-        [
-            'stack'     => $e->getTrace(),
-            'msg'       => $errMsg,
-            'server'    => $_SERVER,
-            'input'     => $GLOBALS['-P-JSON'],
-            'user'      => \Auth::user(),
-        ]);
-    }*/
-
     http_response_code($errorCode);
 }
 
@@ -163,5 +149,4 @@ echo json_encode(array
     'data'      => $data,
     'time'      => number_format((microtime(1) - $t1) * 1000, 2) . ' ms',
     'memory'    => number_format((memory_get_usage() - $m1) / 1024, 2) . ' kB',
-//    'debug'     => $GLOBALS['-DBG-SQL'],
 ));

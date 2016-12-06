@@ -116,7 +116,6 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 $data    = null;
 $errMsg  = '';
 $isError = false;
-// $GLOBALS['-DBG-SQL'] = [];
 
 try
 {
@@ -128,19 +127,6 @@ catch (\Exception $e)
     $errMsg    = $e->getMessage();
     $errorCode = $e->getCode() ?: 500;
 
-/*    if ($errorCode == 500 && \Sys::cfg('release') != false)
-    {
-        // report to Santa about someone's bad behaviour
-        \Sys::svc('Resque')->addJob('ReportError',
-        [
-            'stack'     => $e->getTrace(),
-            'msg'       => $errMsg,
-            'server'    => $_SERVER,
-            'input'     => $GLOBALS['-P-JSON'],
-            'user'      => \Auth::user(),
-        ]);
-    }*/
-
     http_response_code($errorCode);
 }
 
@@ -151,5 +137,4 @@ echo json_encode(array
     'data'      => $data,
     'time'      => number_format((microtime(1) - $t1) * 1000, 2) . ' ms',
     'memory'    => number_format((memory_get_usage() - $m1) / 1024, 2) . ' kB',
-//    'debug'     => $GLOBALS['-DBG-SQL'],
 ));
