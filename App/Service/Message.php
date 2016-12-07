@@ -617,7 +617,7 @@ class Message extends Generic
                 if (substr($content, 0, 5) == '<?xml') return null;
                 if (substr($content, 0, 5) == '<!-- ') return null;
             }
-            if (strpos($content, '<table') !== false) return null;
+        //    if (strpos($content, '<table') !== false) return null;
             if (strpos($content, '<!DOCTYPE html') !== false) return null;
 
             $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
