@@ -344,7 +344,7 @@ class Message extends Generic
         foreach ($chat->messages ?? [] as $message)
         {
             // message with this extID for this User is already present
-            if ($message->refId == $user->_id && $message->extId == $extId)
+            if (@$message->refId == $user->_id && $message->extId == $extId)
             {
                 return $message;
             }
