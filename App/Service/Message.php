@@ -431,7 +431,7 @@ class Message extends Generic
         {
             foreach ($chat->messages ?? [] as $k => $message)
             {
-                if (@$message->tempId == $tempMessageId)
+                if (@$message->id == $tempMessageId)
                 {
                     unset ($chat->messages[$k]);
                     $temporaryMessageExisted = true;
