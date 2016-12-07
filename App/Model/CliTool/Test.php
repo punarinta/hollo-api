@@ -72,43 +72,4 @@ class Test
         $users = \Sys::svc('Chat')->findByEmails(['felix.r.lange@gmail.com', 'fredrik.engblom@gmail.com']);
         print_r($users);
     }
-
-    public function mongo_populate()
-    {
-        $u = ["5838b014b641e39938288bd0", "58396830b641e39938288bd2", "5839d136b02c204c2d7e2c95"];
-
-        $messages = [];
-        $i = 50;
-        while (--$i) $messages[] =
-        [
-            "userId" => $u[$i%3],
-            "extId" => \Text::GUID_v4(),
-            "refId" => $u[$i%3],
-            "subj" => "test-" . mt_rand(1, 10),
-            "body" => "some text " . mt_rand(1000, 9999),
-            "ts" => 1337
-        ];
-
-        $i = 10000;
-        while (--$i) $user = \Sys::svc('Chat')->create
-        (
-            [
-                "name" => "the chat " . $i,
-                "messages" => $messages,
-                "users" => [
-                    [
-                        "id" => "5838b014b641e39938288bd0",
-                        "muted" => 0,
-                        "read" => 1
-                    ],
-                    [
-                        "id" => "5839d136b02c204c2d7e2c95",
-                        "muted" => 0,
-                        "read" => 1
-                    ]
-                ]
-            ]
-        );
-        //print_r($user);
-    }
 }
