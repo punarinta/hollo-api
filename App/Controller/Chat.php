@@ -32,6 +32,7 @@ class Chat extends Generic
             if ($filter['mode'] == 'email')
             {
                 $emailFilter = $filter['value'];
+                \DB::$pageLength = 0;
                 break;
             }
         }
@@ -86,7 +87,7 @@ class Chat extends Generic
             $match = false;
             foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
             {
-                if ($emailFilter && stripos($user->email, $emailFilter) !== false)
+                if ($emailFilter && mb_stripos($user->email, $emailFilter) !== false)
                 {
                     $match = true;
                 }
@@ -99,9 +100,16 @@ class Chat extends Generic
                 );
             }
 
-            if ($emailFilter && !$match)
+            if ($emailFilter)
             {
-                continue;
+                if (!$match)
+                {
+                    continue;
+                }
+                if (\DB::$pageLength && count($items) > \DB::$pageLength)
+                {
+                    break;
+                }
             }
 
             $items[] = array
