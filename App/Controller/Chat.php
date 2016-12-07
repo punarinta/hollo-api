@@ -119,15 +119,12 @@ class Chat extends Generic
                 'users'     => $users,
             );
 
-            foreach ($filters as $filter)
+            if ($emailFilter)
             {
-                if ($filter['mode'] == 'email')
+                usort($items, function ($a, $b)
                 {
-                    usort($items, function ($a, $b)
-                    {
-                        return count($a['users']) > count($b['users']);
-                    });
-                }
+                    return count($a['users']) > count($b['users']);
+                });
             }
         }
 
