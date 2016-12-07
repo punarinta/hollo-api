@@ -92,7 +92,7 @@ class Chat extends Generic
         (
             $mongoFilter,
             [
-                'projection' => ['messages' => ['$slice' => -1]],   // get last message only
+            //    'projection' => ['messages' => ['$slice' => -1]],   // get last message only
                 'sort' => ['lastTs' => -1],
             ]
         );

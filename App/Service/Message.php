@@ -16,7 +16,17 @@ class Message extends Generic
      */
     public function getLastByChat($chat)
     {
-        return @$chat->messages ? $chat->messages[0] : null;
+        if (isset ($chat->messages))
+        {
+            usort($chat->messages, function ($a, $b)
+            {
+                return $b->ts <=> $a->ts;
+            });
+
+            return $chat->messages[0];
+        }
+
+        return null;
     }
 
     /**

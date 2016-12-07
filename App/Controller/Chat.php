@@ -45,7 +45,7 @@ class Chat extends Generic
 
             if ($msgCount)
             {
-                $lastMsg = $chat->messages[$msgCount - 1];
+                $lastMsg = \Sys::svc('Message')->getLastByChat($chat);
 
                 // TODO: move the logic below onto frontend
                 if ($lastMsg->body)
