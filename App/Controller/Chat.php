@@ -37,7 +37,10 @@ class Chat extends Generic
             }
         }
 
-        foreach (\Sys::svc('Chat')->findAllByUserId($myId, $filters) as $chat)
+        $chats = \Sys::svc('Chat')->findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 0]]));
+        $chats = array_merge($chats, \Sys::svc('Chat')->findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 1]])));
+
+        foreach ($chats as $chat)
         {
             $lastMsg = null;
             $lastMsgBody = null;
