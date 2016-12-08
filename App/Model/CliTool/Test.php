@@ -2,11 +2,9 @@
 
 namespace App\Model\CliTool;
 
-use App\Model\ContextIO\ContextIO;
-use App\Model\Inbox\Gmail;
 use App\Model\Inbox\Imap;
-use MongoDB\BSON\ObjectID;
-use MongoDB\Driver\BulkWrite;
+use \App\Service\Chat as ChatSvc;
+use \App\Service\Notify as NotifySvc;
 
 /**
  * Class Test
@@ -18,10 +16,11 @@ class Test
     {
         $count = 0;
 
-        foreach (\Sys::svc('Message')->findAll() as $message)
+        // TODO: refactor based on chats
+      /*  foreach (\Sys::svc('Message')->findAll() as $message)
         {
             $count += 1 * \Sys::svc('Message')->reClean($message);
-        }
+        }*/
 
         return "$count messages affected\n\n";
     }
@@ -62,14 +61,14 @@ class Test
             ),
         );
 
-        $res = \Sys::svc('Notify')->firebase($payload);
+        $res = NotifySvc::firebase($payload);
 
         print_r($res);
     }
 
     public function mongo()
     {
-        $users = \Sys::svc('Chat')->findByEmails(['felix.r.lange@gmail.com', 'fredrik.engblom@gmail.com']);
+        $users = ChatSvc::findByEmails(['felix.r.lange@gmail.com', 'fredrik.engblom@gmail.com']);
         print_r($users);
     }
 }

@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Controller;
+
 use App\Model\Inbox\Inbox;
+use \App\Service\Chat as ChatSvc;
 
 /**
  * Class File
@@ -33,12 +35,12 @@ class File extends Generic
 
         try
         {
-            if (!$chat = \Sys::svc('Chat')->findOne(['messages.id' => $messageId]))
+            if (!$chat = ChatSvc::findOne(['messages.id' => $messageId]))
             {
                 throw new \Exception('Message not found');
             }
 
-            if (!\Sys::svc('Chat')->hasAccess($chat, \Auth::user()->_id))
+            if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
             {
                 throw new \Exception('Access denied.', 403);
             }

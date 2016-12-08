@@ -6,7 +6,7 @@ use MongoDB\BSON\ObjectID;
 
 class User extends Generic
 {
-    protected $cache = [];
+    protected static $class_name = 'user';
 
     /**
      * Overwritten creation to validate email
@@ -15,7 +15,7 @@ class User extends Generic
      * @return \StdClass
      * @throws \Exception
      */
-    public function create($data)
+    public static function create($data)
     {
         if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false)
         {
@@ -28,9 +28,9 @@ class User extends Generic
     /**
      * @return array
      */
-    public function findAllReal()
+    public static function findAllReal()
     {
-        return $this->findAll(['roles' => ['$gt' => 0]]);
+        return self::findAll(['roles' => ['$gt' => 0]]);
     }
 
     /**
@@ -38,17 +38,17 @@ class User extends Generic
      *
      * @param $email
      * @param bool $realOnly
-     * @return array
+     * @return mixed|null
      */
-    public function findByEmail($email, $realOnly = false)
+    public static function findByEmail($email, $realOnly = false)
     {
         if ($realOnly)
         {
-            return $this->findOne(['email' => $email, 'roles' => ['$gt' => 0]]);
+            return self::findOne(['email' => $email, 'roles' => ['$gt' => 0]]);
         }
         else
         {
-            return $this->findOne(['email' => $email]);
+            return self::findOne(['email' => $email]);
         }
     }
 
@@ -60,7 +60,7 @@ class User extends Generic
      * @param int $exceptId
      * @return array
      */
-    public function findByChat($chat, $forContacts = false, $exceptId = 0)
+    public static function findByChat($chat, $forContacts = false, $exceptId = 0)
     {
         $read = 0;
         $muted = 0;
@@ -84,7 +84,7 @@ class User extends Generic
 
         if ($forContacts)
         {
-            $usersData = $this->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]);
+            $usersData = self::findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]);
 
             foreach ($usersData as $usersDataRow)
             {
@@ -98,7 +98,7 @@ class User extends Generic
         }
         else
         {
-            foreach ($this->findAll(['_id' => ['$in' => $scanIds]]) as $usersDataRow)
+            foreach (self::findAll(['_id' => ['$in' => $scanIds]]) as $usersDataRow)
             {
                 $id = $usersDataRow->_id;
                 unset ($usersDataRow->_id);
@@ -121,7 +121,7 @@ class User extends Generic
      * @return null
      * @throws \Exception
      */
-    public function setting($user = null, $path = null)
+    public static function setting($user = null, $path = null)
     {
         if (!$user)
         {
@@ -129,7 +129,7 @@ class User extends Generic
         }
         else if (!is_object($user))
         {
-            if (!$user = $this->findOne(['_id' => new ObjectID($user)]))
+            if (!$user = self::findOne(['_id' => new ObjectID($user)]))
             {
                 throw new \Exception('User does not exist');
             }
@@ -145,7 +145,7 @@ class User extends Generic
      * @return mixed
      * @throws \Exception
      */
-    public function name($user = null)
+    public static function name($user = null)
     {
         if (!$user)
         {
@@ -153,7 +153,7 @@ class User extends Generic
         }
         else if (!is_object($user))
         {
-            if (!$user = $this->findOne(['_id' => new ObjectID($user)]))
+            if (!$user = self::findOne(['_id' => new ObjectID($user)]))
             {
                 throw new \Exception('User does not exist');
             }
@@ -178,7 +178,7 @@ class User extends Generic
      * @param $user
      * @return bool
      */
-    public function subscribeToGmail($user)
+    public static function subscribeToGmail($user)
     {
         if (!$user->settings->token)
         {
@@ -213,7 +213,7 @@ class User extends Generic
 
         $res = json_decode($res, true) ?: [];
 
-        $this->update($user, ['settings.historyId' => $res['historyId']]);
+        self::update($user, ['settings.historyId' => $res['historyId']]);
 
         return true;
     }
@@ -225,7 +225,7 @@ class User extends Generic
      * @param null $qEmail
      * @return int
      */
-    public function updateAvatars($user, $qEmail = null)
+    public static function updateAvatars($user, $qEmail = null)
     {
         $countAvas = 0;
         $emailsPerUserLimit = 10000;
@@ -342,13 +342,13 @@ class User extends Generic
      * @param string $serviceName
      * @return bool
      */
-    public function isMailSvc($user, $serviceName = 'Gmail')
+    public static function isMailSvc($user, $serviceName = 'Gmail')
     {
         if (!isset ($user->settings->svc))
         {
             return false;
         }
 
-        return $user->settings->svc == \Sys::svc('MailService')->findOne(['name' => $serviceName])->_id;
+        return $user->settings->svc == MailService::findOne(['name' => $serviceName])->_id;
     }
 }

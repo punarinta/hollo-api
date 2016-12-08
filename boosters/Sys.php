@@ -70,23 +70,6 @@ class Sys
     }
 
     /**
-     * Cached access to services
-     *
-     * @param $service
-     * @return mixed
-     */
-    static function svc($service)
-    {
-        if (!isset ($GLOBALS['-SVC'][$service]))
-        {
-            $class = '\App\Service\\' . $service;
-            $GLOBALS['-SVC'][$service] = new $class;
-        }
-
-        return $GLOBALS['-SVC'][$service];
-    }
-
-    /**
      * Provides an APath access to the array element.
      *
      * @param $a

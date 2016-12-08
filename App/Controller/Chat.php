@@ -1,7 +1,11 @@
 <?php
 
 namespace App\Controller;
+
 use MongoDB\BSON\ObjectID;
+use \App\Service\User as UserSvc;
+use \App\Service\Chat as ChatSvc;
+use \App\Service\Message as MessageSvc;
 
 /**
  * Class Chat
@@ -37,8 +41,8 @@ class Chat extends Generic
             }
         }
 
-        $chats = \Sys::svc('Chat')->findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 0]]));
-        $chats = array_merge($chats, \Sys::svc('Chat')->findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 1]])));
+        $chats = ChatSvc::findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 0]]));
+        $chats = array_merge($chats, ChatSvc::findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 1]])));
 
         foreach ($chats as $chat)
         {
@@ -49,7 +53,7 @@ class Chat extends Generic
 
             if ($msgCount)
             {
-                $lastMsg = \Sys::svc('Message')->getLastByChat($chat);
+                $lastMsg = MessageSvc::getLastByChat($chat);
 
                 // TODO: move the logic below onto frontend
                 if ($lastMsg->body)
@@ -88,7 +92,7 @@ class Chat extends Generic
 
             $users = [];
             $match = false;
-            foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
+            foreach (UserSvc::findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
             {
                 if ($emailFilter && mb_stripos($user->email, $emailFilter) !== false)
                 {
@@ -159,7 +163,7 @@ class Chat extends Generic
 
         $emails[] = \Auth::user()->email;
 
-        $chat = \Sys::svc('Chat')->init($emails);
+        $chat = ChatSvc::init($emails);
 
         $chat->id = $chat->_id;
         unset ($chat->_id);
@@ -184,7 +188,7 @@ class Chat extends Generic
             throw new \Exception('No ID provided.');
         }
 
-        if (!$chat = \Sys::svc('Chat')->findOne(['_id' => new ObjectID($id)]))
+        if (!$chat = ChatSvc::findOne(['_id' => new ObjectID($id)]))
         {
             throw new \Exception('Chat not found.');
         }
@@ -223,7 +227,7 @@ class Chat extends Generic
 
         if ($doUpdate)
         {
-            \Sys::svc('Chat')->update($chat);
+            ChatSvc::update($chat);
         }
     }
 
@@ -241,6 +245,6 @@ class Chat extends Generic
             throw new \Exception('No chat ID provided.');
         }
 
-        return \Sys::svc('Chat')->dropUser($id, \Auth::user()->id);
+        return ChatSvc::dropUser($id, \Auth::user()->id);
     }
 }

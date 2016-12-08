@@ -1,7 +1,12 @@
 <?php
 
 namespace App\Controller;
+
 use MongoDB\BSON\ObjectID;
+use \App\Service\User as UserSvc;
+use \App\Service\Message as MessageSvc;
+use \App\Service\Smtp as SmtpSvc;
+use \App\Service\Chat as ChatSvc;
 
 /**
  * Class Message
@@ -30,7 +35,7 @@ class Message extends Generic
         $muted = 0;
         $scanIds = [];
 
-        if (!$chat = \Sys::svc('Chat')->findOne
+        if (!$chat = ChatSvc::findOne
         (
             ['_id' => new ObjectID($chatId)],
             ['projection' => ['messages.refId' => 0]]
@@ -39,7 +44,7 @@ class Message extends Generic
             throw new \Exception('Chat does not exist.');
         }
 
-        if (!\Sys::svc('Chat')->hasAccess($chat, \Auth::user()->_id))
+        if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
         {
             throw new \Exception('Access denied.', 403);
         }
@@ -61,7 +66,7 @@ class Message extends Generic
         }
 
         $users = [];
-        foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
+        foreach (UserSvc::findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
         {
             $users[$user->_id] = array
             (
@@ -80,14 +85,14 @@ class Message extends Generic
             else
             {
                 // TODO: use one more cache, do not mix with $users
-                $chat->messages[$k]->from = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->userId)], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]);
+                $chat->messages[$k]->from = UserSvc::findOne(['_id' => new ObjectID($message->userId)], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]);
                 $chat->messages[$k]->from->id = $chat->messages[$k]->from->_id;
                 unset ($chat->messages[$k]->from->_id);
             }
             unset ($chat->messages[$k]->userId);
         }
 
-        \Sys::svc('Chat')->setReadFlag($chat, \Auth::user()->_id, 1);
+        ChatSvc::setReadFlag($chat, \Auth::user()->_id, 1);
 
         foreach ($chat->messages as $k => $v)
         {
@@ -125,18 +130,28 @@ class Message extends Generic
     {
         if (!$chatId = \Input::data('chatId'))
         {
-            throw new \Exception('Email not provided.');
+            throw new \Exception('Chat ID not provided.');
         }
 
-        $message = \Sys::svc('Message')->getLastByChatId($chatId);
-        $user = \Sys::svc('User')->findOne(['_id' => new ObjectID($message->userId)]);
+        if (!$chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]))
+        {
+            throw new \Exception('Chat not found.');
+        }
+
+        if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
+        {
+            throw new \Exception('Access denied', 403);
+        }
+
+        $message = MessageSvc::getLastByChat($chat);
+        $user = UserSvc::findOne(['_id' => new ObjectID($message->userId)]);
 
         return array
         (
             'id'        => $message->_id,
             'ts'        => $message->ts,
             'body'      => $message->body,
-            'subject'   => \Sys::svc('Message')->clearSubject($message->subj),
+            'subject'   => MessageSvc::clearSubject($message->subj),
             'from'      =>
             [
                 'id'    => $user->_id,
@@ -163,12 +178,12 @@ class Message extends Generic
         }
 
         // TODO: passing down chat ID will save resources
-        if (!$chat = \Sys::svc('Chat')->findOne(['messages.id' => $id]))
+        if (!$chat = ChatSvc::findOne(['messages.id' => $id]))
         {
             throw new \Exception('Message does not exist');
         }
 
-        if (!\Sys::svc('Chat')->hasAccess($chat, \Auth::user()->_id))
+        if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
         {
             throw new \Exception('Access denied.', 403);
         }
@@ -177,7 +192,7 @@ class Message extends Generic
         {
             if ($message->id == $id)
             {
-                if (!$data = \Sys::svc('Message')->getDataByRefIdAndExtId($message->refId, $message->extId))
+                if (!$data = MessageSvc::getDataByRefIdAndExtId($message->refId, $message->extId))
                 {
                     return false;
                 }
@@ -237,7 +252,7 @@ class Message extends Generic
             );
         }
 
-        $chat = \Sys::svc('Chat')->findOne(['_id' => new ObjectID($chatId)]);
+        $chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]);
 
         $messageStructure =
         [
@@ -263,7 +278,7 @@ class Message extends Generic
 
         // mark chat as just updated
         $chat->lastTs = time();
-        \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs, 'users' => $chat->users]);
+        ChatSvc::update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs, 'users' => $chat->users]);
 
         // check if you are chatting with a bot
     //    if ($bots = \DB::rows("SELECT u.* FROM user AS u LEFT JOIN chat_user AS cu ON cu.user_id = u.id WHERE cu.chat_id=? AND u.email LIKE '%@bot.hollo.email' ", [$chatId]))
@@ -275,8 +290,8 @@ class Message extends Generic
     //    }
     //    else
     //    {
-            \Sys::svc('Smtp')->setupThread(\Auth::user()->_id, $chat, $messageStructure['id']);
-            $res = \Sys::svc('Smtp')->send($chat, $body, \Input::data('subject'), $files);
+            SmtpSvc::setupThread(\Auth::user()->_id, $chat, $messageStructure['id']);
+            $res = SmtpSvc::send($chat, $body, \Input::data('subject'), $files);
     //    }
 
         return true; // $res;
@@ -304,9 +319,9 @@ class Message extends Generic
         }
 
         // NB: newest are on the top
-        foreach (\Sys::svc('Chat')->findAllByUserId(\Auth::user()->_id, $filters) as $chat)
+        foreach (ChatSvc::findAllByUserId(\Auth::user()->_id, $filters) as $chat)
         {
-            if ($message = \Sys::svc('Message')->getLastByChat($chat))
+            if ($message = MessageSvc::getLastByChat($chat))
             {
                 $items[] = array
                 (

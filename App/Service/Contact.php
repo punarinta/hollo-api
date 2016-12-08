@@ -8,7 +8,7 @@ namespace App\Service;
  * Class Contact
  * @package App\Service
  */
-class Contact extends Generic
+class Contact
 {
     /**
      * Check if the contact is muted by default or not
@@ -16,7 +16,7 @@ class Contact extends Generic
      * @param $email
      * @return bool
      */
-    public function isMuted($email)
+    public static function isMuted($email)
     {
         $email = explode('@', $email);
 

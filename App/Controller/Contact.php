@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use MongoDB\BSON\ObjectID;
+use \App\Service\Chat as ChatSvc;
+use \App\Service\User as UserSvc;
 
 /**
  * Class Contact
@@ -31,7 +33,7 @@ class Contact extends Generic
             }
         }
 
-        $chats = \Sys::svc('Chat')->findAllByUserId(\Auth::user()->_id);
+        $chats = ChatSvc::findAllByUserId(\Auth::user()->_id);
 
         foreach ($chats as $chat) foreach ($chat->users as $userRow)
         {
@@ -40,7 +42,7 @@ class Contact extends Generic
             $userIds[$userRow->id] = new ObjectID($userRow->id);
         }
 
-        foreach (\Sys::svc('User')->findAll(['_id' => ['$in' => array_values($userIds)]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
+        foreach (UserSvc::findAll(['_id' => ['$in' => array_values($userIds)]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
         {
             if ($emailFilter && stripos($user->email, $emailFilter) === false)
             {

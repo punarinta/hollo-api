@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Model\CliTool;
+
 use App\Model\Bcrypt;
 use App\Model\Inbox\Gmail;
+use \App\Service\Message as MessageSvc;
 
 /**
  * Class Admin
@@ -12,14 +14,14 @@ class Admin
 {
     public function sync($userId, $fetchMuted = false)
     {
-        $x = \Sys::svc('Message')->syncAllByUserId($userId, $fetchMuted);
+        $x = MessageSvc::syncAllByUserId($userId, $fetchMuted);
 
         return "Messages synced: $x\n\n";
     }
 
     public function syncMessage($userId, $messageExtId)
     {
-        \Sys::svc('Message')->sync($userId, $messageExtId);
+        MessageSvc::sync($userId, $messageExtId);
 
         return '';
     }

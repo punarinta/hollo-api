@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-class Bot extends Generic
+class Bot
 {
     /**
      * Talk to a bot
@@ -19,7 +19,7 @@ class Bot extends Generic
 
         if ($botName == 'ping')
         {
-            $message = \Sys::svc('Message')->create(array
+            $message = Message::create(array
             (
                 'ext_id'    => '',
                 'user_id'   => $bot->id,
@@ -32,13 +32,13 @@ class Bot extends Generic
 
             $userIds = [];
 
-            foreach (\Sys::svc('User')->findByChatId($chatId, true, $bot->id) as $user)
+            foreach (User::findByChatId($chatId, true, $bot->id) as $user)
             {
                 // collect user IDs for IM notification
                 $userIds[] = $user->id;
             }
 
-            \Sys::svc('Notify')->im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chatId]);
+            Notify::im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chatId]);
         }
 
         return $message;*/

@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use \App\Service\Auth as AuthSvc;
+use \App\Service\User as UserSvc;
+
 /**
  * Class Auth
  * @package App\Controller
@@ -14,7 +17,7 @@ class Auth extends Generic
      */
     static function logout()
     {
-        \Sys::svc('Auth')->logout();
+        AuthSvc::logout();
     }
 
     /**
@@ -28,7 +31,7 @@ class Auth extends Generic
         {
             if (!isset (\Auth::user()->_id) || !\Auth::user()->_id)
             {
-                \Sys::svc('Auth')->logout();
+                AuthSvc::logout();
             }
         }
 
@@ -72,10 +75,10 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No password was provided.'));
         }
 
-        if (($user = \Sys::svc('User')->findByEmail($email, true)) && $user->settings->svc)
+        if (($user = UserSvc::findByEmail($email, true)) && $user->settings->svc)
         {
             // login
-            \Sys::svc('Auth')->loginImap($user, $password);
+            AuthSvc::loginImap($user, $password);
         }
         else
         {
@@ -87,7 +90,7 @@ class Auth extends Generic
                 throw new \Exception(\Lang::translate('Malformed email.'));
             }
 
-            \Sys::svc('Auth')->registerImap($email, $password, $locale);
+            AuthSvc::registerImap($email, $password, $locale);
         }
 
         return self::status();
@@ -104,7 +107,7 @@ class Auth extends Generic
     {
         // TODO: add a switch to support different OAuth providers
 
-        return \Sys::svc('Auth')->getOAuthToken(null, \Input::data('redirectUrl'));
+        return AuthSvc::getOAuthToken(null, \Input::data('redirectUrl'));
     }
 
     /**
@@ -122,7 +125,7 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No code was provided.'));
         }
 
-        \Sys::svc('Auth')->processOAuthCode($code, \Input::data('redirectUrl'));
+        AuthSvc::processOAuthCode($code, \Input::data('redirectUrl'));
 
         return self::status();
     }
@@ -139,14 +142,14 @@ class Auth extends Generic
             throw new \Exception('No user ID provided.');
         }
 
-        \Sys::svc('Auth')->incarnate($userId);
+        AuthSvc::incarnate($userId);
 
         return self::status();
     }
 
     static function wakeUp()
     {
-        \Sys::svc('Auth')->wakeUp();
+        AuthSvc::wakeUp();
         return self::status();
     }
 }

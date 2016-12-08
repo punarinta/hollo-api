@@ -6,7 +6,7 @@ use App\Model\FileParser\Calendar;
 use App\Model\Inbox\Inbox;
 use MongoDB\BSON\ObjectID;
 
-class Message extends Generic
+class Message
 {
     /**
      * Returns the last message from the chat
@@ -14,7 +14,7 @@ class Message extends Generic
      * @param $chat
      * @return null|\StdClass
      */
-    public function getLastByChat($chat)
+    public static function getLastByChat($chat)
     {
         if (isset ($chat->messages))
         {
@@ -36,9 +36,9 @@ class Message extends Generic
      * @param $extId
      * @return null|\StdClass
      */
-    public function findByRefIdAndExtId($refUserId, $extId)
+    public static function findByRefIdAndExtId($refUserId, $extId)
     {
-        return \Sys::svc('Chat')->findOne(['messages.refId' => $refUserId, 'messages.extId' => $extId]);
+        return Chat::findOne(['messages.refId' => $refUserId, 'messages.extId' => $extId]);
     }
 
     /**
@@ -47,7 +47,7 @@ class Message extends Generic
      * @param $chat
      * @return mixed
      */
-    public function countByChatId($chat)
+    public static function countByChatId($chat)
     {
         return count($chat->messages);
     }
@@ -58,7 +58,7 @@ class Message extends Generic
      * @param $chat
      * @return null|\StdClass
      */
-    public function findByLastRealByChat($chat)
+    public static function findByLastRealByChat($chat)
     {
         // latest messages are at the top
         foreach ($chat->messages ?? [] as $message)
@@ -80,11 +80,11 @@ class Message extends Generic
      * @return int
      * @throws \Exception
      */
-    public function syncAllByUserId($userId, $fetchMuted = false)
+    public static function syncAllByUserId($userId, $fetchMuted = false)
     {
         if (!is_object($userId))
         {
-            if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userId)]))
+            if (!$user = User::findOne(['_id' => new ObjectID($userId)]))
             {
                 throw new \Exception('User does not exist');
             }
@@ -101,18 +101,18 @@ class Message extends Generic
         if (count($messageExtIds) && $messageExtIds[0] != @$user->lastMuid)
         {
             $user->lastMuid = $messageExtIds[0];
-            \Sys::svc('User')->update($user);
+            User::update($user);
         }
 
-        $this->say('Prepared ' . count($messageExtIds) . ' messages to analyze.');
+        self::say('Prepared ' . count($messageExtIds) . ' messages to analyze.');
 
         foreach ($messageExtIds as $messageExtId)
         {
-            $this->say("User {$user->email}, extId = $messageExtId");
+            self::say("User {$user->email}, extId = $messageExtId");
 
             $emailData = $imap->getMessage($messageExtId);
 
-            $count += 1 * !empty ($this->processMessageSync($user, $emailData,
+            $count += 1 * !empty (self::processMessageSync($user, $emailData,
             [
                 'fetchMuted'    => $fetchMuted,
                 'fetchAll'      => true,
@@ -137,11 +137,11 @@ class Message extends Generic
      * @return bool|object
      * @throws \Exception
      */
-    public function sync($userId, $messageExtId, $tryVerbose = true, $options = [])
+    public static function sync($userId, $messageExtId, $tryVerbose = true, $options = [])
     {
         if (!is_object($userId))
         {
-            if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($userId)]))
+            if (!$user = User::findOne(['_id' => new ObjectID($userId)]))
             {
                 throw new \Exception('User does not exist');
             }
@@ -153,12 +153,12 @@ class Message extends Generic
 
         if ($tryVerbose)
         {
-            $this->say($data, 1);
+            self::say($data, 1);
         }
 
         $options['fetchMuted'] = true;
 
-        $message = $this->processMessageSync($user, $data, $options);
+        $message = self::processMessageSync($user, $data, $options);
 
         return $message;
     }
@@ -170,7 +170,7 @@ class Message extends Generic
      * @param $messageExtId
      * @return mixed
      */
-    public function getDataByRefIdAndExtId($userId, $messageExtId)
+    public static function getDataByRefIdAndExtId($userId, $messageExtId)
     {
         return Inbox::init($userId)->getMessage($messageExtId);
     }
@@ -181,7 +181,7 @@ class Message extends Generic
      * @param array $messages
      * @return array $messages
      */
-    public function removeOld($messages)
+    public static function removeOld($messages)
     {
         foreach ($messages ?? [] as $k => $v)
         {
@@ -192,25 +192,6 @@ class Message extends Generic
         }
 
         return $messages;
-    }
-
-    /**
-     * @param $message
-     * @return bool
-     */
-    public function reClean($message)
-    {
-        $oldLen = mb_strlen($message->body);
-        $newStr = $this->clearContent(null, $message->body);
-
-        if ($oldLen > mb_strlen($newStr))
-        {
-            $message->body = $newStr;
-            $this->update($message);
-            return true;
-        }
-
-        return false;
     }
 
     // ============================
@@ -224,7 +205,7 @@ class Message extends Generic
      * @return bool | object
      * @throws \Exception
      */
-    protected function processMessageSync($user, $messageData, $options = [])
+    protected static function processMessageSync($user, $messageData, $options = [])
     {
         $temporaryMessageExisted = false;
 
@@ -248,7 +229,7 @@ class Message extends Generic
 
             if (in_array($folder, ['draft', 'chat', 'trash']))
             {
-                $this->say("Notice: message has illegal label '$folder'");
+                self::say("Notice: message has illegal label '$folder'");
                 return false;
             }
             if (strpos($folder, 'sent') !== false)
@@ -261,7 +242,7 @@ class Message extends Generic
 
         if (!isset ($messageData['addresses']['from']))
         {
-            $this->say('Error: no "from" address');
+            self::say('Error: no "from" address');
             return false;
         }
 
@@ -293,7 +274,7 @@ class Message extends Generic
         // sometimes it may happen that user is not in the chat (e.g. stolen message), check this
         if (!in_array($user->email, $emails))
         {
-            $this->say('Error: user is not in the chat');
+            self::say('Error: user is not in the chat');
             return false;
         }
 
@@ -304,7 +285,7 @@ class Message extends Generic
         }
 
         // chat may not exist -> init and mute if necessary
-        if (!$chat = \Sys::svc('Chat')->findByEmails($emails))
+        if (!$chat = Chat::findByEmails($emails))
         {
             if ($limitToChatId)
             {
@@ -315,12 +296,12 @@ class Message extends Generic
             if (count($emails) < 2)
             {
                 // the cannot be less than 2 people in chat
-                $this->say('Error: only one person in chat');
+                self::say('Error: only one person in chat');
                 return false;
             }
             try
             {
-                $chat = \Sys::svc('Chat')->init($emails, $names);
+                $chat = Chat::init($emails, $names);
             }
             catch (\Exception $e)
             {
@@ -352,19 +333,19 @@ class Message extends Generic
 
         if ($maxTimeBack > 0 && $messageData['date'] < time() - $maxTimeBack)
         {
-            $this->say('Notice: message is too old');
+            self::say('Notice: message is too old');
             return false;
         }
 
-        $recipient = \Sys::svc('User')->findOne(['email' => @$messageData['addresses']['to'][0]['email']]);
-        $flags = \Sys::svc('Chat')->getFlags($chat, $recipient ? $recipient->_id : 0);
+        $recipient = User::findOne(['email' => @$messageData['addresses']['to'][0]['email']]);
+        $flags = Chat::getFlags($chat, $recipient ? $recipient->_id : 0);
 
         // check that you want any messages in this chat
         // message sync on behalf of a bot will not happen
 
         if (!$fetchMuted && $flags && $flags->muted)
         {
-            $this->say('Notice: message is muted');
+            self::say('Notice: message is muted');
             return false;
         }
 
@@ -388,7 +369,7 @@ class Message extends Generic
 
         if ((!isset ($messageData['body'][0]) || !strlen($messageData['body'][0]['content'])) && empty ($files))
         {
-            $this->say('Error: no payload');
+            self::say('Error: no payload');
             return false;
         }
 
@@ -399,19 +380,19 @@ class Message extends Generic
         }
         else
         {
-            $sender = \Sys::svc('User')->findOne(['email' => $messageData['addresses']['from']['email']]);
+            $sender = User::findOne(['email' => $messageData['addresses']['from']['email']]);
             $senderId = $sender->_id;
         }
 
 
         // avoid duplicating by user_id-chat-ts key
-        if (!$this->isUnique($senderId, $chat, $messageData['date']))
+        if (!self::isUnique($senderId, $chat, $messageData['date']))
         {
-            $this->say('Notice: duplicate message');
+            self::say('Notice: duplicate message');
             return false;
         }
 
-        $content = $this->clearContent(@$messageData['body'][0]['type'], @$messageData['body'][0]['content']);
+        $content = self::clearContent(@$messageData['body'][0]['type'], @$messageData['body'][0]['content']);
 
         // check for forwarded messages
         if (stripos($messageData['subject'], 'FWD:', 0) === 0)
@@ -422,7 +403,7 @@ class Message extends Generic
         if (!mb_strlen($content) && empty ($files))
         {
             // avoid empty replies
-            $this->say('Notice: message has no real content');
+            self::say('Notice: message has no real content');
             return false;
         }
 
@@ -440,7 +421,7 @@ class Message extends Generic
             }
         }
 
-        $subject = mb_convert_encoding($this->clearSubject($messageData['subject']), 'UTF-8');
+        $subject = mb_convert_encoding(self::clearSubject($messageData['subject']), 'UTF-8');
         $body = mb_convert_encoding($content, 'UTF-8');
 
         // check other bodies if they contain anything useful
@@ -472,7 +453,7 @@ class Message extends Generic
         else if (!$keepOld)
         {
             // remove old messages if not explicitly instructed
-            $chat->messages = $this->removeOld($chat->messages);
+            $chat->messages = self::removeOld($chat->messages);
         }
 
         $messageStructure =
@@ -502,7 +483,7 @@ class Message extends Generic
         $chat->lastTs = max($messageData['date'], $chat->lastTs ?? 0);
 
         // run chat update
-        \Sys::svc('Chat')->update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs, 'users' => $chat->users]);
+        Chat::update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs, 'users' => $chat->users]);
 
         if (!$temporaryMessageExisted && $notify)
         {
@@ -517,7 +498,7 @@ class Message extends Generic
                 }
 
                 // safe to use Firebase
-                \Sys::svc('Notify')->firebase(array
+                Notify::firebase(array
                 (
                     'to'           => '/topics/user-' . $user->_id,
                     'priority'     => 'high',
@@ -540,7 +521,7 @@ class Message extends Generic
 
             if ($useSocket)
             {
-                \Sys::svc('Notify')->im(
+                Notify::im(
                 [
                     'cmd'       => 'notify',
                     'userIds'   => [$user->_id],
@@ -561,7 +542,7 @@ class Message extends Generic
      * @param $ts
      * @return bool
      */
-    protected function isUnique($userId, $chat, $ts)
+    protected static function isUnique($userId, $chat, $ts)
     {
         foreach ($chat->messages ?? [] as $message)
         {
@@ -577,7 +558,7 @@ class Message extends Generic
      * @param $subject
      * @return string
      */
-    public function clearSubject($subject)
+    public static function clearSubject($subject)
     {
         $items = ['RE','FWD','FW','VS','VB','SV'];
 
@@ -602,7 +583,7 @@ class Message extends Generic
      * @param $content
      * @return null
      */
-    protected function clearContent($type, $content)
+    protected static function clearContent($type, $content)
     {
         $content = str_ireplace(['<br />','<br>','<br/>'], "\n", $content);
 
@@ -704,16 +685,16 @@ class Message extends Generic
      * @param $params
      * @param $attempt
      */
-    protected function retry($params, $attempt)
+    protected static function retry($params, $attempt)
     {
         $timeout = (int)(5 + $attempt/2);
 
-        $this->say("Sync error, attempt #$attempt in $timeout seconds");
+        self::say("Sync error, attempt #$attempt in $timeout seconds");
         sleep($timeout);
-        $this->say($params, 1);
+        self::say($params, 1);
     }
 
-    protected function say($what, $print = 0)
+    protected static function say($what, $print = 0)
     {
         if (@$GLOBALS['-SYS-VERBOSE'])
         {

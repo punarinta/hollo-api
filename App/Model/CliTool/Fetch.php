@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Model\CliTool;
+
 use App\Model\Inbox\Inbox;
+use \App\Service\Chat as ChatSvc;
 
 /**
  * Class Fetch
@@ -16,7 +18,7 @@ class Fetch
      */
     public function file($messageId, $offset = 0)
     {
-        if (!$chat = \Sys::svc('Chat')->findOne(['messages.id' => $messageId]))
+        if (!$chat = ChatSvc::findOne(['messages.id' => $messageId]))
         {
            return "Message not found\n";
         }
@@ -45,7 +47,7 @@ class Fetch
      */
     public function message($userId, $messageExtId, $full = false)
     {
-        if (!$chat = \Sys::svc('Chat')->findOne(['messages.refId' => $userId, 'messages.extId' => $messageExtId]))
+        if (!$chat = ChatSvc::findOne(['messages.refId' => $userId, 'messages.extId' => $messageExtId]))
         {
             return "Message not found\n";
         }

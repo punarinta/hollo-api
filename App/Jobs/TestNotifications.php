@@ -1,7 +1,10 @@
 <?php
 
 namespace App\Jobs;
+
 use MongoDB\BSON\ObjectID;
+use \App\Service\User as UserSvc;
+use \App\Service\Notify as NotifySvc;
 
 /**
  * Class TestNotifications
@@ -11,7 +14,7 @@ class TestNotifications extends Generic
 {
     public function testSetup()
     {
-        $user = \Sys::svc('User')->findOne(['email' => 'hollo.email@gmail.com']);
+        $user = UserSvc::findOne(['email' => 'hollo.email@gmail.com']);
 
         $this->args = array
         (
@@ -21,7 +24,7 @@ class TestNotifications extends Generic
 
     public function perform()
     {
-        if (!$user = \Sys::svc('User')->findOne(['_id' => new ObjectID($this->args['user_id'])]))
+        if (!$user = UserSvc::findOne(['_id' => new ObjectID($this->args['user_id'])]))
         {
             echo "No user found (ID = {$this->args['user_id']}).\n";
             return false;
@@ -47,7 +50,7 @@ class TestNotifications extends Generic
         );
 
         sleep(5);
-        $res = \Sys::svc('Notify')->firebase($payload);
+        $res = NotifySvc::firebase($payload);
         print_r($res);
 
         return true;

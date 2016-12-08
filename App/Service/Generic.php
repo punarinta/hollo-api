@@ -7,19 +7,7 @@ use \MongoDB\Driver\BulkWrite;
 
 class Generic
 {
-    protected $ClassName;
-    protected $class_name;
-
-    public function __construct()
-    {
-        // get table name out from class name
-        $names = explode('\\', get_class($this));
-        $this->ClassName  = end($names);
-        $this->class_name = strtolower(preg_replace_callback('/(^|[a-z])([A-Z])/', function ($matches)
-        {
-            return strtolower(strlen($matches[1]) ? $matches[1] . '_' . $matches[2] : $matches[2]);
-        }, $this->ClassName));
-    }
+    protected static $class_name;
 
     /**
      * Creates an object in the database
@@ -27,12 +15,12 @@ class Generic
      * @param $array
      * @return mixed
      */
-    public function create($array)
+    public static function create($array)
     {
         $bulk = new BulkWrite();
         $document = new \stdClass();
         $array['_id'] = $bulk->insert($array)->__toString();
-        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . $this->class_name, $bulk);
+        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . static::$class_name, $bulk);
 
         foreach ($array as $k => $v)
         {
@@ -48,7 +36,7 @@ class Generic
      * @param object $document
      * @param array $set
      */
-    public function update($document, $set = [])
+    public static function update($document, $set = [])
     {
         $bulk = new BulkWrite();
         $id = new ObjectID($document->_id);
@@ -56,7 +44,7 @@ class Generic
         unset ($document->_id);
 
         $bulk->update(['_id' => $id], $set ? ['$set' => $set] : $document);
-        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . $this->class_name, $bulk);
+        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . static::$class_name, $bulk);
         $document->_id = $tempId;
     }
 
@@ -66,7 +54,7 @@ class Generic
      * @param object $document
      * @return bool
      */
-    public function delete($document)
+    public static function delete($document)
     {
         if (!$document || !$document->_id)
         {
@@ -77,7 +65,7 @@ class Generic
         $id = new ObjectID($document->_id);
 
         $bulk->delete(['_id' => $id], ['limit' => 1]);
-        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . $this->class_name, $bulk);
+        $GLOBALS['-DB-L']->executeBulkWrite('hollo.' . static::$class_name, $bulk);
 
         return true;
     }
@@ -89,9 +77,9 @@ class Generic
      * @param array $options
      * @return null|mixed
      */
-    public function findOne($filter = [], $options = [])
+    public static function findOne($filter = [], $options = [])
     {
-        $rows = \DB::query($this->class_name, $filter, $options);
+        $rows = \DB::query(static::$class_name, $filter, $options);
 
         foreach ($rows as $row)
         {
@@ -113,11 +101,11 @@ class Generic
      * @param array $options
      * @return array
      */
-    public function findAll($filter = [], $options = [])
+    public static function findAll($filter = [], $options = [])
     {
         $rows = [];
 
-        foreach (\DB::query($this->class_name, $filter, $options) as $row)
+        foreach (\DB::query(static::$class_name, $filter, $options) as $row)
         {
             if (is_object($row->_id))
             {

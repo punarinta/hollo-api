@@ -3,6 +3,10 @@
 namespace App\Model\CliTool;
 use App\Model\Inbox\Inbox;
 use MongoDB\BSON\ObjectID;
+use \App\Service\User as UserSvc;
+use \App\Service\Chat as ChatSvc;
+use \App\Service\Message as MessageSvc;
+use \App\Service\MailService as MailServiceSvc;
 
 /**
  * Class Cron
@@ -20,7 +24,7 @@ class Cron
         $steps = 0;
         $count = 0;
 
-        foreach (\Sys::svc('Chat')->findAll([], ['projection' => ['messages' => 1]]) as $chat)
+        foreach (ChatSvc::findAll([], ['projection' => ['messages' => 1]]) as $chat)
         {
             ++$steps;
 
@@ -31,8 +35,8 @@ class Cron
                 continue;
             }
 
-            $messages = \Sys::svc('Message')->removeOld($messages);
-            \Sys::svc('Chat')->update($chat, ['messages' => $messages]);
+            $messages = MessageSvc::removeOld($messages);
+            ChatSvc::update($chat, ['messages' => $messages]);
             $postCount = count($messages);
 
             $count += ($preCount - $postCount);
@@ -54,9 +58,9 @@ class Cron
     {
         $tsAfter = strtotime('yesterday');
 
-        $gmailSvcId = \Sys::svc('MailService')->findOne(['name' => 'Gmail'])->_id;
+        $gmailSvcId = MailServiceSvc::findOne(['name' => 'Gmail'])->_id;
 
-        foreach (\Sys::svc('User')->findAllReal() as $user)
+        foreach (UserSvc::findAllReal() as $user)
         {
             microtime(100000);
 
@@ -89,14 +93,14 @@ class Cron
                         }
 
                         // inform in any case
-                        $count += 1 * !empty (\Sys::svc('Message')->sync($user, $messageId, false));
+                        $count += 1 * !empty (MessageSvc::sync($user, $messageId, false));
 
                         usleep(200000);
                     }
 
                     if ($user->lastMuid != $lastMuid)
                     {
-                        \Sys::svc('User')->update($user, ['lastMuid' => $lastMuid]);
+                        UserSvc::update($user, ['lastMuid' => $lastMuid]);
                     }
                 }
 
@@ -116,17 +120,17 @@ class Cron
     public function refreshGmailSubscription($userId = null)
     {
         $count = 0;
-        $users = $userId ? [\Sys::svc('User')->findOne(['_id' => new ObjectID($userId)])] : \Sys::svc('User')->findAllReal();
+        $users = $userId ? [UserSvc::findOne(['_id' => new ObjectID($userId)])] : UserSvc::findAllReal();
 
         foreach ($users as $user)
         {
-            if (!\Sys::svc('User')->isMailSvc($user))
+            if (!UserSvc::isMailSvc($user))
             {
                 continue;
             }
 
             echo "User {$user->email}... ";
-            $res = \Sys::svc('User')->subscribeToGmail($user);
+            $res = UserSvc::subscribeToGmail($user);
 
             echo ($res ? 'OK' : 'NOT OK') . "\n";
 
@@ -148,18 +152,18 @@ class Cron
         $countAvas = 0;
         $countUsers = 0;
 
-        $users = $userId ? [\Sys::svc('User')->findOne(['_id' => new ObjectID($userId)])] : \Sys::svc('User')->findAllReal();
+        $users = $userId ? [UserSvc::findOne(['_id' => new ObjectID($userId)])] : UserSvc::findAllReal();
 
         foreach ($users as $user)
         {
-            if (!\Sys::svc('User')->isMailSvc($user))
+            if (!UserSvc::isMailSvc($user))
             {
                 continue;
             }
 
             echo "\nUser {$user->email}... ";
 
-            $countAvas += \Sys::svc('User')->updateAvatars($user, $qEmail);
+            $countAvas += UserSvc::updateAvatars($user, $qEmail);
 
             ++$countUsers;
         }

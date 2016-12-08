@@ -2,7 +2,8 @@
 
 namespace App\Controller;
 
-use MongoDB\BSON\ObjectID;
+use \App\Service\User as UserSvc;
+use \App\Service\MailService as MailServiceSvc;
 
 /**
  * Class Sys
@@ -18,10 +19,10 @@ class Sys extends Generic
     {
         $result = [];
         $gmailCount = 0;
-        $gmailId = \Sys::svc('MailService')->findOne(['name' => 'Gmail'])->_id;
+        $gmailId = MailServiceSvc::findOne(['name' => 'Gmail'])->_id;
 
         // get real users
-        $users = \Sys::svc('User')->findAll(['roles' => ['$gt' => 0]]);
+        $users = UserSvc::findAll(['roles' => ['$gt' => 0]]);
 
         $result['users']['total'] = count($users);
 

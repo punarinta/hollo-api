@@ -6,6 +6,8 @@ use MongoDB\BSON\ObjectID;
 
 class Chat extends Generic
 {
+    protected static $class_name = 'chat';
+
     /**
      * Initializes a new Chat with a specific set of participants
      *
@@ -13,12 +15,12 @@ class Chat extends Generic
      * @param array $names
      * @return mixed|null
      */
-    public function init($emails = [], $names = [])
+    public static function init($emails = [], $names = [])
     {
         $emails = array_unique($emails);
 
         // check just in case
-        if ($chat = $this->findByEmails($emails))
+        if ($chat = self::findByEmails($emails))
         {
             return $chat;
         }
@@ -28,7 +30,7 @@ class Chat extends Generic
 
         foreach ($emails as $email)
         {
-            if (\Sys::svc('Contact')->isMuted($email))
+            if (Contact::isMuted($email))
             {
                 $muteThis = true;
             }
@@ -37,7 +39,7 @@ class Chat extends Generic
         // create users first
         foreach ($emails as $email)
         {
-            if (!$user = \Sys::svc('User')->findOne(['email' => $email]))
+            if (!$user = User::findOne(['email' => $email]))
             {
                 $userStructure = ['email' => $email];
                 if (isset ($names[$email]) && $names[$email] != $email)
@@ -45,7 +47,7 @@ class Chat extends Generic
                     $userStructure['name'] = $names[$email];
                 }
 
-                $user = \Sys::svc('User')->create($userStructure);
+                $user = User::create($userStructure);
             }
 
             $chatUsers[] = (object)
@@ -56,7 +58,7 @@ class Chat extends Generic
             ];
         }
 
-        return $this->create(['users' => $chatUsers]);
+        return self::create(['users' => $chatUsers]);
     }
 
     /**
@@ -66,7 +68,7 @@ class Chat extends Generic
      * @param array $filters
      * @return array
      */
-    public function findAllByUserId($userId, $filters = [])
+    public static function findAllByUserId($userId, $filters = [])
     {
         $mongoFilter = ['users' => ['$elemMatch' => ['id' => $userId]]];
 
@@ -88,7 +90,7 @@ class Chat extends Generic
             }
         }
 
-        return $this->findAll
+        return self::findAll
         (
             $mongoFilter,
             [
@@ -105,7 +107,7 @@ class Chat extends Generic
      * @param $userId
      * @return null
      */
-    public function getFlags($chat, $userId)
+    public static function getFlags($chat, $userId)
     {
         if (!$userId)
         {
@@ -114,7 +116,7 @@ class Chat extends Generic
 
         if (!is_object($chat))
         {
-            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+            $chat = self::findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
         foreach ($chat->users ?? [] as $userItem)
@@ -139,11 +141,11 @@ class Chat extends Generic
      * @param $flags
      * @return bool
      */
-    public function setFlags($chat, $userId, $flags)
+    public static function setFlags($chat, $userId, $flags)
     {
         if (!is_object($chat))
         {
-            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+            $chat = self::findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
         $chatUsers = $chat->users;
@@ -154,7 +156,7 @@ class Chat extends Generic
             {
                 $chatUsers[$k]->read = (int) $flags->read;
                 $chatUsers[$k]->muted = (int) $flags->muted;
-                $this->update($chat, ['users' => $chatUsers]);
+                self::update($chat, ['users' => $chatUsers]);
 
                 return true;
             }
@@ -171,11 +173,11 @@ class Chat extends Generic
      * @param $muted
      * @return bool
      */
-    public function setMutedFlag($chat, $userId, $muted)
+    public static function setMutedFlag($chat, $userId, $muted)
     {
         if (!is_object($chat))
         {
-            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+            $chat = self::findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
         $chatUsers = $chat->users;
@@ -185,7 +187,7 @@ class Chat extends Generic
             if ($userRow->id == $userId)
             {
                 $chatUsers[$k]->muted = (int) $muted;
-                $this->update($chat, ['users' => $chatUsers]);
+                self::update($chat, ['users' => $chatUsers]);
 
                 return true;
             }
@@ -201,11 +203,11 @@ class Chat extends Generic
      * @param $userId
      * @param $read
      */
-    public function setReadFlag($chat, $userId, $read)
+    public static function setReadFlag($chat, $userId, $read)
     {
         if (!is_object($chat))
         {
-            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+            $chat = self::findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
         $chatUsers = json_decode(json_encode($chat->users ?? []));
@@ -237,7 +239,7 @@ class Chat extends Generic
 
         if ($chatUsers != $chat->users)
         {
-            $this->update($chat, ['users' => $chatUsers]);
+            self::update($chat, ['users' => $chatUsers]);
         }
     }
 
@@ -247,11 +249,11 @@ class Chat extends Generic
      * @param $chat
      * @return mixed
      */
-    public function countUsers($chat)
+    public static function countUsers($chat)
     {
         if (!is_object($chat))
         {
-            $chat = $this->findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
+            $chat = self::findOne(['_id' => $chat], ['projection' => ['users' => 1]]);
         }
 
         return count($chat->users ?? []);
@@ -264,7 +266,7 @@ class Chat extends Generic
      * @param $userId
      * @return bool
      */
-    public function hasAccess($chat, $userId)
+    public static function hasAccess($chat, $userId)
     {
         foreach ($chat->users ?? [] as $userItem)
         {
@@ -284,9 +286,9 @@ class Chat extends Generic
      * @param $userId
      * @return bool
      */
-    public function dropUser($chatId, $userId)
+    public static function dropUser($chatId, $userId)
     {
-        if (!$chat = $this->findOne(['_id' => new ObjectID($chatId)]))
+        if (!$chat = self::findOne(['_id' => new ObjectID($chatId)]))
         {
             return false;
         }
@@ -300,12 +302,12 @@ class Chat extends Generic
                 if (count($chatUsers) <= 2)
                 {
                     // one of them were User => kill the whole chat
-                    $this->delete($chat);
+                    self::delete($chat);
                 }
                 else
                 {
                     unset ($chatUsers[$k]);
-                    $this->update($chat, ['users' => $chatUsers]);
+                    self::update($chat, ['users' => $chatUsers]);
                 }
                 return true;
             }
@@ -320,13 +322,13 @@ class Chat extends Generic
      * @param array $emails
      * @return mixed|null
      */
-    public function findByEmails($emails = [])
+    public static function findByEmails($emails = [])
     {
         $ids = [];
 
         foreach ($emails as $email)
         {
-            if (!$user = \Sys::svc('User')->findOne(['email' => $email]))
+            if (!$user = User::findOne(['email' => $email]))
             {
                 return null;
             }
@@ -334,6 +336,6 @@ class Chat extends Generic
             $ids[] = $user->_id;
         }
 
-        return $this->findOne(['users.id' => ['$all' => $ids], 'users' => ['$size' => count($emails)]]);
+        return self::findOne(['users.id' => ['$all' => $ids], 'users' => ['$size' => count($emails)]]);
     }
 }

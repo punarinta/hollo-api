@@ -1,7 +1,11 @@
 <?php
 
 namespace App\Model\Inbox;
+
 use MongoDB\BSON\ObjectID;
+use \App\Service\User as UserSvc;
+use \App\Service\Chat as ChatSvc;
+use \App\Service\Notify as NotifySvc;
 
 /**
  * Class Gmail
@@ -21,7 +25,7 @@ class Gmail extends Generic implements InboxInterface
     {
         if (!is_object($user))
         {
-            $user = \Sys::svc('User')->findOne(['_id' => new ObjectID($user)]);
+            $user = UserSvc::findOne(['_id' => new ObjectID($user)]);
         }
 
         if (!$user->settings->token)
@@ -47,10 +51,10 @@ class Gmail extends Generic implements InboxInterface
             {
                 // clear token
                 $user->settings->token = null;
-                \Sys::svc('User')->update($user, ['settings.token' => null]);
+                UserSvc::update($user, ['settings.token' => null]);
 
                 // ask to relogin
-                \Sys::svc('Notify')->firebase(array
+                NotifySvc::firebase(array
                 (
                     'to'           => '/topics/user-' . $user->_id,
                     'priority'     => 'high',
@@ -69,7 +73,7 @@ class Gmail extends Generic implements InboxInterface
                     ),
                 ));
 
-                \Sys::svc('Notify')->im(['cmd' => 'sys', 'userIds' => [$user->_id], 'message' => 'logout']);
+                NotifySvc::im(['cmd' => 'sys', 'userIds' => [$user->_id], 'message' => 'logout']);
             }
         }
     }
@@ -85,7 +89,7 @@ class Gmail extends Generic implements InboxInterface
         $latestExtId = null;
 
         // find all chats where this user's messages are present
-        foreach (\Sys::svc('Chat')->findAll(['messages.refId' => $this->user->_id]) as $chat)
+        foreach (ChatSvc::findAll(['messages.refId' => $this->user->_id]) as $chat)
         {
             foreach ($chat->messages as $message)
             {
@@ -126,7 +130,7 @@ class Gmail extends Generic implements InboxInterface
 
         // update if anyone else decides to use that var
         $this->user->settings->historyId = $newHistoryId;
-        \Sys::svc('User')->update($this->user, ['settings.historyId' => $newHistoryId]);
+        UserSvc::update($this->user, ['settings.historyId' => $newHistoryId]);
 
         return isset ($res['history']) ? $res['history'] : [];
     }

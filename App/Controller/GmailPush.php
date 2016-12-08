@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Model\Inbox\Gmail;
+use \App\Service\User as UserSvc;
+use \App\Service\Message as MessageSvc;
 
 class GmailPush
 {
@@ -21,7 +23,7 @@ class GmailPush
         if (isset ($json['message']['data']))
         {
             $x = json_decode(base64_decode($json['message']['data']), true);
-            $user = \Sys::svc('User')->findOne(['email' => $x['emailAddress']]);
+            $user = UserSvc::findOne(['email' => $x['emailAddress']]);
 
             self::log("{$user->email}|H={$x['historyId']}|");
             self::syncNew($user, $x['historyId']);
@@ -59,7 +61,7 @@ class GmailPush
 
                 try
                 {
-                    $message = \Sys::svc('Message')->sync($user, $data['message']['id']);
+                    $message = MessageSvc::sync($user, $data['message']['id']);
                     self::log($message ? " M={$message->id}," : ' [*],');
                 }
                 catch (\Exception $e)

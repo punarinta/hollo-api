@@ -4,25 +4,19 @@ namespace App\Service;
 
 class Resque
 {
-    protected $connected = false;
-
-    /**
-     * Resque Service constructor
-     **/
-    public function __construct()
-    {
-        include_once 'vendor/colinmollenhour/credis/Client.php';
-    }
+    protected static $connected = false;
 
     /**
      * Checks if you are connected to Redis server
      *
      * @return bool
      */
-    public function checkConnection()
+    public static function checkConnection()
     {
-        if (!$this->connected)
+        if (!self::$connected)
         {
+            include_once 'vendor/colinmollenhour/credis/Client.php';
+            
             // Get settings
             $config = \Sys::cfg('redis');
 
@@ -39,7 +33,7 @@ class Resque
 
             // Connect to Redis
             \Resque::setBackend('redis://user:' . $config['pass'] . '@' . $config['host'] . ':' . $config['port']);
-            $this->connected = true;
+            self::$connected = true;
         }
 
         return true;
@@ -52,9 +46,9 @@ class Resque
      * @param $params
      * @return null|string
      */
-    public function addJob($job, $params)
+    public static function addJob($job, $params)
     {
-        if ($this->checkConnection())
+        if (self::checkConnection())
         {
             return \Resque::enqueue(\Sys::cfg('resque.queue'), '\App\Jobs\\' . $job, $params, true);
         }
@@ -73,9 +67,9 @@ class Resque
      * @param string $token
      * @return string
      **/
-    public function checkJob($token)
+    public static function checkJob($token)
     {
-        return $this->checkConnection() ? new \Resque_Job_Status($token) : null;
+        return self::checkConnection() ? new \Resque_Job_Status($token) : null;
     }
 
     /**
@@ -85,10 +79,10 @@ class Resque
      * @param $params
      * @return mixed
      */
-    public function execute($job, $params)
+    public static function execute($job, $params)
     {
         $className = '\App\Jobs\\' . $job;
-        $object = new $className;
+        $object = (object) new $className;
         $object->args = $params;
         return $object->perform();
     }

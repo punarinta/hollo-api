@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use \App\Service\User as UserSvc;
+use \App\Service\MailService as MailServiceSvc;
+
 class Auth
 {
     /**
@@ -9,13 +12,13 @@ class Auth
      *
      * @return bool
      */
-    public function sync()
+    public static function sync()
     {
         // some checks
         if (!isset ($_SESSION['-AUTH']['user'])) return false;
         if (!$userId = $_SESSION['-AUTH']['user']->_id) return false;
 
-        if (!$user = \Sys::svc('User')->findOne(['_id' => $userId]))
+        if (!$user = UserSvc::findOne(['_id' => $userId]))
         {
             return false;
         }
@@ -32,10 +35,10 @@ class Auth
      * @param $password
      * @throws \Exception
      */
-    public function loginImap($user, $password)
+    public static function loginImap($user, $password)
     {
         // mail service is known
-        if (!$in = \Sys::svc('MailService')->getCfg($user->settings->svc))
+        if (!$in = MailServiceSvc::getCfg($user->settings->svc))
         {
             // bullshit, but we don't want to say 'unsupported'
             throw new \Exception('Mail service provider did not respond.');
@@ -52,7 +55,7 @@ class Auth
 
         $key = \Sys::cfg('sys.imap_hash');
         $user->settings->hash = openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key);
-        \Sys::svc('User')->update($user);
+        UserSvc::update($user);
 
         $_SESSION['-AUTH']['user'] = $user;
         $_SESSION['-AUTH']['mail'] = ['user' => $user->email, 'pass' => $password];
@@ -67,21 +70,21 @@ class Auth
      * @return mixed
      * @throws \Exception
      */
-    public function registerImap($email, $password, $locale = 'en_US')
+    public static function registerImap($email, $password, $locale = 'en_US')
     {
-        if ($mailService = \Sys::svc('MailService')->findByEmail($email))
+        if ($mailService = MailService::findByEmail($email))
         {
-            $in = \Sys::svc('MailService')->getCfg($mailService);
+            $in = MailService::getCfg($mailService);
         }
         else
         {
-            if (!$mailService = \Sys::svc('MailService')->fullDiscoverAndSave($email))
+            if (!$mailService = MailService::fullDiscoverAndSave($email))
             {
                 // bullshit, but we don't want to say 'unsupported'
                 throw new \Exception('Mail service provider did not respond.');
             }
 
-            $in = \Sys::svc('MailService')->getCfg($mailService);
+            $in = MailService::getCfg($mailService);
         }
 
         // TODO support non-SSL login
@@ -102,9 +105,9 @@ class Auth
         }
 
         // create Hollo account or use an existing dummy one
-        if (!$user = \Sys::svc('User')->findOne(['email' => $email]))
+        if (!$user = User::findOne(['email' => $email]))
         {
-            $user = \Sys::svc('User')->create(array
+            $user = User::create(array
             (
                 // 'name' is unknown for a standard IMAP
                 'email'     => $email,
@@ -121,7 +124,7 @@ class Auth
             }
             $user->roles = \Auth::USER;
             $user->settings = $settings;
-            \Sys::svc('User')->update($user);
+            User::update($user);
         }
 
         if (!$user->_id)
@@ -129,7 +132,7 @@ class Auth
             throw new \Exception('Cannot add user');
         }
 
-        \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->_id]);
+        Resque::addJob('SyncContacts', ['user_id' => $user->_id]);
 
 
         $_SESSION['-AUTH']['user'] = $user;
@@ -145,7 +148,7 @@ class Auth
      * @param null $redirectUrl
      * @return array|string
      */
-    public function getOAuthToken($code = null, $redirectUrl = null)
+    public static function getOAuthToken($code = null, $redirectUrl = null)
     {
         if (!$redirectUrl)
         {
@@ -195,9 +198,9 @@ class Auth
      * @param null $redirectUrl
      * @throws \Exception
      */
-    public function processOAuthCode($code, $redirectUrl = null)
+    public static function processOAuthCode($code, $redirectUrl = null)
     {
-        $oauthData = $this->getOAuthToken($code, $redirectUrl);
+        $oauthData = self::getOAuthToken($code, $redirectUrl);
 
         $token = $oauthData['refresh'];
         $email = $oauthData['email'];
@@ -205,8 +208,8 @@ class Auth
         $name = $oauthData['name'];
 
         // Now we only have Google working with OAuth
-        $mailService = \Sys::svc('MailService')->findOne(['name' => 'Gmail']);
-        $user = \Sys::svc('User')->findOne(['email' => $email]);
+        $mailService = MailService::findOne(['name' => 'Gmail']);
+        $user = User::findOne(['email' => $email]);
 
         if (!$user || !isset ($user->roles))
         {
@@ -216,7 +219,7 @@ class Auth
             if (!$user)
             {
                 // create Hollo account
-                $user = \Sys::svc('User')->create(array
+                $user = User::create(array
                 (
                     'name'      => $name,
                     'email'     => $email,
@@ -232,7 +235,7 @@ class Auth
                 }
                 $user->roles = \Auth::USER;
                 $user->settings = $settings;
-                \Sys::svc('User')->update($user);
+                User::update($user);
             }
 
             if (!$user->_id)
@@ -240,13 +243,13 @@ class Auth
                 throw new \Exception('Cannot add user');
             }
 
-            \Sys::svc('Resque')->addJob('SyncContacts', ['user_id' => $user->_id]);
+            Resque::addJob('SyncContacts', ['user_id' => $user->_id]);
         }
         else
         {
             // save updated refresh token on every login
             $user->settings->token = $token;
-            \Sys::svc('User')->update($user);
+            User::update($user);
         }
 
         $_SESSION['-AUTH']['user'] = $user;
@@ -258,7 +261,7 @@ class Auth
     /**
      * Logs you out
      */
-    public function logout()
+    public static function logout()
     {
         unset ($_SESSION['-AUTH']);
     }
@@ -271,14 +274,14 @@ class Auth
      * @param bool $skipCheck
      * @throws \Exception
      */
-    public function incarnate($userId, $forever = false, $skipCheck = false)
+    public static function incarnate($userId, $forever = false, $skipCheck = false)
     {
         if (!\Auth::check() && !$skipCheck)
         {
             throw new \Exception('You need to be logged-in to incarnate.');
         }
 
-        if (!$newUser = \Sys::svc('User')->findOne(['_id' => $userId]))
+        if (!$newUser = User::findOne(['_id' => $userId]))
         {
             throw new \Exception('User not found. ID = ' . $userId);
         }
@@ -296,7 +299,7 @@ class Auth
      *
      * @throws \Exception
      */
-    public function wakeUp()
+    public static function wakeUp()
     {
         if (!isset ($_SESSION['-AUTH']['real-user']))
         {
@@ -313,7 +316,7 @@ class Auth
      *
      * @return bool
      */
-    public function canWakeUp()
+    public static function canWakeUp()
     {
         return isset ($_SESSION['-AUTH']['real-user']);
     }

@@ -8,19 +8,21 @@ use MongoDB\BSON\ObjectID;
 
 class MailService extends Generic
 {
+    protected static $class_name = 'mail_service';
+
     /**
      * Returns configuration for a mail service
      *
      * @param $mailService      — both ID and object are supported
      * @param string $dir
-     * @return array
+     * @return mixed
      * @throws \Exception*
      */
-    public function getCfg($mailService, $dir = 'in')
+    public static function getCfg($mailService, $dir = 'in')
     {
         if (!is_object($mailService))
         {
-            if (!$mailService = $this->findOne(['_id' => new ObjectID($mailService)]))
+            if (!$mailService = self::findOne(['_id' => new ObjectID($mailService)]))
             {
                 throw new \Exception('Mail service does not exist');
             }
@@ -42,7 +44,7 @@ class MailService extends Generic
      * @param $email
      * @return null|\StdClass
      */
-    public function fullDiscoverAndSave($email)
+    public static function fullDiscoverAndSave($email)
     {
         $discover = new Discover;
 
@@ -59,7 +61,7 @@ class MailService extends Generic
         $domain = explode('@', $email);
         $domain = $domain[1];
 
-        return $this->create(
+        return self::create(
         [
             'name'      => $domain,
             'domains'   => [$domain],
@@ -74,9 +76,9 @@ class MailService extends Generic
      * @param $domain
      * @return null|\StdClass
      */
-    public function findByDomain($domain)
+    public static function findByDomain($domain)
     {
-        return $this->findOne(['domains' => ['$elemMatch' => ['$eq' => $domain]]]);
+        return self::findOne(['domains' => ['$elemMatch' => ['$eq' => $domain]]]);
     }
 
     /**
@@ -86,7 +88,7 @@ class MailService extends Generic
      * @return null|\StdClass
      * @throws \Exception
      */
-    public function findByEmail($email)
+    public static function findByEmail($email)
     {
         $domain = explode('@', $email);
 
@@ -95,7 +97,7 @@ class MailService extends Generic
             throw new \Exception('Not an email address');
         }
 
-        return $this->findByDomain($domain[1]);
+        return self::findByDomain($domain[1]);
     }
 
     /**
@@ -104,7 +106,7 @@ class MailService extends Generic
      * @param $email
      * @return array|bool
      */
-    public function discoverEmail($email)
+    public static function discoverEmail($email)
     {
         $cfg = \Sys::cfg('contextio');
         $conn = new ContextIO($cfg['key'], $cfg['secret']);

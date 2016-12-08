@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use \App\Service\Auth as AuthSvc;
+use \App\Service\User as UserSvc;
+use \App\Service\Resque as ResqueSvc;
+
 /**
  * Class Settings
  * @package App\Controller
@@ -54,14 +58,14 @@ class Settings extends Generic
         }
 
         // save settings back
-        \Sys::svc('User')->update($user, ['settings' => $settings]);
-        \Sys::svc('Auth')->sync();
+        UserSvc::update($user, ['settings' => $settings]);
+        AuthSvc::sync();
 
         return $settings;
     }
 
     static public function testNotification()
     {
-        \Sys::svc('Resque')->addJob('TestNotifications', ['user_id' => \Auth::user()->_id]);
+        ResqueSvc::addJob('TestNotifications', ['user_id' => \Auth::user()->_id]);
     }
 }

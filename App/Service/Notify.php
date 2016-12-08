@@ -4,25 +4,25 @@ namespace App\Service;
 
 use App\Model\WebSocketClient;
 
-class Notify extends Generic
+class Notify
 {
-    public $client = null;
+    public static $client = null;
 
     /**
      * Send data to WebSocket server
      *
      * @param $data
      */
-    public function im($data)
+    public static function im($data)
     {
-        if (!$this->client)
+        if (!self::$client)
         {
             $cfg = \Sys::cfg('notifier');
-            $this->client = new WebSocketClient;
-            $this->client->connect($cfg['host'], $cfg['port'], '/', $cfg['origin'], $cfg['ssl']);
+            self::$client = new WebSocketClient;
+            self::$client->connect($cfg['host'], $cfg['port'], '/', $cfg['origin'], $cfg['ssl']);
         }
 
-        $this->client->sendData(json_encode($data));
+        self::$client->sendData(json_encode($data));
     }
 
     /**
@@ -31,7 +31,7 @@ class Notify extends Generic
      * @param $data
      * @return bool
      */
-    public function firebase($data)
+    public static function firebase($data)
     {
         $data['notification']['sound'] = 'default';
         $data['notification']['click_action'] = 'FCM_PLUGIN_ACTIVITY';

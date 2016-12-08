@@ -7,6 +7,7 @@ namespace App\Model;
     https://github.com/chrisboulton/php-resque/pull/229/files
     Last commit to master was for now on May 13, id df69e8980cc21652f10cd775cb6a0e8c572ffd2d
 */
+use \App\Service\Resque as ResqueSvc;
 
 /**
  * Class Worker
@@ -113,7 +114,7 @@ class Worker
     public function testJob($jobId)
     {
         $jobId = '\App\Jobs\\' . $jobId;
-        $job = new $jobId;
+        $job = (object) new $jobId;
 
         $job->testSetup();
         $job->setUp();
@@ -133,7 +134,7 @@ class Worker
     public function runJob($jobId, $params)
     {
         $jobId = '\App\Jobs\\' . $jobId;
-        $job = new $jobId;
+        $job = (object) new $jobId;
 
         if ($params)
         {
@@ -170,7 +171,7 @@ class Worker
             return 'Parameters found but were unreadable: ' . $params . "\n\n";
         }
 
-        $hash = \Sys::svc('Resque')->addJob($jobId, $jParams);
+        $hash = ResqueSvc::addJob($jobId, $jParams);
 
         return "Job added. Hash = $hash\n";
     }
