@@ -42,7 +42,18 @@ class Chat extends Generic
         }
 
         $chats = ChatSvc::findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 0]]));
-        $chats = array_merge($chats, ChatSvc::findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 1]])));
+
+        // keep total page length ;)
+        if (\DB::$pageLength)
+        {
+            \DB::$pageLength = \DB::$pageLength - count($chats);
+        }
+
+        if (\DB::$pageLength > 0)
+        {
+            $chats = array_merge($chats, ChatSvc::findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 1]])));
+        }
+
 
         foreach ($chats as $chat)
         {
