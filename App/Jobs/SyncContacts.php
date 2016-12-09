@@ -5,6 +5,7 @@ namespace App\Jobs;
 use MongoDB\BSON\ObjectID;
 use \App\Service\User as UserSvc;
 use \App\Service\Message as MessageSvc;
+use \App\Service\MailService as MailServiceSvc;
 
 /**
  * This is basically called only one time -- when user is connected to Context
@@ -38,16 +39,24 @@ class SyncContacts extends Generic
             return false;
         }
 
-        sleep(5);
+        $gmailSvcId = MailServiceSvc::findOne(['name' => 'Gmail'])->_id;
 
-        // subscribe for future updates
-        UserSvc::subscribeToGmail($user);
+        if (@$user->settings->svc == $gmailSvcId)
+        {
+            // subscribe for future updates
+            UserSvc::subscribeToGmail($user);
+        }
 
         // fetch all the messages
         MessageSvc::syncAllByUserId($user, false);
 
-        // fetch avatars
-        UserSvc::updateAvatars($user);
+        if (@$user->settings->svc == $gmailSvcId)
+        {
+            // TODO: move avatar checking logic into updateAvatars() after avatar server is up
+
+            // fetch avatars
+            UserSvc::updateAvatars($user);
+        }
 
         return true;
     }
