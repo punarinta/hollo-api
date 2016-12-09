@@ -66,6 +66,8 @@ class Settings extends Generic
 
     static public function testNotification()
     {
-        ResqueSvc::addJob('TestNotifications', ['user_id' => \Auth::user()->_id]);
+        $mode = \Input::data('mode') ?: 'firebase';
+
+        ResqueSvc::addJob('TestNotifications', ['user_id' => \Auth::user()->_id, 'mode' => $mode ]);
     }
 }
