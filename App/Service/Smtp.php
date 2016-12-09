@@ -190,6 +190,7 @@ class Smtp
             Notify::firebase(array
             (
                 'to'           => '/topics/user-' . $userRow->id,
+                'collapse_key' => 'new_message',
                 'priority'     => 'high',
 
                 'notification' => array

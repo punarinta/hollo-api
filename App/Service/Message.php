@@ -501,6 +501,7 @@ class Message
                 Notify::firebase(array
                 (
                     'to'           => '/topics/user-' . $user->_id,
+                    'collapse_key' => 'new_message',
                     'priority'     => 'high',
 
                     'notification' => array
