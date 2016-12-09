@@ -18,7 +18,8 @@ class TestNotifications extends Generic
 
         $this->args = array
         (
-            'user_id' => $user->_id,
+            'user_id'   => $user->_id,
+            'mode'      => 'firebase',
         );
     }
 
@@ -30,27 +31,43 @@ class TestNotifications extends Generic
             return false;
         }
 
-        $payload = array
-        (
-            'to'           => '/topics/user-' . $user->_id,
-            'priority'     => 'high',
-
-            'notification' => array
-            (
-                'title' => 'You requested a test',
-                'body'  => 'Surprise! 🎂',
-                'icon'  => 'fcm_push_icon'
-            ),
-
-            'data' => array
-            (
-                'authId' => $user->_id,
-                'cmd'    => 'ping',
-            ),
-        );
-
+        $res = 'Error';
         sleep(5);
-        $res = NotifySvc::firebase($payload);
+
+        if ($this->args['mode'] == 'firebase')
+        {
+            $payload = array
+            (
+                'to'           => '/topics/user-' . $user->_id,
+                'priority'     => 'high',
+
+                'notification' => array
+                (
+                    'title' => 'You requested a test',
+                    'body'  => 'Surprise! 🎂',
+                    'icon'  => 'fcm_push_icon'
+                ),
+
+                'data' => array
+                (
+                    'cmd'    => 'sys:ping',
+                    'authId' => $user->_id,
+                ),
+            );
+
+            $res = NotifySvc::firebase($payload);
+        }
+        elseif ($this->args['mode'] == 'im')
+        {
+            $payload = array
+            (
+                'cmd'       => 'sys:ping',
+                'userIds'   => [$user->_id],
+            );
+
+            $res = NotifySvc::im($payload);
+        }
+
         print_r($res);
 
         return true;
