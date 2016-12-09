@@ -512,7 +512,7 @@ class Message
 
                     'data' => array
                     (
-                        'cmd'    => 'chat:notify',
+                        'cmd'    => 'chat:update',
                         'authId' => $user->_id,
                         'chatId' => $chat->_id,
                     ),
@@ -523,7 +523,7 @@ class Message
             {
                 Notify::im(
                 [
-                    'cmd'       => 'chat:notify',
+                    'cmd'       => 'chat:update',
                     'userIds'   => [$user->_id],
                     'chatId'    => $chat->_id,
                     'silent'    => $noMarks,
