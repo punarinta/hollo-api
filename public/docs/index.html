@@ -544,11 +544,11 @@
         <pre class="api-result hidden"></pre>
     </form>
 </li>
-<li class="procedure api-data-method" data-method="getLastChatMessage">
+<li class="procedure api-data-method" data-method="getAllAfter">
     <div class="title">
-        <a class="toggle-method" href="#"><span class="name">getLastChatMessage()</span></a>
+        <a class="toggle-method" href="#"><span class="name">getAllAfter()</span></a>
         —
-        <span class="description">Returns last message in the Chat</span>
+        <span class="description">Returns last messages in the Chat</span>
     </div>
 
     <form class="api-form togglable">
@@ -567,6 +567,12 @@
     <td class="parameter"><input class="form-control value " value="" /></td>
     <td class="type">string</td>
     <td class="description"><p>Chat ID</p></td>
+</tr>
+<tr class="required">
+    <td class="name">lastMessageId</td>
+    <td class="parameter"><input class="form-control value " value="" /></td>
+    <td class="type">string</td>
+    <td class="description"><p>Message ID after which one has to count</p></td>
 </tr>
 
             </tbody>

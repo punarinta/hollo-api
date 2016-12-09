@@ -119,14 +119,15 @@ class Message extends Generic
     }
 
     /**
-     * Returns last message in the Chat
+     * Returns last messages in the Chat
      *
-     * @doc-var     (string) chatId!        - Chat ID
+     * @doc-var     (string) chatId!            - Chat ID
+     * @doc-var     (string) lastMessageId!     - Message ID after which one has to count
      *
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
-    static function getLastChatMessage()
+    static function getAllAfter()
     {
         if (!$chatId = \Input::data('chatId'))
         {
@@ -143,23 +144,27 @@ class Message extends Generic
             throw new \Exception('Access denied', 403);
         }
 
-        $message = MessageSvc::getLastByChat($chat);
-        $user = UserSvc::findOne(['_id' => new ObjectID($message->userId)]);
+        $items = [];
+        $messages = $chat->messages ?? [];
+        $lastMessageId = \Input::data('lastMessageId');
 
-        return array
-        (
-            'id'        => $message->_id,
-            'ts'        => $message->ts,
-            'body'      => $message->body,
-            'subject'   => MessageSvc::clearSubject($message->subj),
-            'from'      =>
-            [
-                'id'    => $user->_id,
-                'email' => $user->email,
-                'name'  => $user->name,
-            ],
-            'files'     => $message->files,
-        );
+        usort($messages, function ($a, $b)
+        {
+            // latest messages will thus go first
+            return $b->ts <=> $a->ts;
+        });
+
+        foreach ($messages as $message)
+        {
+            if ($message->id == $lastMessageId)
+            {
+                break;
+            }
+
+            $items[] = $message;
+        }
+
+        return $items;
     }
 
     /**
