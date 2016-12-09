@@ -73,12 +73,16 @@ class Imap extends Generic implements InboxInterface
 
                 'data' => array
                 (
+                    'cmd'       => 'auth:logout',
                     'authId'    => $user->_id,
-                    'cmd'       => 'logout',
                 ),
             ));
 
-            NotifySvc::im(['cmd' => 'sys', 'userIds' => [$user->_id], 'message' => 'logout']);
+            NotifySvc::im(
+            [
+                'cmd'       => 'auth:logout',
+                'userIds'   => [$user->_id],
+            ]);
         }
     }
 

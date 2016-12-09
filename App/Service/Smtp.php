@@ -201,14 +201,19 @@ class Smtp
 
                 'data' => array
                 (
+                    'cmd'    => 'chat:update',
                     'authId' => $userRow->id,
-                    'cmd'    => 'show-chat',
                     'chatId' => $chat->_id,
                 ),
             ));
         }
 
-        Notify::im(['cmd' => 'notify', 'userIds' => $userIds, 'chatId' => $chat->_id]);
+        Notify::im(
+        [
+            'cmd'       => 'chat:update',
+            'userIds'   => $userIds,
+            'chatId'    => $chat->_id,
+        ]);
 
         foreach ($attachments as $file)
         {

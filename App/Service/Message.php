@@ -512,8 +512,8 @@ class Message
 
                     'data' => array
                     (
+                        'cmd'    => 'chat:notify',
                         'authId' => $user->_id,
-                        'cmd'    => 'show-chat',
                         'chatId' => $chat->_id,
                     ),
                 ));
@@ -523,10 +523,10 @@ class Message
             {
                 Notify::im(
                 [
-                    'cmd'       => 'notify',
+                    'cmd'       => 'chat:notify',
                     'userIds'   => [$user->_id],
                     'chatId'    => $chat->_id,
-                    'noMarks'   => $noMarks,
+                    'silent'    => $noMarks,
                 ]);
             }
         }
