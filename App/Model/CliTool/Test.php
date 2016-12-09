@@ -4,6 +4,7 @@ namespace App\Model\CliTool;
 
 use App\Model\Inbox\Imap;
 use \App\Service\Chat as ChatSvc;
+use \App\Service\User as UserSvc;
 use \App\Service\Notify as NotifySvc;
 
 /**
@@ -55,9 +56,8 @@ class Test
 
             'data' => array
             (
-                'authId' => 1,
-                'cmd'    => 'show-chat',
-                'chatId' => 1,
+                'authId' => UserSvc::findOne(['email' => 'vladimir.g.osipov@gmail.com'])->_id,
+                'cmd'    => 'sys:ping',
             ),
         );
 
