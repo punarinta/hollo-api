@@ -12,6 +12,7 @@ class Notify
      * Send data to WebSocket server
      *
      * @param $data
+     * @return bool
      */
     public static function im($data)
     {
@@ -22,7 +23,7 @@ class Notify
             self::$client->connect($cfg['host'], $cfg['port'], '/', $cfg['origin'], $cfg['ssl']);
         }
 
-        self::$client->sendData(json_encode($data));
+        return self::$client->sendData(json_encode($data));
     }
 
     /**
