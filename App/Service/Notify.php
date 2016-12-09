@@ -23,6 +23,8 @@ class Notify
             self::$client->connect($cfg['host'], $cfg['port'], '/', $cfg['origin'], $cfg['ssl']);
         }
 
+        $data['key'] = 'S5tDDFnqq2Xn$Wh%ES0H!Y58W)"F8g$AvI"DJ$EmZRfO5PVesNbGgWSK$k(5E#VC';
+
         return self::$client->sendData(json_encode($data));
     }
 
