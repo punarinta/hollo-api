@@ -203,9 +203,7 @@ class Message extends Generic
                     return false;
                 }
 
-                $rawBody = $data['body'][\Input::data('bodyId') ?? 0];
-
-                return MessageSvc::clearContent('keep', $rawBody);
+                return $data['body'][\Input::data('bodyId') ?? 0];
             }
         }
 
