@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Model\FileParser\Calendar;
+use App\Model\Html2Text;
 use App\Model\Inbox\Inbox;
 use MongoDB\BSON\ObjectID;
 
@@ -112,9 +113,10 @@ class Message
             $emailData = $imap->getMessage($messageExtId);
 
             $maxTimeBack = \Sys::cfg('sys.sync_period');
-            if ($maxTimeBack > 0 && $emailData['date'] < time() - 172800)
+            if ($maxTimeBack > 0 && $emailData['date'] < time() - $maxTimeBack - 172800)
             {
                 // most probably all the next email will be 'too old'
+                self::say('Process stopped as definitely-too-old message was reached');
                 break;
             }
 
@@ -583,7 +585,7 @@ class Message
 
         if ($type == 'text/html')
         {
-            // do not let HTML spam in
+        /*    // do not let HTML spam in
             if (substr($content, 0, 1) == '<')
             {
                 // use prelim check to speedup
@@ -592,13 +594,14 @@ class Message
                 if (substr($content, 0, 5) == '<?xml') return null;
                 if (substr($content, 0, 5) == '<!-- ') return null;
             }
-        //    if (strpos($content, '<table') !== false) return null;
+            if (strpos($content, '<table') !== false) return null;
             if (strpos($content, '<!DOCTYPE html') !== false) return null;
 
             $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
             $content = str_replace('</div><div>', "\n", $content);
             $content = strip_tags($content);
-            $content = html_entity_decode($content);
+            $content = html_entity_decode($content);*/
+            $content = Html2Text::convert($content);
         }
 
         $content = str_replace("\r\n", "\n", $content);
