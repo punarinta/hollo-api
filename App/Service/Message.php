@@ -602,7 +602,14 @@ class Message
             $content = str_replace('</div><div>', "\n", $content);
             $content = strip_tags($content);
             $content = html_entity_decode($content);*/
-            $content = Html2Text::convert($content);
+            try
+            {
+                $content = Html2Text::convert($content);
+            }
+            catch (\Exception $e)
+            {
+                return null;
+            }
         }
 
         $content = str_replace("\r\n", "\n", $content);
