@@ -48,7 +48,7 @@ class Html2Text
         }
 
         $doc = new \DOMDocument();
-        if (!$doc->loadHTML($html)) 
+        if (!@$doc->loadHTML($html))
         {
             throw new Html2TextException('Could not load HTML - badly formed?', $html);
         }
