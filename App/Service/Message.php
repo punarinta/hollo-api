@@ -111,6 +111,13 @@ class Message
 
             $emailData = $imap->getMessage($messageExtId);
 
+            $maxTimeBack = \Sys::cfg('sys.sync_period');
+            if ($maxTimeBack > 0 && $emailData['date'] < time() - 172800)
+            {
+                // most probably all the next email will be 'too old'
+                break;
+            }
+
             $count += 1 * !empty (self::processMessageSync($user, $emailData,
             [
                 'fetchAll'      => true,
