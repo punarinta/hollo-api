@@ -604,6 +604,10 @@ class Message
                     $content = str_replace('</div><div>', "\n", $content);
                     $content = strip_tags($content);
                     $content = html_entity_decode($content);*/
+
+                $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
+                $content = str_replace('</div><div>', "\n", $content);
+
                 try
                 {
                     $content = Html2Text::convert($content);
