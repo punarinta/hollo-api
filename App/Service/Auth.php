@@ -203,7 +203,7 @@ class Auth
         $oauthData = self::getOAuthToken($code, $redirectUrl);
 
         $token = $oauthData['refresh'];
-        $email = $oauthData['email'];
+        $email = strtolower($oauthData['email']);
         $avatar = $oauthData['avatar'];
         $name = $oauthData['name'];
 
