@@ -22,6 +22,8 @@ class User extends Generic
             throw new \Exception('Cannot add user: invalid email');
         }
 
+        $data['email'] = strtolower($data['email']);
+
         return parent::create($data);
     }
 
