@@ -4,6 +4,7 @@ namespace App\Model\CliTool;
 
 use App\Model\Bcrypt;
 use App\Model\Inbox\Gmail;
+use \App\Service\User as UserSvc;
 use \App\Service\Message as MessageSvc;
 
 /**
@@ -24,6 +25,14 @@ class Admin
         MessageSvc::sync($userId, $messageExtId);
 
         return '';
+    }
+
+    public function prepareSync()
+    {
+        foreach (UserSvc::findAllReal() as $user)
+        {
+            echo "php cli admin sync {$user->_id} &\n";
+        }
     }
 
     /**
