@@ -171,6 +171,7 @@ class Message extends Generic
      * Show the original message
      *
      * @doc-var     (string) id!       - Message ID
+     * @doc-var     (int) bodyId       - Body ID
      *
      * @return mixed
      * @throws \Exception
@@ -202,7 +203,9 @@ class Message extends Generic
                     return false;
                 }
 
-                return $data['body'][0];
+                $rawBody = $data['body'][\Input::data('bodyId') ?? 0];
+
+                return MessageSvc::clearContent('keep', $rawBody);
             }
         }
 

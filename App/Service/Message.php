@@ -580,7 +580,7 @@ class Message
      * @param $content
      * @return null
      */
-    protected static function clearContent($type, $content)
+    public static function clearContent($type, $content)
     {
         if ($type != 'keep')
         {
