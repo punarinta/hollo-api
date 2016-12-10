@@ -48,7 +48,7 @@ class SyncContacts extends Generic
         }
 
         // fetch all the messages
-        MessageSvc::syncAllByUserId($user, false);
+        MessageSvc::syncAllByUserId($user);
 
         if (@$user->settings->svc == $gmailSvcId)
         {

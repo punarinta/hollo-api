@@ -76,11 +76,10 @@ class Message
      * Syncs all messages for the User
      *
      * @param $userId
-     * @param bool $fetchMuted      - fetch muted too
      * @return int
      * @throws \Exception
      */
-    public static function syncAllByUserId($userId, $fetchMuted = false)
+    public static function syncAllByUserId($userId)
     {
         if (!is_object($userId))
         {
@@ -114,7 +113,6 @@ class Message
 
             $count += 1 * !empty (self::processMessageSync($user, $emailData,
             [
-                'fetchMuted'    => $fetchMuted,
                 'fetchAll'      => true,
                 'noMarks'       => true,
                 'useFirebase'   => false,           // don't spam during a mass sync
@@ -155,8 +153,6 @@ class Message
         {
             self::say($data, 1);
         }
-
-        $options['fetchMuted'] = true;
 
         $message = self::processMessageSync($user, $data, $options);
 
@@ -212,7 +208,6 @@ class Message
         // message must not exist
         $extId = $messageData['message_id'];
 
-        $fetchMuted = isset ($options['fetchMuted']) ? $options['fetchMuted'] : false;
         $fetchAll = isset ($options['fetchAll']) ? $options['fetchAll'] : false;
         $limitToChatId = isset ($options['limitToChatId']) ? $options['limitToChatId'] : 0;
         $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : \Sys::cfg('sys.sync_period');
@@ -340,15 +335,6 @@ class Message
         $recipient = User::findOne(['email' => @$messageData['addresses']['to'][0]['email']]);
         $flags = Chat::getFlags($chat, $recipient ? $recipient->_id : 0);
 
-        // check that you want any messages in this chat
-        // message sync on behalf of a bot will not happen
-
-        if (!$fetchMuted && $flags && $flags->muted)
-        {
-            self::say('Notice: message is muted');
-            return false;
-        }
-
 
         // === process the message content ===
 
@@ -443,7 +429,7 @@ class Message
 
         $chat->messages = $chat->messages ?? [];
 
-        if ($fetchMuted && $flags && $flags->muted)
+        if ($flags && $flags->muted)
         {
             // OK, the chat is muted
             // allow fetching, but keep 1 message in the chat only => clear the whole chat before sync

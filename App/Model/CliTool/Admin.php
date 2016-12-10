@@ -12,9 +12,9 @@ use \App\Service\Message as MessageSvc;
  */
 class Admin
 {
-    public function sync($userId, $fetchMuted = false)
+    public function sync($userId)
     {
-        $x = MessageSvc::syncAllByUserId($userId, $fetchMuted);
+        $x = MessageSvc::syncAllByUserId($userId);
 
         return "Messages synced: $x\n\n";
     }
