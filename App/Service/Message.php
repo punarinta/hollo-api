@@ -281,7 +281,7 @@ class Message
         // try to clean emails
         foreach ($emails as $k => $email)
         {
-            $emails[$k] = trim($email, "'");
+            $emails[$k] = strtolower(trim($email, "'"));
         }
 
         // chat may not exist -> init and mute if necessary
