@@ -606,7 +606,6 @@ class Message
                     $content = html_entity_decode($content);*/
 
                 $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
-                $content = str_replace('</div><div>', "\n", $content);
 
                 try
                 {
