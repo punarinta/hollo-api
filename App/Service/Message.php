@@ -108,25 +108,33 @@ class Message
 
         foreach ($messageExtIds as $messageExtId)
         {
-            self::say("User {$user->email}, extId = $messageExtId");
-
-            $emailData = $imap->getMessage($messageExtId);
-
-            // this check is here just in case
-            $maxTimeBack = \Sys::cfg('sys.sync_period');
-            if ($maxTimeBack > 0 && $emailData['date'] < time() - $maxTimeBack - 172800)
+            try
             {
-                // most probably all the next email will be 'too old'
-                self::say('Process stopped as definitely-too-old message was reached');
-                break;
-            }
+                self::say("User {$user->email}, extId = $messageExtId");
 
-            $count += 1 * !empty (self::processMessageSync($user, $emailData,
-            [
-                'fetchAll'      => true,
-                'noMarks'       => true,
-                'useFirebase'   => false,           // don't spam during a mass sync
-            ]));
+                $emailData = $imap->getMessage($messageExtId);
+
+                // this check is here just in case
+                $maxTimeBack = \Sys::cfg('sys.sync_period');
+                if ($maxTimeBack > 0 && $emailData['date'] < time() - $maxTimeBack - 172800)
+                {
+                    // most probably all the next email will be 'too old'
+                    self::say('Process stopped as definitely-too-old message was reached');
+                    break;
+                }
+
+                $count += 1 * !empty (self::processMessageSync($user, $emailData,
+                [
+                    'fetchAll'      => true,
+                    'noMarks'       => true,
+                    'useFirebase'   => false,           // don't spam during a mass sync
+                ]));
+            }
+            catch (\Exception $e)
+            {
+                self::say('ERROR ' . $e->getMessage());
+                usleep(500000);
+            }
 
             // sleep a bit to prevent API request queue growth
             usleep(200000);
