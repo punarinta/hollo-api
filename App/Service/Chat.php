@@ -105,7 +105,7 @@ class Chat extends Generic
      *
      * @param $chat
      * @param $userId
-     * @return null
+     * @return null|\stdClass
      */
     public static function getFlags($chat, $userId)
     {
