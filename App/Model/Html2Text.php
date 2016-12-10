@@ -2,17 +2,6 @@
 
 namespace App\Model;
 
-class Html2TextException extends \Exception
-{
-    var $more_info;
-
-    public function __construct($message = '', $more_info = '')
-    {
-        parent::__construct($message);
-        $this->more_info = $more_info;
-    }
-}
-
 class Html2Text
 {
     /**
@@ -27,7 +16,7 @@ class Html2Text
      *
      * @param string $html the input HTML
      * @return string the HTML converted, as best as possible, to text
-     * @throws Html2TextException if the HTML could not be loaded as a {@link DOMDocument}
+     * @throws \Exception if the HTML could not be loaded as a {@link DOMDocument}
      */
     public static function convert($html)
     {
@@ -50,7 +39,7 @@ class Html2Text
         $doc = new \DOMDocument();
         if (!@$doc->loadHTML($html))
         {
-            throw new Html2TextException('Could not load HTML - badly formed?', $html);
+            throw new \Exception('Could not load HTML - badly formed?', $html);
         }
 
         if (static::isOfficeDocument($html))
