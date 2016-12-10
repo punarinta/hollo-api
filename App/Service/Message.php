@@ -582,38 +582,41 @@ class Message
      */
     protected static function clearContent($type, $content)
     {
-        $content = str_ireplace(['<br />','<br>','<br/>'], "\n", $content);
-
-        if ($type == 'text/html')
+        if ($type != 'keep')
         {
-        /*    // do not let HTML spam in
-            if (substr($content, 0, 1) == '<')
-            {
-                // use prelim check to speedup
-                if (substr($content, 0, 5) == '<html') return null;
-                if (substr($content, 0, 5) == '<meta') return null;
-                if (substr($content, 0, 5) == '<?xml') return null;
-                if (substr($content, 0, 5) == '<!-- ') return null;
-            }
-            if (strpos($content, '<table') !== false) return null;
-            if (strpos($content, '<!DOCTYPE html') !== false) return null;
+            $content = str_ireplace(['<br />','<br>','<br/>'], "\n", $content);
 
-            $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
-            $content = str_replace('</div><div>', "\n", $content);
-            $content = strip_tags($content);
-            $content = html_entity_decode($content);*/
-            try
+            if ($type == 'text/html')
             {
-                $content = Html2Text::convert($content);
+                /*    // do not let HTML spam in
+                    if (substr($content, 0, 1) == '<')
+                    {
+                        // use prelim check to speedup
+                        if (substr($content, 0, 5) == '<html') return null;
+                        if (substr($content, 0, 5) == '<meta') return null;
+                        if (substr($content, 0, 5) == '<?xml') return null;
+                        if (substr($content, 0, 5) == '<!-- ') return null;
+                    }
+                    if (strpos($content, '<table') !== false) return null;
+                    if (strpos($content, '<!DOCTYPE html') !== false) return null;
+
+                    $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
+                    $content = str_replace('</div><div>', "\n", $content);
+                    $content = strip_tags($content);
+                    $content = html_entity_decode($content);*/
+                try
+                {
+                    $content = Html2Text::convert($content);
+                }
+                catch (\Exception $e)
+                {
+                    return null;
+                }
             }
-            catch (\Exception $e)
-            {
-                return null;
-            }
+
+            $content = str_replace("\r\n", "\n", $content);
+            $content = preg_replace('/\n{3,}/', "\n\n", $content);
         }
-
-        $content = str_replace("\r\n", "\n", $content);
-        $content = preg_replace('/\n{3,}/', "\n\n", $content);
 
         $quoteHeadersRegex = array
         (
@@ -699,6 +702,10 @@ class Message
         self::say($params, 1);
     }
 
+    /**
+     * @param $what
+     * @param int $print
+     */
     protected static function say($what, $print = 0)
     {
         if (@$GLOBALS['-SYS-VERBOSE'])
