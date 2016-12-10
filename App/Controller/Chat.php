@@ -49,7 +49,7 @@ class Chat extends Generic
             \DB::$pageLength = \DB::$pageLength - count($chats);
         }
 
-        if (\DB::$pageLength > 0)
+        if (\DB::$pageLength > 0 || $emailFilter)
         {
             $chats = array_merge($chats, ChatSvc::findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 1]])));
         }
