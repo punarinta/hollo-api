@@ -306,7 +306,7 @@ class Message
             }
             try
             {
-                $chat = Chat::init($emails, $names);
+                $chat = Chat::init($emails, $names, true);
             }
             catch (\Exception $e)
             {

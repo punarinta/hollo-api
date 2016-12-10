@@ -13,15 +13,41 @@ class Chat extends Generic
      *
      * @param array $emails
      * @param array $names
+     * @param bool $nameChecks
      * @return mixed|null
      */
-    public static function init($emails = [], $names = [])
+    public static function init($emails = [], $names = [], $nameChecks = false)
     {
         $emails = array_unique($emails);
 
         // check just in case
         if ($chat = self::findByEmails($emails))
         {
+            if ($nameChecks)
+            {
+                // sometimes another name can come for the same email (e.g. notify@twitter.com)
+                // check for those cases and if contact is muted by default remove his name
+                foreach ($emails as $email)
+                {
+                    if (!isset ($names[$email]))
+                    {
+                        continue;
+                    }
+
+                    $user = User::findOne(['email' => $email]);
+
+                    if (!isset ($user->name))
+                    {
+                        $user->name = $names[$email];
+                    }
+                    else if ($user->name != $names[$email])
+                    {
+                        $user->name = '';
+                    }
+                    User::update($user, ['name' => $user->name]);
+                }
+            }
+
             return $chat;
         }
 
