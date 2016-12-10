@@ -112,6 +112,7 @@ class Message
 
             $emailData = $imap->getMessage($messageExtId);
 
+            // this check is here just in case
             $maxTimeBack = \Sys::cfg('sys.sync_period');
             if ($maxTimeBack > 0 && $emailData['date'] < time() - $maxTimeBack - 172800)
             {
