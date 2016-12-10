@@ -492,7 +492,7 @@ class Message
                 $messageBody = $body;
 
                 // make message notifiable
-                if ($messageBody[0] == '{')
+                if (mb_strpos(trim($messageBody), '{') === 0)
                 {
                     $messageBody = 'Tap to see calendar';
                 }
