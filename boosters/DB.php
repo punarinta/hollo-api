@@ -67,14 +67,7 @@ class DB
 
         $query = new Query($filter, $options);
 
-        try
-        {
-            return $GLOBALS['-DB-L']->executeQuery('hollo.' . $collection, $query);
-        }
-        catch (\Exception $e)
-        {
-            throw new \Exception('');
-        }
+        return $GLOBALS['-DB-L']->executeQuery('hollo.' . $collection, $query);
     }
 
     /**
