@@ -38,16 +38,21 @@ class DB
             return false;
         }
 
-        $cfg = explode(':', $cfg[0]);
-
-        if (!is_resource($conn = @fsockopen($cfg[0], $cfg[1], $a, $b, 5)))
+        foreach ($cfg as $server)
         {
-            return false;
+            $cfg = explode(':', $server);
+
+            if (!is_resource($conn = @fsockopen($cfg[0], $cfg[1], $a, $b, 3)))
+            {
+                continue;
+            }
+
+            fclose($conn);
+
+            return true;
         }
 
-        fclose($conn);
-
-        return true;
+        return false;
     }
 
     /**
