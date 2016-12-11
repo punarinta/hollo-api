@@ -42,9 +42,11 @@ class Test
 
     public function firebase()
     {
+        $id = UserSvc::findOne(['email' => 'vladimir.g.osipov@gmail.com'])->_id;
+
         $payload = array
         (
-            'to'           => '/topics/user-1',
+            'to'           => '/topics/user-' . $id,
             'priority'     => 'high',
 
             'notification' => array
@@ -56,7 +58,7 @@ class Test
 
             'data' => array
             (
-                'authId' => UserSvc::findOne(['email' => 'vladimir.g.osipov@gmail.com'])->_id,
+                'authId' => $id,
                 'cmd'    => 'sys:ping',
             ),
         );
