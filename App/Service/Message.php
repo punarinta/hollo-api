@@ -613,6 +613,7 @@ class Message
                     $content = strip_tags($content);
                     $content = html_entity_decode($content);*/
 
+                $content = preg_replace('/<style(.*)<\/style>/im', '', $content);
                 $content = preg_replace('/<blockquote(.*)<\/blockquote>/im', '', $content);
 
                 try
