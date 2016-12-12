@@ -105,7 +105,7 @@ class Chat extends Generic
             $match = false;
             foreach (UserSvc::findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
             {
-                if ($emailFilter && mb_stripos($user->email, $emailFilter) !== false)
+                if ($emailFilter && (mb_stripos($user->email, $emailFilter) !== false || mb_stripos(@$chat->name, $emailFilter) !== false))
                 {
                     $match = true;
                 }
