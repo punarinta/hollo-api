@@ -493,14 +493,6 @@ class Message
         {
             if ($useFirebase)
             {
-                $messageBody = $body;
-
-                // make message notifiable
-                if (mb_strpos(trim($messageBody), '{') === 0)
-                {
-                    $messageBody = 'Tap to see calendar';
-                }
-
                 // safe to use Firebase
                 Notify::firebase(array
                 (
@@ -511,7 +503,7 @@ class Message
                     'notification' => array
                     (
                         'title' => $subject,
-                        'body'  => $messageBody,
+                        'body'  => $body,
                         'icon'  => 'fcm_push_icon'
                     ),
 

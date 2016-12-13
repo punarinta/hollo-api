@@ -39,6 +39,20 @@ class Notify
         $data['notification']['sound'] = 'default';
         $data['notification']['click_action'] = 'FCM_PLUGIN_ACTIVITY';
 
+        if (isset ($data['notification']['body']))
+        {
+            $messageBody = $data['notification']['body'];
+
+            // make message notifiable
+            // TODO: allow other types in advance
+            if (mb_strpos(trim($messageBody), '{') === 0)
+            {
+                $messageBody = 'Tap to see calendar';
+            }
+
+            $data['notification']['body'] = $messageBody;
+        }
+
         $ch = curl_init('https://fcm.googleapis.com/fcm/send');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-type:application/json", "Authorization:key=" . \Sys::cfg('notifier.firebase')));
