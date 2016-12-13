@@ -69,11 +69,11 @@ class Generic
 
             if (count($str) == 1)
             {
-                $names[] = ['name' => null, 'email' => trim($str[0], '<>')];
+                $names[] = ['name' => null, 'email' => strtolower(trim($str[0], '<>'))];
             }
             else
             {
-                $names[] = ['name' => trim($str[0], ' "'), 'email' => trim($str[1], '>')];
+                $names[] = ['name' => trim($str[0], ' "'), 'email' => strtolower(trim($str[1], '>'))];
             }
         }
 
