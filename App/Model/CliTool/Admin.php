@@ -27,11 +27,12 @@ class Admin
         return '';
     }
 
-    public function prepareSync()
+    public function prepareSync($showMails = 0)
     {
         foreach (UserSvc::findAllReal() as $user)
         {
-            echo "php cli admin sync {$user->_id} &\n";
+            $suffix = $showMails ? " ({$user->email})" : '&';
+            echo "php cli admin sync {$user->_id} $suffix\n";
         }
     }
 
