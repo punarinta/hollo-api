@@ -23,7 +23,7 @@ class GmailPush
         if (isset ($json['message']['data']))
         {
             $x = json_decode(base64_decode($json['message']['data']), true);
-            $user = UserSvc::findOne(['email' => $x['emailAddress']]);
+            $user = UserSvc::findOne(['email' => strtolower($x['emailAddress'])]);
 
             self::log("{$user->email}|H={$x['historyId']}|");
             self::syncNew($user, $x['historyId']);
