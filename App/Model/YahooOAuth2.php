@@ -6,6 +6,8 @@ namespace App\Model;
  * https://developer.yahoo.com/oauth2/guide/
  * https://developer.yahoo.com/forums
  *
+ * https://github.com/saurabhsahni/php-yahoo-oauth2/blob/master/index.php
+ *
  * Class YahooOAuth2
  * @package App\Model
  */
