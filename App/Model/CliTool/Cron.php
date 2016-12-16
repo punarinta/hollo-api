@@ -58,7 +58,11 @@ class Cron
     {
         $tsAfter = strtotime('yesterday');
 
-        $gmailSvcId = MailServiceSvc::findOne(['name' => 'Gmail'])->_id;
+        $gmailSvcId = 'Gmail';
+        if ($type == 1)
+        {
+            $gmailSvcId = MailServiceSvc::findOne(['name' => 'Gmail'])->_id;
+        }
 
         foreach (UserSvc::findAllReal() as $user)
         {
