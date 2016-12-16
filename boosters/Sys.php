@@ -27,10 +27,10 @@ class Sys
 
         // usual request starts
 
-        if (!DB::check())
+    /*    if (!DB::check())
         {
             throw new \Exception('Oops, the database is down');
-        }
+        }*/
 
         DB::connect();
 
