@@ -257,7 +257,7 @@ class Auth
         $_SESSION['-AUTH']['avatar'] = $avatar;
     }
 
-    static static function processGoogleToken($tokenId)
+    static function processGoogleToken($tokenId)
     {
         $ch = curl_init('https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=' . $tokenId);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
