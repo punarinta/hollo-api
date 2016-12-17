@@ -137,14 +137,7 @@ class Auth extends Generic
             throw new \Exception(\Lang::translate('No token was provided.'));
         }
 
-        if ($token['serverAuthCode'])
-        {
-            AuthSvc::processOAuthCode($token['serverAuthCode']);
-        }
-        else
-        {
-            AuthSvc::processGoogleToken($token['idToken']);
-        }
+        AuthSvc::processOAuthCode($token['serverAuthCode']);
 
         return self::status();
     }
