@@ -130,6 +130,25 @@ class Auth extends Generic
         return self::status();
     }
 
+    static function processGoogleToken()
+    {
+        if (!$token = \Input::data('token'))
+        {
+            throw new \Exception(\Lang::translate('No token was provided.'));
+        }
+
+        if ($token['serverAuthCode'])
+        {
+            AuthSvc::processOAuthCode($token['serverAuthCode']);
+        }
+        else
+        {
+            AuthSvc::processGoogleToken($token['idToken']);
+        }
+
+        return self::status();
+    }
+
     static function incarnate()
     {
         if (!\Auth::amI(\Auth::ADMIN))
