@@ -152,7 +152,7 @@ class Auth
     {
         if (!$redirectUrl)
         {
-            $redirectUrl = 'https://' . \Sys::cfg('mailless.app_domain') . '/oauth/google';
+            $redirectUrl = 'https://' . \Sys::cfg('mailless.app_domain') . '/'; //oauth/google';
         }
 
         $client = new \Google_Client();
