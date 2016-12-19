@@ -253,8 +253,16 @@ class Auth
         }
 
         $_SESSION['-AUTH']['user'] = $user;
-        if ($token) $_SESSION['-AUTH']['mail'] = ['token' => $token];
         $_SESSION['-AUTH']['avatar'] = $avatar;
+
+        if ($token)
+        {
+            $_SESSION['-AUTH']['mail'] = ['token' => $token];
+        }
+        elseif ($user->settings->token)
+        {
+            $_SESSION['-AUTH']['mail'] = ['token' => $user->settings->token];
+        }
     }
 
     /**
