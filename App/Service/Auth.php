@@ -211,7 +211,7 @@ class Auth
         $mailService = MailService::findOne(['name' => 'Gmail']);
         $user = User::findOne(['email' => $email]);
 
-        if (!$user || !isset ($user->roles))
+        if ((!$user || !isset ($user->roles)) && $token)
         {
             // no user -> register
             $settings = ['svc' => $mailService->_id, 'token' => $token];
@@ -245,7 +245,7 @@ class Auth
 
             Resque::addJob('SyncContacts', ['user_id' => $user->_id]);
         }
-        else
+        elseif ($token)
         {
             // save updated refresh token on every login
             $user->settings->token = $token;
@@ -253,26 +253,9 @@ class Auth
         }
 
         $_SESSION['-AUTH']['user'] = $user;
-        $_SESSION['-AUTH']['mail'] = ['token' => $token];
+        if ($token) $_SESSION['-AUTH']['mail'] = ['token' => $token];
         $_SESSION['-AUTH']['avatar'] = $avatar;
     }
-
-    /*static function processGoogleToken($tokenId)
-    {
-        $ch = curl_init('https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=' . $tokenId);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $data = json_decode(curl_exec($ch), true) ?:[];
-        curl_close($ch);
-
-        if (!$user = User::findOne(['email' => $data['email']]))
-        {
-            throw new \Exception('Cannot add user');
-        }
-
-        $_SESSION['-AUTH']['user'] = $user;
-        $_SESSION['-AUTH']['mail'] = ['token' => $user->settings->token];
-        $_SESSION['-AUTH']['avatar'] = $data['picture'];
-    }*/
 
     /**
      * Logs you out
