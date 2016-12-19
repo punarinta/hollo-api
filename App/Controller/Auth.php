@@ -130,6 +130,12 @@ class Auth extends Generic
         return self::status();
     }
 
+    /**
+     * Complete native Goggle auth
+     *
+     * @return array
+     * @throws \Exception
+     */
     static function processGoogleToken()
     {
         if (!$token = \Input::data('token'))
