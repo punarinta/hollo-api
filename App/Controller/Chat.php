@@ -15,6 +15,53 @@ use \App\Service\Message as MessageSvc;
 class Chat extends Generic
 {
     /**
+     * Literally, get all the data
+     *
+     * @doc-var     (int) lastTs         - Possible bottom time limit.
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    static public function getAllData()
+    {
+        $userIds = [];
+        $myId = \Auth::user()->_id;
+
+        // get all chats
+        $chats = ChatSvc::findAll(['users' => ['$elemMatch' => ['id' => $myId]]]);
+
+        // get all users
+        foreach ($chats as $k => $chat)
+        {
+            foreach ($chat->users as $userItem)
+            {
+                if ($userItem->id != $myId && !isset ($userIds[$userItem->id]))
+                {
+                    $userIds[$userItem->id] = new ObjectID($userItem->id);
+                }
+            }
+
+            foreach ($chat->messages as $k2 => $message)
+            {
+                unset ($chat->messages[$k2]->refId);
+                unset ($chat->messages[$k2]->extId);
+            }
+        }
+
+        $users = UserSvc::findAll
+        (
+            ['_id' => ['$in' => array_values($userIds)]],
+            ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]
+        );
+
+        return array
+        (
+            'chats' => $chats,
+            'users' => $users,
+        );
+    }
+
+    /**
      * Lists your chats
      *
      * @doc-var     (array) filters         - Array of 'filter'.
