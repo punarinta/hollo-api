@@ -18,6 +18,7 @@ class Chat extends Generic
      * Literally, get all the data
      *
      * @doc-var     (int) lastTs         - Possible bottom time limit.
+     * @doc-var     (string) chatId      - Limit to one chat only.
      *
      * @return mixed
      * @throws \Exception
@@ -27,8 +28,26 @@ class Chat extends Generic
         $userIds = [];
         $myId = \Auth::user()->_id;
 
-        // get all chats
-        $chats = ChatSvc::findAll(['users' => ['$elemMatch' => ['id' => $myId]]]);
+        if (!$chatId = \Input::data('chatId'))
+        {
+            // get all chats
+            $chats = ChatSvc::findAll(['users' => ['$elemMatch' => ['id' => $myId]]]);
+        }
+        else
+        {
+            // get a specific chat, but check access
+            if (!$chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]))
+            {
+                throw new \Exception('Chat not found.');
+            }
+
+            if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
+            {
+                throw new \Exception('Access denied', 403);
+            }
+
+            $chats = [$chat];
+        }
 
         // get all users
         foreach ($chats as $k => $chat)
@@ -249,6 +268,11 @@ class Chat extends Generic
         if (!$chat = ChatSvc::findOne(['_id' => new ObjectID($id)]))
         {
             throw new \Exception('Chat not found.');
+        }
+
+        if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
+        {
+            throw new \Exception('Access denied', 403);
         }
 
         $doUpdate = false;
