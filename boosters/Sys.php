@@ -39,6 +39,11 @@ class Sys
             session_id($_SERVER['HTTP_TOKEN']);
         }
 
+        if ($token = \Input::get('token'))
+        {
+            session_id($token);
+        }
+
         @session_start();
 
         $uri = explode('?', rtrim($_SERVER['REQUEST_URI'], '\\'));
