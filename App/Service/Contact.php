@@ -28,6 +28,7 @@ class Contact
             'bekraftelse',
             'billing',
             'booking',
+            'bounce',
             'career',
             'contact',
             'demo',
