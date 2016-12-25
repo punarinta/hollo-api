@@ -242,6 +242,13 @@ class Message extends Generic
             throw new \Exception('Chat ID is not specified.');
         }
 
+        $chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]);
+
+        if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
+        {
+            throw new \Exception('Access denied.', 403);
+        }
+
         // create a temporary message in the DB
         // message will be kept until the real one arrives
 
@@ -257,8 +264,6 @@ class Message extends Generic
                 'size'  => $file['size'],
             );
         }
-
-        $chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]);
 
         $messageStructure =
         [
@@ -301,6 +306,34 @@ class Message extends Generic
     //    }
 
         return true; // $res;
+    }
+
+    /**
+     * Forwards a message into a chat
+     *
+     * @doc-var     (string) id!            - Message ID.
+     * @doc-var     (string) chatId!        - Recipient chat ID.
+     */
+    static public function forward()
+    {
+        if (!$id = \Input::data('id'))
+        {
+            throw new \Exception('Message ID is not specified.');
+        }
+
+        if (!$chatId = \Input::data('chatId'))
+        {
+            throw new \Exception('Chat ID is not specified.');
+        }
+
+        $chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]);
+
+        if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
+        {
+            throw new \Exception('Access denied.', 403);
+        }
+
+        return true;
     }
 
     /**
