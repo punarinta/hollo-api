@@ -159,7 +159,8 @@ class Message extends Generic
      * Forwards a message into a chat
      *
      * @doc-var     (string) id!            - Message ID.
-     * @doc-var     (string) chatId!        - Recipient chat ID.
+     * @doc-var     (string) fromChatId!    - Donor chat ID.
+     * @doc-var     (string) toChatId!      - Recipient chat ID.
      */
     static public function forward()
     {
@@ -168,18 +169,31 @@ class Message extends Generic
             throw new \Exception('Message ID is not specified.');
         }
 
-        if (!$chatId = \Input::data('chatId'))
+        if ((!$fromChatId = \Input::data('fromChatId')) || (!$toChatId = \Input::data('toChatId')))
         {
             throw new \Exception('Chat ID is not specified.');
         }
 
-        $chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]);
+        $fromChat = ChatSvc::findOne(['_id' => new ObjectID($fromChatId)]);
+        $toChat = ChatSvc::findOne(['_id' => new ObjectID($toChatId)]);
 
-        if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
+        if (!ChatSvc::hasAccess($fromChat, \Auth::user()->_id) || !ChatSvc::hasAccess($toChat, \Auth::user()->_id))
         {
             throw new \Exception('Access denied.', 403);
         }
 
-        return true;
+        if (isset ($fromChat->messages))
+        {
+            foreach ($fromChat->messages as $message)
+            {
+                if ($message->id == $id)
+                {
+                    SmtpSvc::forward($message, $toChat);
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

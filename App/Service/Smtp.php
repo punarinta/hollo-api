@@ -251,4 +251,13 @@ class Smtp
 
         return [self::$mail, self::$mail->getCustomHeaders(), self::$mail->getToAddresses(), self::$mail->getCcAddresses(), self::$mail->getAttachments()];
     }
+
+    /**
+     * @param $message
+     * @param array $chat
+     */
+    public static function forward($message, $chat = [])
+    {
+
+    }
 }
