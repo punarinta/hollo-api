@@ -5,7 +5,6 @@ namespace App\Controller;
 use MongoDB\BSON\ObjectID;
 use \App\Service\User as UserSvc;
 use \App\Service\Chat as ChatSvc;
-use \App\Service\Message as MessageSvc;
 
 /**
  * Class Chat
@@ -38,7 +37,7 @@ class Chat extends Generic
             // get a specific chat, but check access
             if (!$chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]))
             {
-                throw new \Exception('Chat not found.');
+                throw new \Exception('Chat not found.', 404);
             }
 
             if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
@@ -78,149 +77,6 @@ class Chat extends Generic
             'chats' => $chats,
             'users' => $users,
         );
-    }
-
-    /**
-     * Lists your chats
-     *
-     * @doc-var     (array) filters         - Array of 'filter'.
-     * @doc-var     (string) filter[].mode  - Filtering mode. Options are 'muted', 'name', 'email'.
-     * @doc-var     (string) filter[].value - Filter string.
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    static public function find()
-    {
-        $items = [];
-        $emailFilter = null;
-        $myId = \Auth::user()->_id;
-        $filters = \Input::data('filters') ?:[];
-
-        foreach ($filters as $filter)
-        {
-            if ($filter['mode'] == 'email')
-            {
-                $emailFilter = $filter['value'];
-                \DB::$pageLength = 0;
-                break;
-            }
-        }
-
-        $chats = ChatSvc::findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 0]]));
-
-        // keep total page length ;)
-        if (\DB::$pageLength)
-        {
-            \DB::$pageLength = \DB::$pageLength - count($chats);
-        }
-
-        if (\DB::$pageLength > 0 || $emailFilter)
-        {
-            $chats = array_merge($chats, ChatSvc::findAllByUserId($myId, array_merge($filters, [['mode' => 'read', 'value' => 1]])));
-        }
-
-
-        foreach ($chats as $chat)
-        {
-            $lastMsg = null;
-            $lastMsgBody = null;
-            $chat->messages = $chat->messages ?? [];
-            $msgCount = count($chat->messages);
-
-            if ($msgCount)
-            {
-                $lastMsg = MessageSvc::getLastByChat($chat);
-
-                // TODO: move the logic below onto frontend
-                if ($lastMsg->body)
-                {
-                    $lastMsgBody = $lastMsg->body;
-                }
-                elseif ($lastMsg->files)
-                {
-                    $lastMsgBody = '📎 ' . $lastMsg->files[0]->name;
-                }
-                else
-                {
-                    $lastMsgBody = '';
-                }
-            }
-
-            $read = 1;
-            $muted = 0;
-            $scanIds = [];
-
-            foreach ($chat->users as $userItem)
-            {
-                if ($userItem->id == $myId)
-                {
-                    $read = $userItem->read;
-                    $muted = $userItem->muted;
-                }
-                else
-                {
-                    $scanIds[] = new ObjectID($userItem->id);
-                }
-            }
-
-            // no pagination
-            \DB::$pageLength = 0;
-
-            $users = [];
-            $match = false;
-            foreach (UserSvc::findAll(['_id' => ['$in' => $scanIds]], ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]) as $user)
-            {
-                if ($emailFilter && (mb_stripos($user->email, $emailFilter) !== false || mb_stripos(@$chat->name, $emailFilter) !== false))
-                {
-                    $match = true;
-                }
-
-                $users[] = array
-                (
-                    'id'    => $user->_id,
-                    'name'  => @$user->name,
-                    'email' => $user->email,
-                );
-            }
-
-            if ($emailFilter)
-            {
-                if (!$match)
-                {
-                    continue;
-                }
-                if (\DB::$pageLength && count($items) > \DB::$pageLength)
-                {
-                    break;
-                }
-            }
-
-            $items[] = array
-            (
-                'id'        => $chat->_id,
-                'name'      => @$chat->name,
-                'muted'     => $muted,
-                'read'      => $read,
-                'last'      => $msgCount ?
-                [
-                    'ts'    => $lastMsg->ts,
-                    'msg'   => $lastMsgBody,
-                    'subj'  => $lastMsg->subj,
-                ] : [],
-                'users'     => $users,
-            );
-
-            if ($emailFilter)
-            {
-                usort($items, function ($a, $b)
-                {
-                    return count($a['users']) > count($b['users']);
-                });
-            }
-        }
-
-        return $items;
     }
 
     /**
@@ -267,7 +123,7 @@ class Chat extends Generic
 
         if (!$chat = ChatSvc::findOne(['_id' => new ObjectID($id)]))
         {
-            throw new \Exception('Chat not found.');
+            throw new \Exception('Chat not found.', 404);
         }
 
         if (!ChatSvc::hasAccess($chat, \Auth::user()->_id))
