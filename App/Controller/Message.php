@@ -199,8 +199,8 @@ class Message extends Generic
                     $ts = date('r', $message->ts);
                     $name = $fromUser->email ?? explode('@', $fromUser->email);
 
-                    $newBody = \Input::data('comment') ? \Input::data('comment') . "\n\n" : '';
-                    $newBody .= "-------- Beginning of forwarded message--------\n";
+                    $prefix = \Input::data('comment') ? \Input::data('comment') . "\n\n" : '';
+                    $newBody = $prefix . "-------- Beginning of forwarded message--------\n";
                     $newBody .= "On $ts, \"$name\" <{$fromUser->email}> wrote:\n\n" . $message->body;
                     $newBody .= "\n-------- End of forwarded message --------\n";
 
@@ -210,7 +210,7 @@ class Message extends Generic
                         'id'        => (new ObjectID())->__toString(),
                         'userId'    => \Auth::user()->_id,
                         'subj'      => $newSubject,
-                        'body'      => $newBody,
+                        'body'      => $prefix . '[sys:fwd]',
                         'files'     => $message->files,
                         'ts'        => time(),
                     ];
@@ -260,7 +260,7 @@ class Message extends Generic
                     $toChat->lastTs = time();
                     ChatSvc::update($toChat, ['messages' => $toChat->messages, 'lastTs' => $toChat->lastTs, 'users' => $toChat->users]);
 
-                    return true; // $res;
+                    return $res;
                 }
             }
         }
