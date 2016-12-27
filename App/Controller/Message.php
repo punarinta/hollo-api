@@ -163,6 +163,7 @@ class Message extends Generic
      * @doc-var     (string) id!            - Message ID.
      * @doc-var     (string) fromChatId!    - Donor chat ID.
      * @doc-var     (string) toChatId!      - Recipient chat ID.
+     * @doc-var     (string) comment        - Your comment.
      */
     static public function forward()
     {
@@ -191,27 +192,17 @@ class Message extends Generic
                 if ($message->id == $id)
                 {
                     // we have to form the new body here
-                    $refUser = UserSvc::findOne(['_id' => new ObjectID($message->refId)]);
-                    $inbox = Inbox::init($refUser);
+                    $fromUser = UserSvc::findOne(['_id' => new ObjectID($message->userId)]);
 
-                    $newBody = '';
                     $newSubject = 'FWD: ' . $message->subj;
 
-                    if ($data = $inbox->getMessage($message->extId))
-                    {
-                        $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
+                    $ts = date('r', $message->ts);
+                    $name = $fromUser->email ?? explode('@', $fromUser->email);
 
-                        $body = [];
-                        foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
-                        {
-                            $body[] = '> ' . $line;
-                        }
-
-                        $ts = date('r', $data['date']);
-                        $name = explode('@', $data['addresses']['from']['email']);
-                        $newBody = "-------- Beginning of forwarded message--------\n";
-                        $newBody .= "On {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
-                    }
+                    $newBody = \Input::data('comment') ? \Input::data('comment') . "\n\n" : '';
+                    $newBody .= "-------- Beginning of forwarded message--------\n";
+                    $newBody .= "On $ts, \"$name\" <{$fromUser->email}> wrote:\n\n" . $message->body;
+                    $newBody .= "\n-------- End of forwarded message --------\n";
 
                     // create a temporary message
                     $messageStructure =
