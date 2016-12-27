@@ -218,12 +218,12 @@ class Smtp
 
         foreach ($attachments as $file)
         {
-            // support new and old field names
+        /*    // support new and old field names
             // TODO: remove after new frontend released
             if (isset ($file['data']) && !isset ($file['b64']))
             {
                 $file['b64'] = $file['data'];
-            }
+            }*/
 
             // save file first
             $path = tempnam('data/temp', 'upl-');
@@ -250,14 +250,5 @@ class Smtp
         }
 
         return [self::$mail, self::$mail->getCustomHeaders(), self::$mail->getToAddresses(), self::$mail->getCcAddresses(), self::$mail->getAttachments()];
-    }
-
-    /**
-     * @param $message
-     * @param array $chat
-     */
-    public static function forward($message, $chat = [])
-    {
-
     }
 }

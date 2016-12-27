@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Model\Inbox\Inbox;
 use MongoDB\BSON\ObjectID;
 use \App\Service\Message as MessageSvc;
 use \App\Service\Smtp as SmtpSvc;
 use \App\Service\Chat as ChatSvc;
+use \App\Service\Chat as UserSvc;
 
 /**
  * Class Message
@@ -148,7 +150,7 @@ class Message extends Generic
     //    }
     //    else
     //    {
-            SmtpSvc::setupThread(\Auth::user()->_id, $chat, $messageStructure['id']);
+            SmtpSvc::setupThread(\Auth::user(), $chat, $messageStructure['id']);
             $res = SmtpSvc::send($chat, $body, \Input::data('subject'), $files);
     //    }
 
@@ -188,8 +190,83 @@ class Message extends Generic
             {
                 if ($message->id == $id)
                 {
-                    SmtpSvc::forward($message, $toChat);
-                    return true;
+                    // we have to form the new body here
+                    $refUser = UserSvc::findOne(['_id' => new ObjectID($message->refId)]);
+                    $inbox = Inbox::init($refUser);
+
+                    $newBody = '';
+                    $newSubject = 'FWD: ' . $message->subj;
+
+                    if ($data = $inbox->getMessage($message->extId))
+                    {
+                        $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
+
+                        $body = [];
+                        foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
+                        {
+                            $body[] = '> ' . $line;
+                        }
+
+                        $ts = date('r', $data['date']);
+                        $name = explode('@', $data['addresses']['from']['email']);
+                        $newBody = "-------- Beginning of forwarded message--------\n";
+                        $newBody .= "On {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
+                    }
+
+                    // create a temporary message
+                    $messageStructure =
+                    [
+                        'id'        => (new ObjectID())->__toString(),
+                        'userId'    => \Auth::user()->_id,
+                        'subj'      => $newSubject,
+                        'body'      => $newBody,
+                        'files'     => $message->files,
+                        'ts'        => time(),
+                    ];
+
+                    $toChat->messages = $toChat->messages ?? [];
+                    array_unshift($toChat->messages, $messageStructure);
+
+                    // mark chat as unread for everyone except you
+                    foreach ($toChat->users as $k => $userRow)
+                    {
+                        if ($userRow->id != \Auth::user()->_id)
+                        {
+                            $toChat->users[$k]->read = 0;
+                        }
+                    }
+
+                    // get files from donor message
+                    $files = [];
+                    $offset = 0;
+                    if (@$message->files)
+                    {
+                        // give more time for fetching files
+                        ini_set('max_execution_time', 30);
+
+                        foreach ($message->files as $file)
+                        {
+                            $files[] = array
+                            (
+                                'name'  => $file['name'],
+                                'type'  => $file['type'],
+                                'size'  => $file['size'],
+                                'b64'   => base64_encode($inbox->getFileData($message->extId, $offset++)),  // return and increment
+                            );
+                        }
+                    }
+
+                    // prepare a generic sender
+                    SmtpSvc::setupThread(\Auth::user(), null, $messageStructure['id']);
+
+                    // send prepared message
+                    $res = SmtpSvc::send($toChat, $newBody, $newSubject, $files);
+
+                    // mark the chat as just updated
+                    $toChat->lastTs = time();
+                    ChatSvc::update($toChat, ['messages' => $toChat->messages, 'lastTs' => $toChat->lastTs, 'users' => $toChat->users]);
+
+                    return true; // $res;
                 }
             }
         }
