@@ -11,20 +11,24 @@ class Inbox
     /**
      * Initializes a mail layer class for a user
      *
-     * @param $user
+     * @param $userId
      * @return InboxInterface
      * @throws \Exception
      */
-    public static function init($user)
+    public static function init($userId)
     {
         // TODO: memorize and check next time if already initialized for this user
 
-        if (!is_object($user))
+        if (!is_object($userId))
         {
-            if (!$user = UserSvc::findOne(['_id' => new ObjectID($user)]))
+            if (!$user = UserSvc::findOne(['_id' => new ObjectID($userId)]))
             {
-                throw new \Exception('User does not exist. ID = ' . $user);
+                throw new \Exception('User does not exist. ID = ' . $userId);
             }
+        }
+        else
+        {
+            $user = $userId;
         }
 
         if (!$svc = $user->settings->svc)
