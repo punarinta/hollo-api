@@ -246,8 +246,7 @@ class Message extends Generic
                         // give more time for fetching files
                         ini_set('max_execution_time', 30);
 
-                        $refUser = UserSvc::findOne(['_id' => new ObjectID($message->refId)]);
-                        $inbox = Inbox::init($refUser);
+                        $inbox = Inbox::init($message->refId);
 
                         foreach ($message->files as $file)
                         {
