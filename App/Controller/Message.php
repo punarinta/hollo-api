@@ -21,6 +21,7 @@ class Message extends Generic
      *
      * @doc-var     (string) id!       - Message ID
      * @doc-var     (int) bodyId       - Body ID
+     * @doc-var     (bool) tryHtml     - Try to find an HTML body. False by default.
      *
      * @return mixed
      * @throws \Exception
@@ -43,6 +44,8 @@ class Message extends Generic
             throw new \Exception('Access denied.', 403);
         }
 
+        $tryHtml = \Input::data('tryHtml');
+
         foreach ($chat->messages ?? [] as $message)
         {
             if ($message->id == $id)
@@ -50,6 +53,14 @@ class Message extends Generic
                 if (!$data = MessageSvc::getDataByRefIdAndExtId($message->refId, $message->extId))
                 {
                     return false;
+                }
+
+                if ($tryHtml) foreach ($data['body'] as $body)
+                {
+                    if ($body['type'] == 'text/html')
+                    {
+                        return $body;
+                    }
                 }
 
                 return $data['body'][\Input::data('bodyId') ?? 0];
