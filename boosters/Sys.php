@@ -13,9 +13,10 @@ class Sys
     {
         $GLOBALS['-CFG'] = $config;
 
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=utf-8');
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Token');
+        header('X-Content-Type-Options: nosniff');
 
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS')
         {
