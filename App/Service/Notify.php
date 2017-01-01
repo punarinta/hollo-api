@@ -45,7 +45,7 @@ class Notify
 
             // make message notifiable
             // TODO: allow other types in advance
-            if (mb_strpos(trim($messageBody), '{') === 0)
+            if (strpos(trim($messageBody), '{') === 0)
             {
                 $messageBody = 'Tap to see calendar';
             }
