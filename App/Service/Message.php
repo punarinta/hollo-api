@@ -624,10 +624,17 @@ class Message
 
         $quoteHeadersRegex = array
         (
+            // English
             '/^([^\n]*On).*(wrote:).*$/sm',
+
+            // Swedish
             '/^([^\n]*Den).*(skrev:).*$/sm',
             '/^[^\n]*(<.+@.+>).*(skrev:).*$/sm',
             '/^[^\n]*(skrev).*(<.+@.+>:).*$/sm',
+
+            // Lithuanian
+            '/^[^\n]*[0-9]{4} m\..*(<.+@.+> rašė:).*$/sm',
+
         );
 
         // Remove lines like '--- On ... wrote:' (some other clients).
