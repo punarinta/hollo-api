@@ -635,6 +635,8 @@ class Message
             // Lithuanian
             '/^[^\n]*[0-9]{4} m\..*(<.+@.+> rašė:).*$/sm',
 
+            // generic
+            '/^[^\n]*[0-9.]{10}, [0-9:]{5}, \".+\" (<.+@.+>:).*$/sm',
         );
 
         // Remove lines like '--- On ... wrote:' (some other clients).
