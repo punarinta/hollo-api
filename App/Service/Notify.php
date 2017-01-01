@@ -50,6 +50,11 @@ class Notify
                 $messageBody = 'Tap to see calendar';
             }
 
+            if ($messageBody == '[sys:fwd]')
+            {
+                $messageBody = 'Forwarded message';
+            }
+
             $data['notification']['body'] = $messageBody;
         }
 
