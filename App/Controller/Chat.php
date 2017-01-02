@@ -59,7 +59,7 @@ class Chat extends Generic
                 }
             }
 
-            foreach ($chat->messages as $k2 => $message)
+            foreach ($chat->messages ?? [] as $k2 => $message)
             {
                 unset ($chat->messages[$k2]->refId);
                 unset ($chat->messages[$k2]->extId);
