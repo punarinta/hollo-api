@@ -10,7 +10,7 @@ ini_set('display_errors', 1);*/
 // 1. Preliminary settings
 
 chdir('..');
-date_default_timezone_set('Europe/Stockholm');
+date_default_timezone_set('UTC'/*'Europe/Stockholm'*/);
 
 
 // 2. Load namespaces

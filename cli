@@ -11,7 +11,7 @@ ini_set('display_errors', 1);
 
 // 1. Preliminary settings
 
-date_default_timezone_set('Europe/Stockholm');
+date_default_timezone_set('UTC');
 // include_once 'vendor/colinmollenhour/credis/Client.php';
 
 chdir(__DIR__);

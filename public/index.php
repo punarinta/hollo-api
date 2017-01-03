@@ -10,7 +10,7 @@ ini_set('display_errors', 1);*/
 // 1. Preliminary settings
 
 chdir('..');
-date_default_timezone_set('Europe/Stockholm');
+date_default_timezone_set('UTC'/*'Europe/Stockholm'*/);
 
 
 // 2. Load namespaces
@@ -110,7 +110,7 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 26.12.16 @ 19:41:18 +0100
+// Built 03.01.17 @ 14:53:15 +0100
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
