@@ -41,11 +41,11 @@ class Notify
 
         if (isset ($data['notification']['body']))
         {
-            $messageBody = $data['notification']['body'];
+            $messageBody = trim($data['notification']['body']);
 
             // make message notifiable
             // TODO: allow other types in advance
-            if (strpos(trim($messageBody), '{') === 0)
+            if (mb_strpos($messageBody, '{"widget":') !== false)
             {
                 $messageBody = 'Tap to see calendar';
             }
