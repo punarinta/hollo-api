@@ -109,6 +109,9 @@ class Message extends Generic
             throw new \Exception('Access denied.', 403);
         }
 
+        // give more time for fetching files
+        ini_set('max_execution_time', 30);
+
         // create a temporary message in the DB
         // message will be kept until the real one arrives
 
@@ -196,6 +199,9 @@ class Message extends Generic
             throw new \Exception('Access denied.', 403);
         }
 
+        // give more time for fetching files
+        ini_set('max_execution_time', 30);
+
         if (isset ($fromChat->messages))
         {
             foreach ($fromChat->messages as $message)
@@ -243,9 +249,6 @@ class Message extends Generic
                     $offset = 0;
                     if (@$message->files)
                     {
-                        // give more time for fetching files
-                        ini_set('max_execution_time', 30);
-
                         $inbox = Inbox::init($message->refId);
 
                         foreach ($message->files as $file)
