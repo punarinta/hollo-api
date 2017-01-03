@@ -96,6 +96,7 @@ class Auth
 
         imap_close($box);
 
+        $created = time();
         $key = \Sys::cfg('sys.imap_hash');
         $settings = ['svc' => $mailService->_id, 'hash' => openssl_encrypt($password, 'aes-256-cbc', $key, 0, $key)];
 
@@ -112,6 +113,7 @@ class Auth
                 // 'name' is unknown for a standard IMAP
                 'email'     => $email,
                 'roles'     => \Auth::USER,
+                'created'   => $created,
                 'settings'  => $settings,
             ));
         }
@@ -122,6 +124,7 @@ class Auth
             {
                 throw new \Exception('User already exists');
             }
+            $user->created = $created;
             $user->roles = \Auth::USER;
             $user->settings = $settings;
             User::update($user);
@@ -213,6 +216,8 @@ class Auth
 
         if ((!$user || !isset ($user->roles)) && $token)
         {
+            $created = time();
+
             // no user -> register
             $settings = ['svc' => $mailService->_id, 'token' => $token];
 
@@ -224,6 +229,7 @@ class Auth
                     'name'      => $name,
                     'email'     => $email,
                     'roles'     => \Auth::USER,
+                    'created'   => $created,
                     'settings'  => $settings,
                 ));
             }
@@ -233,6 +239,7 @@ class Auth
                 {
                     $user->name = $name;
                 }
+                $user->created = $created;
                 $user->roles = \Auth::USER;
                 $user->settings = $settings;
                 User::update($user);
