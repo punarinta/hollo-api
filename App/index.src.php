@@ -130,11 +130,15 @@ catch (\Exception $e)
     http_response_code($errorCode);
 }
 
-echo json_encode(array
-(
-    'isError'   => $isError,
-    'errMsg'    => $errMsg,
-    'data'      => $data,
-    'time'      => number_format((microtime(1) - $t1) * 1000, 2) . ' ms',
-    'memory'    => number_format((memory_get_usage() - $m1) / 1024, 2) . ' kB',
-));
+// object return is reserved for special purposes
+if (!is_object($data))
+{
+    echo json_encode(array
+    (
+        'isError'   => $isError,
+        'errMsg'    => $errMsg,
+        'data'      => $data,
+        'time'      => number_format((microtime(1) - $t1) * 1000, 2) . ' ms',
+        'memory'    => number_format((memory_get_usage() - $m1) / 1024, 2) . ' kB',
+    ));
+}
