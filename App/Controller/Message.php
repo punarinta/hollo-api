@@ -7,7 +7,7 @@ use MongoDB\BSON\ObjectID;
 use \App\Service\Message as MessageSvc;
 use \App\Service\Smtp as SmtpSvc;
 use \App\Service\Chat as ChatSvc;
-use \App\Service\Chat as UserSvc;
+use \App\Service\User as UserSvc;
 
 /**
  * Class Message
