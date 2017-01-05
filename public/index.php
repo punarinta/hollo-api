@@ -110,7 +110,7 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 03.01.17 @ 14:53:15 +0100
+// Built 05.01.17 @ 11:14:31 +0100
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
@@ -119,6 +119,7 @@ $GLOBALS['-R'] = [
 'file' => ['/api/file', \Auth::USER, '\App\Controller\File', 'index'],
 'settings' => ['/api/settings', \Auth::USER, '\App\Controller\Settings', 'index'],
 'gmail-push' => ['/api/gmail-push', \Auth::GUEST, '\App\Controller\GmailPush', 'index'],
+'track' => ['/api/track', \Auth::GUEST, '\App\Controller\Track', 'index'],
 'sys' => ['/api/sys', \Auth::USER, '\App\Controller\Sys', 'index'],
 ];
 
@@ -141,11 +142,15 @@ catch (\Exception $e)
     http_response_code($errorCode);
 }
 
-echo json_encode(array
-(
-    'isError'   => $isError,
-    'errMsg'    => $errMsg,
-    'data'      => $data,
-    'time'      => number_format((microtime(1) - $t1) * 1000, 2) . ' ms',
-    'memory'    => number_format((memory_get_usage() - $m1) / 1024, 2) . ' kB',
-));
+// object return is reserved for special purposes
+if (!is_object($data))
+{
+    echo json_encode(array
+    (
+        'isError'   => $isError,
+        'errMsg'    => $errMsg,
+        'data'      => $data,
+        'time'      => number_format((microtime(1) - $t1) * 1000, 2) . ' ms',
+        'memory'    => number_format((memory_get_usage() - $m1) / 1024, 2) . ' kB',
+    ));
+}
