@@ -4,6 +4,7 @@ class Auth
 {
     const GUEST         = 0;                // not logged in
     const USER          = 0b00000001;       // usual user
+    const HOLLO         = 0b00000010;       // crew member
     const ADMIN         = 0b10000000;       // admin
 
     /**
