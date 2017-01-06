@@ -70,6 +70,9 @@ class Smtp
 
         if ($tempMsgId)
         {
+            // save temp message ID into AltBody
+            self::$mail->AltBody = $tempMsgId;
+
             self::$mail->addCustomHeader('X-Temporary-ID: ' . $tempMsgId);
         }
         
@@ -215,6 +218,22 @@ class Smtp
             'userIds'   => $userIds,
             'chatId'    => $chat->_id,
         ]);
+
+        if (count($userIds) == 1)
+        {
+            // use text/html as the main body
+            self::$mail->isHTML(true);
+
+            $tempMessageId = self::$mail->AltBody;
+
+            $trackingPixel = '<img src="https://' . \Sys::cfg('mailless.app_domain') . '/api/track?&token=' . $chat->_id . $tempMessageId . $userIds[0] . '" />';
+            self::$mail->AltBody = self::$mail->Body;
+            self::$mail->Body = $trackingPixel . nl2br(self::$mail->Body);
+        }
+        else
+        {
+            self::$mail->AltBody = '';
+        }
 
         foreach ($attachments as $file)
         {
