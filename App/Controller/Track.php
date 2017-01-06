@@ -50,7 +50,16 @@ class Track extends Generic
 
         if ($found)
         {
-
+            $chatUsers = $chat->users ?? [];
+            foreach ($chatUsers as $k => $user)
+            {
+                if ($user->id == $userId)
+                {
+                    $chatUsers[$k]->tracked = time();
+                    ChatSvc::update($chat, ['users' => $chatUsers]);
+                    break;
+                }
+            }
         }
 
         // flush with a 1x1 transparent GIF
