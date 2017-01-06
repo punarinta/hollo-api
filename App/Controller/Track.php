@@ -55,7 +55,7 @@ class Track extends Generic
             {
                 if ($user->id == $userId)
                 {
-                    $chatUsers[$k]->tracked = time();
+                    $chatUsers[$k]->trk = time();
                     ChatSvc::update($chat, ['users' => $chatUsers]);
                     break;
                 }
