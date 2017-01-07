@@ -19,7 +19,7 @@ class User extends Generic
     {
         if (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false)
         {
-            throw new \Exception('Cannot add user: invalid email');
+            throw new \Exception('Cannot add user: invalid email - ' . $data['email']);
         }
 
         $data['email'] = strtolower($data['email']);
