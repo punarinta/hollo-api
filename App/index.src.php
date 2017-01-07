@@ -131,7 +131,7 @@ catch (\Exception $e)
 }
 
 // object return is reserved for special purposes
-if (get_class($data) != 'Silent')
+if (!is_object($data) || get_class($data) != 'Silent')
 {
     echo json_encode(array
     (
