@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Service\Contact as ContactSvc;
 use \App\Service\User as UserSvc;
 use \App\Service\MailService as MailServiceSvc;
+use MongoDB\BSON\Regex;
 
 /**
  * Class Sys
@@ -53,8 +55,14 @@ class Sys extends Generic
 
         $items = [];
 
-        foreach (UserSvc::findAll(['name' => ['$regex' => $token]]) as $user)
+        // case-insensitive token search
+        foreach (UserSvc::findAll(['name' => ['$regex' => new Regex($token, 'i')]]) as $user)
         {
+            if (ContactSvc::isMuted($user->email))
+            {
+                continue;
+            }
+
             $items[] = array
             (
                 'email' => $user->email,
