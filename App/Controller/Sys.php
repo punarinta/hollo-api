@@ -43,4 +43,25 @@ class Sys extends Generic
 
         return $result;
     }
+
+    static public function discover()
+    {
+        if ((!$token = \Input::data('token')) || strlen($token) < 3)
+        {
+            throw new \Exception('No token specified or it is too short');
+        }
+
+        $items = [];
+
+        foreach (UserSvc::findAll(['name' => ['$regex' => $token]]) as $user)
+        {
+            $items[] = array
+            (
+                'email' => $user->email,
+                'name'  => @$user->name,
+            );
+        }
+
+        return $items;
+    }
 }

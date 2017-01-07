@@ -205,7 +205,7 @@ class Message
             }
         }
 
-        return $messages;
+        return array_values($messages);
     }
 
     // ============================
