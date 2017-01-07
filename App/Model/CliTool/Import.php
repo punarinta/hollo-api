@@ -26,9 +26,14 @@ class Import
         foreach (explode("\n", $raw) as $line)
         {
             // give DB some breath
-            usleep(20000);
+            usleep(50000);
 
             $line = explode("\t", $line);
+            if (count($line) < 2)
+            {
+                continue;
+            }
+
             $email = trim(strtolower($line[0]));
 
             // check existence first
@@ -50,11 +55,19 @@ class Import
             $name = preg_replace('/\s+/', ' ', $name);
             $name = ucwords(strtolower($name));
 
-            UserSvc::create(array
-            (
-                'email' => $email,
-                'name'  => $name,
-            ));
+            try
+            {
+                UserSvc::create(array
+                (
+                    'email' => $email,
+                    'name'  => $name,
+                ));
+            }
+            catch (\Exception $e)
+            {
+                echo "[WARN] not an email: $email\n";
+                continue;
+            }
         }
 
         return "OK\n";
