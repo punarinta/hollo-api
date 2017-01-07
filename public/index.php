@@ -110,7 +110,7 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 05.01.17 @ 11:14:31 +0100
+// Built 07.01.17 @ 15:09:28 +0100
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
@@ -143,7 +143,7 @@ catch (\Exception $e)
 }
 
 // object return is reserved for special purposes
-if (!is_object($data))
+if (get_class($data) != 'Silent')
 {
     echo json_encode(array
     (

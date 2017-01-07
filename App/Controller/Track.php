@@ -17,7 +17,7 @@ class Track extends Generic
      *
      * @doc-var     (string) token!       - Tracking token
      *
-     * @return \stdClass
+     * @return \Silent
      * @throws \Exception
      */
     static public function index()
@@ -67,6 +67,6 @@ class Track extends Generic
         header('Content-Type: image/gif');
         echo "\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x90\x00\x00\xff\x00\x00\x00\x00\x00\x21\xf9\x04\x05\x10\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x04\x01\x00\x3b";
 
-        return new \stdClass;
+        return new \Silent;
     }
 }

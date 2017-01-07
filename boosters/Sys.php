@@ -106,3 +106,5 @@ class Sys
         return $a;
     }
 }
+
+class Silent {}
