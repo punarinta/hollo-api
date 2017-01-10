@@ -197,7 +197,14 @@ class Message
      */
     public static function removeOld($messages)
     {
-        foreach ($messages ?? [] as $k => $v)
+        $messages = $messages ?? [];
+
+        if (count($messages) > 100)
+        {
+            $messages = array_slice($messages, 0, 100);
+        }
+
+        foreach ($messages as $k => $v)
         {
             if ($v->ts < time() - \Sys::cfg('sys.sync_period'))
             {
