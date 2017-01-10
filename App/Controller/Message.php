@@ -253,6 +253,11 @@ class Message extends Generic
 
                         foreach ($message->files as $file)
                         {
+                            if (is_object($file))
+                            {
+                                $file = (array) $file;
+                            }
+
                             $files[] = array
                             (
                                 'name'  => $file['name'],
