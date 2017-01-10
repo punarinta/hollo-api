@@ -48,7 +48,7 @@ class Message extends Generic
 
         foreach ($chat->messages ?? [] as $message)
         {
-            if ($message->id == $id && $message->extId)
+            if ($message->id == $id && @$message->extId)
             {
                 if (!$data = MessageSvc::getDataByRefIdAndExtId($message->refId, $message->extId))
                 {
