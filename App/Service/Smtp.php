@@ -70,10 +70,10 @@ class Smtp
 
         if ($tempMsgId)
         {
+            self::$mail->addCustomHeader('X-Temporary-ID: ' . $tempMsgId);
+
             // save temp message ID into AltBody
             self::$mail->AltBody = $tempMsgId;
-
-            self::$mail->addCustomHeader('X-Temporary-ID: ' . $tempMsgId);
         }
         
         if ($chat)
