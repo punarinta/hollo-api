@@ -37,7 +37,9 @@ class Track extends Generic
             throw new \Exception('Chat not found.', 404);
         }
 
-        $found = false;
+    /*    $found = false;
+
+        // TODO: keep in mind that temp message is deleted when real one arrives
 
         foreach ($chat->messages ?? [] as $message)
         {
@@ -49,7 +51,7 @@ class Track extends Generic
         }
 
         if ($found)
-        {
+        {*/
             $chatUsers = $chat->users ?? [];
             foreach ($chatUsers as $k => $user)
             {
@@ -60,7 +62,7 @@ class Track extends Generic
                     break;
                 }
             }
-        }
+    //    }
 
         // flush with a 1x1 transparent GIF
 
