@@ -491,6 +491,8 @@ class Message
 
         if (!$temporaryMessageExisted && $notify)
         {
+            $uid = uniqid('', true);
+
             if ($useFirebase)
             {
                 // safe to use Firebase
@@ -512,6 +514,7 @@ class Message
                         'cmd'    => 'chat:update',
                         'authId' => $user->_id,
                         'chatId' => $chat->_id,
+                        'uid'    => $uid,
                     ),
                 ));
             }
@@ -524,6 +527,7 @@ class Message
                     'userIds'   => [$user->_id],
                     'chatId'    => $chat->_id,
                     'silent'    => $noMarks,
+                    'uid'       => $uid,
                 ]);
             }
         }
