@@ -77,6 +77,7 @@ class Message extends Generic
      * @doc-var     (string) chatId!        - Chat ID, used for temporary message referencing and notifications.
      * @doc-var     (string) messageId      - Hollo's message ID to reply to.
      * @doc-var     (string) subject        - Message subject.
+     * @doc-var     (int) transport         - Transporting mode: 0 - classic, 1 - modern, 2 - light
      * @doc-var     (array) files           - Message attachments.
      * @doc-var     (string) file[].name    - File name.
      * @doc-var     (string) file[].type    - File MIME type.
@@ -101,6 +102,8 @@ class Message extends Generic
         {
             throw new \Exception('Chat ID is not specified.');
         }
+
+        $transport = \Input::data('transport') ?: 0;
 
         $chat = ChatSvc::findOne(['_id' => new ObjectID($chatId)]);
 
@@ -164,9 +167,15 @@ class Message extends Generic
     //    }
     //    else
     //    {
-            SmtpSvc::setupThread(\Auth::user(), $chat, $messageStructure['id']);
-            $res = SmtpSvc::send($chat, $body, \Input::data('subject'), $files);
+    //       ...sending
     //    }
+
+        if ($transport != 2)
+        {
+            SmtpSvc::setupThread(\Auth::user(), $chat, $messageStructure['id'], $transport);
+        }
+
+        $res = SmtpSvc::send($chat, $body, \Input::data('subject'), $files, $transport);
 
         return true; // $res;
     }
@@ -178,6 +187,7 @@ class Message extends Generic
      * @doc-var     (string) fromChatId!    - Donor chat ID.
      * @doc-var     (string) toChatId!      - Recipient chat ID.
      * @doc-var     (string) comment        - Your comment.
+     * @doc-var     (int) transport         - Transporting mode: 0 - classic, 1 - modern, 2 - light
      */
     static public function forward()
     {
@@ -190,6 +200,8 @@ class Message extends Generic
         {
             throw new \Exception('Chat ID is not specified.');
         }
+
+        $transport = \Input::data('transport') ?: 0;
 
         $fromChat = ChatSvc::findOne(['_id' => new ObjectID($fromChatId)]);
         $toChat = ChatSvc::findOne(['_id' => new ObjectID($toChatId)]);
@@ -269,10 +281,10 @@ class Message extends Generic
                     }
 
                     // prepare a generic sender
-                    SmtpSvc::setupThread(\Auth::user(), null, $messageStructure['id']);
+                    SmtpSvc::setupThread(\Auth::user(), null, $messageStructure['id'], $transport);
 
                     // send prepared message
-                    $res = SmtpSvc::send($toChat, $newBody, $newSubject, $files);
+                    $res = SmtpSvc::send($toChat, $newBody, $newSubject, $files, $transport);
 
                     // mark the chat as just updated
                     $toChat->lastTs = time();

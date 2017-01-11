@@ -24,10 +24,11 @@ class Smtp
      * @param $user
      * @param null $chat
      * @param null $tempMsgId
+     * @param int $transport
      * @return bool
      * @throws \Exception
      */
-    public static function setupThread($user, $chat = null, $tempMsgId = null)
+    public static function setupThread($user, $chat = null, $tempMsgId = null, $transport = 0)
     {
         if (!is_object($user))
         {
@@ -75,52 +76,51 @@ class Smtp
             // save temp message ID into AltBody
             self::$mail->AltBody = $tempMsgId;
         }
-        
-        if ($chat)
+
+        // quote old messages only if transport is 'classic'
+        if ($chat && $transport == 0)
         {
-            // get external message ID
-            if (!$message = Message::findByLastRealByChat($chat))
+            // do not continue if no real message found in the chat
+            if ($message = Message::findByLastRealByChat($chat))
             {
-                throw new \Exception('Message does not exist');
-            }
+                $refUser = User::findOne(['_id' => new ObjectID($message->refId)]);
 
-            $refUser = User::findOne(['_id' => new ObjectID($message->refId)]);
-
-            // temporary messages do not have external IDs and external Owner IDs
-            if ($message->extId && $refUser->roles)
-            {
-                // get original message data
-
-                $inbox = Inbox::init($refUser);
-
-                if ($data = $inbox->getMessage($message->extId))
+                // temporary messages do not have external IDs and external Owner IDs
+                if ($message->extId && $refUser->roles)
                 {
-                    $emailMessageId = $data['headers']['message-id'][0];
+                    // get original message data
 
-                    $refs = isset ($data['headers']['references']) ? $data['headers']['references'] : [];
-                    array_push($refs, $emailMessageId);
+                    $inbox = Inbox::init($refUser);
 
-                    self::$mail->addCustomHeader('Message-ID: ' . \Text::GUID_v4() . '@' . \Sys::cfg('mailless.this_server'));
-                    self::$mail->addCustomHeader('In-Reply-To: ' . $emailMessageId);
-                    self::$mail->addCustomHeader('References: ' . implode(' ', $refs));
-
-                    self::$mail->Subject = 'Re: ' . $data['subject'];
-
-                    if (isset ($data['body']))
+                    if ($data = $inbox->getMessage($message->extId))
                     {
-                        self::$messageExisted = true;
+                        $emailMessageId = $data['headers']['message-id'][0];
 
-                        $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
+                        $refs = isset ($data['headers']['references']) ? $data['headers']['references'] : [];
+                        array_push($refs, $emailMessageId);
 
-                        $body = [];
-                        foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
+                        self::$mail->addCustomHeader('Message-ID: ' . \Text::GUID_v4() . '@' . \Sys::cfg('mailless.this_server'));
+                        self::$mail->addCustomHeader('In-Reply-To: ' . $emailMessageId);
+                        self::$mail->addCustomHeader('References: ' . implode(' ', $refs));
+
+                        self::$mail->Subject = 'Re: ' . $data['subject'];
+
+                        if (isset ($data['body']))
                         {
-                            $body[] = '> ' . $line;
-                        }
+                            self::$messageExisted = true;
 
-                        $ts = date('r', $data['date']);
-                        $name = explode('@', $data['addresses']['from']['email']);
-                        self::$mail->Body = "\nOn {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
+                            $content = mb_convert_encoding($data['body'][0]['content'], 'UTF-8');
+
+                            $body = [];
+                            foreach (preg_split("/\r\n|\n|\r/", $content) as $line)
+                            {
+                                $body[] = '> ' . $line;
+                            }
+
+                            $ts = date('r', $data['date']);
+                            $name = explode('@', $data['addresses']['from']['email']);
+                            self::$mail->Body = "\nOn {$ts}, {$name[0]} <{$data['addresses']['from']['email']}> wrote:\n\n" . implode("\n", $body);
+                        }
                     }
                 }
             }
@@ -142,37 +142,41 @@ class Smtp
      * @param $body
      * @param null $subject
      * @param array $attachments
-     * @return array
+     * @param int $transport
+     * @return mixed
      * @throws \Exception
      */
-    public static function send($chat, $body, $subject = null, $attachments = [])
+    public static function send($chat, $body, $subject = null, $attachments = [], $transport = 0)
     {
         $tempFiles = [];
 
-        if (!self::$setup)
+        if ($transport != 2)
         {
-            throw new \Exception('Sending was not setup');
-        }
-
-        if ($body)
-        {
-            // body may be empty in case of a files only post
-            self::$mail->Body = $body . "\n" . self::$mail->Body;
-        }
-
-        if ($subject)
-        {
-            if (!self::$messageExisted || Message::clearSubject(self::$mail->Subject) != $subject)
+            if (!self::$setup)
             {
-                // this means the mail did not exist or message existed, but this one is new
-                self::$mail->Body = $body;
-                self::$mail->Subject = $subject;
+                throw new \Exception('Sending was not setup');
             }
-        }
-        else
-        {
-            // no subject -> do not quote
-            self::$mail->Body = $body;
+
+            if ($body)
+            {
+                // body may be empty in case of a files only post
+                self::$mail->Body = $body . "\n" . self::$mail->Body;
+            }
+
+            if ($subject)
+            {
+                if (!self::$messageExisted || Message::clearSubject(self::$mail->Subject) != $subject)
+                {
+                    // this means the mail did not exist or message existed, but this one is new
+                    self::$mail->Body = $body;
+                    self::$mail->Subject = $subject;
+                }
+            }
+            else
+            {
+                // no subject -> do not quote
+                self::$mail->Body = $body;
+            }
         }
 
         $userIds = [];
@@ -219,55 +223,55 @@ class Smtp
             'chatId'    => $chat->_id,
         ]);
 
-        if (count($userIds) == 1)
+        if ($transport != 2)
         {
-            // use text/html as the main body
-            self::$mail->isHTML(true);
+            if (count($userIds) == 1)
+            {
+                // use text/html as the main body
+                self::$mail->isHTML(true);
 
-            $tempMessageId = self::$mail->AltBody;
+                $tempMessageId = self::$mail->AltBody;
 
-            $trackingPixel = '<img src="https://' . \Sys::cfg('mailless.app_domain') . '/api/track?&token=' . $chat->_id . $tempMessageId . $userIds[0] . '" />';
-            self::$mail->AltBody = self::$mail->Body;
-            self::$mail->Body = $trackingPixel . nl2br(self::$mail->Body);
+                $trackingPixel = '<img src="https://' . \Sys::cfg('mailless.app_domain') . '/api/track?&token=' . $chat->_id . $tempMessageId . $userIds[0] . '" />';
+                self::$mail->AltBody = self::$mail->Body;
+                self::$mail->Body = $trackingPixel . nl2br(self::$mail->Body);
+            }
+            else
+            {
+                self::$mail->AltBody = '';
+            }
+
+            foreach ($attachments as $file)
+            {
+                // save file first
+                $path = tempnam('data/temp', 'upl-');
+
+                $f = fopen($path, 'wb');
+                stream_filter_append($f, 'convert.base64-decode');
+                fwrite($f, substr($file['b64'], strpos($file['b64'], ',') + 1));
+                fclose($f);
+
+                $tempFiles[] = $path;
+
+                self::$mail->addAttachment($path, $file['name'], 'base64', $file['type']);
+            }
+
+            if (!self::$mail->send())
+            {
+                throw new \Exception(self::$mail->ErrorInfo);
+            }
+
+            // cleanup possible temporary files
+            foreach ($tempFiles as $file)
+            {
+                unlink($file);
+            }
+
+            return [self::$mail, self::$mail->getCustomHeaders(), self::$mail->getToAddresses(), self::$mail->getCcAddresses(), self::$mail->getAttachments()];
         }
         else
         {
-            self::$mail->AltBody = '';
+            return true;
         }
-
-        foreach ($attachments as $file)
-        {
-        /*    // support new and old field names
-            // TODO: remove after new frontend released
-            if (isset ($file['data']) && !isset ($file['b64']))
-            {
-                $file['b64'] = $file['data'];
-            }*/
-
-            // save file first
-            $path = tempnam('data/temp', 'upl-');
-
-            $f = fopen($path, 'wb');
-            stream_filter_append($f, 'convert.base64-decode');
-            fwrite($f, substr($file['b64'], strpos($file['b64'], ',') + 1));
-            fclose($f);
-
-            $tempFiles[] = $path;
-
-            self::$mail->addAttachment($path, $file['name'], 'base64', $file['type']);
-        }
-
-        if (!self::$mail->send())
-        {
-            throw new \Exception(self::$mail->ErrorInfo);
-        }
-
-        // cleanup possible temporary files
-        foreach ($tempFiles as $file)
-        {
-            unlink($file);
-        }
-
-        return [self::$mail, self::$mail->getCustomHeaders(), self::$mail->getToAddresses(), self::$mail->getCcAddresses(), self::$mail->getAttachments()];
     }
 }
