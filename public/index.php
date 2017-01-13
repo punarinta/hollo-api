@@ -4,8 +4,8 @@
 $t1 = microtime(1);
 $m1 = memory_get_usage();
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+/*error_reporting(E_ALL);
+ini_set('display_errors', 1);*/
 
 // 1. Preliminary settings
 
@@ -110,7 +110,7 @@ unset ($autoClasses0, $autoClasses4, $loaderClassMap);
 
 // 4. Compiled routes
 
-// Built 07.01.17 @ 15:09:28 +0100
+// Built 13.01.17 @ 16:52:02 +0100
 
 $GLOBALS['-R'] = [
 'auth' => ['/api/auth', \Auth::GUEST, '\App\Controller\Auth', 'index'],
@@ -120,7 +120,7 @@ $GLOBALS['-R'] = [
 'settings' => ['/api/settings', \Auth::USER, '\App\Controller\Settings', 'index'],
 'gmail-push' => ['/api/gmail-push', \Auth::GUEST, '\App\Controller\GmailPush', 'index'],
 'track' => ['/api/track', \Auth::GUEST, '\App\Controller\Track', 'index'],
-'sys' => ['/api/sys', \Auth::USER, '\App\Controller\Sys', 'index'],
+'sys' => ['/api/sys', \Auth::HOLLO, '\App\Controller\Sys', 'index'],
 ];
 
 // 5. Run application
@@ -140,6 +140,19 @@ catch (\Exception $e)
     $errorCode = $e->getCode() ?: 500;
 
     http_response_code($errorCode);
+
+    if ($errorCode == 500 && \Sys::cfg('release') != false)
+    {
+        // report to Santa about someone's bad behaviour
+        \App\Service\Resque::addJob('ReportError',
+        [
+            'stack'     => $e->getTrace(),
+            'msg'       => $errMsg,
+            'server'    => $_SERVER,
+            'input'     => @$GLOBALS['-P-JSON'],
+            'user'      => \Auth::user(),
+        ]);
+    }
 }
 
 // object return is reserved for special purposes

@@ -128,6 +128,19 @@ catch (\Exception $e)
     $errorCode = $e->getCode() ?: 500;
 
     http_response_code($errorCode);
+
+    if ($errorCode == 500 && \Sys::cfg('release') != false)
+    {
+        // report to Santa about someone's bad behaviour
+        \App\Service\Resque::addJob('ReportError',
+        [
+            'stack'     => $e->getTrace(),
+            'msg'       => $errMsg,
+            'server'    => $_SERVER,
+            'input'     => @$GLOBALS['-P-JSON'],
+            'user'      => \Auth::user(),
+        ]);
+    }
 }
 
 // object return is reserved for special purposes

@@ -72,4 +72,9 @@ class Sys extends Generic
 
         return $items;
     }
+
+    static public function throwError()
+    {
+        throw new \Exception('Test error');
+    }
 }
