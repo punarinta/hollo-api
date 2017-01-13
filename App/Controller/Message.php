@@ -187,14 +187,50 @@ class Message extends Generic
      * @doc-var     (string) fromChatId!    - Donor chat ID.
      * @doc-var     (string) toChatId!      - Recipient chat ID.
      * @doc-var     (string) comment        - Your comment.
+     * @doc-var     (string) body           - Arbitrary message body.
      * @doc-var     (int) transport         - Transporting mode: 0 - classic, 1 - modern, 2 - light
      */
     static public function forward()
     {
+        $body = null;
+        $toChatId = 0;
+
         if (!$id = \Input::data('id'))
         {
-            throw new \Exception('Message ID is not specified.');
+            if ((!$body = \Input::data('body')) || (!$toChatId = \Input::data('toChatId')))
+            {
+                throw new \Exception('Message ID is not specified.');
+            }
         }
+
+        // forwarding a non-email
+        if ($body)
+        {
+            // create a temporary message
+            $messageStructure =
+            [
+                'id'        => (new ObjectID())->__toString(),
+                'userId'    => \Auth::user()->_id,
+                'subj'      => '',
+                'body'      => $body,
+                'files'     => [],
+                'ts'        => time(),
+            ];
+
+            SmtpSvc::setupThread(\Auth::user(), null, $messageStructure['id'], 1);
+
+            // send prepared message
+            $res = SmtpSvc::send($toChatId, $body, '', [], 1);
+
+            // mark the chat as just updated
+            $toChat = ChatSvc::findOne(['_id' => new ObjectID($toChatId)]);
+            $toChat->lastTs = time();
+            ChatSvc::update($toChat, ['messages' => $toChat->messages, 'lastTs' => $toChat->lastTs, 'users' => $toChat->users]);
+
+            return $res;
+        }
+
+
 
         if ((!$fromChatId = \Input::data('fromChatId')) || (!$toChatId = \Input::data('toChatId')))
         {
