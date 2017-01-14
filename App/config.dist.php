@@ -31,6 +31,11 @@ return array
         'key'       => '',
         'secret'    => '',
     ),
+    'mailgun' => array
+    (
+        'domain'  => 'hollo.email',
+        'api_key' => '',
+    ),
     'resque' => array
     (
         'queue'  => 'hollo',

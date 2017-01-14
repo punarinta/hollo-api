@@ -274,4 +274,38 @@ class Smtp
             return true;
         }
     }
+
+    /**
+     * @param $to
+     * @param $subject
+     * @param $message
+     * @return bool|mixed
+     */
+    public static function mailGun($to, $subject, $message)
+    {
+        $ch = curl_init();
+        $cfg = \Sys::cfg('mailgun');
+
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($ch, CURLOPT_USERPWD, 'api:' . $cfg['api_key']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, CURLOPT_URL, 'https://api.mailgun.net/v3/'. $cfg['domain'] .'/messages');
+        curl_setopt($ch, CURLOPT_POSTFIELDS,
+        [
+            'from'      => 'noreply@' . $cfg['domain'],
+            'to'        => $to,
+            'subject'   => $subject,
+        //    'html'      => $message,
+            'text'      => $message
+        ]);
+
+        $j = json_decode(curl_exec($ch));
+
+        $info = curl_getinfo($ch);
+        curl_close($ch);
+
+        return $info['http_code'] == 200 ? $j : false;
+    }
 }
