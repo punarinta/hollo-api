@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Jobs;
+use App\Service\Smtp as SmtpSvc;
 
 /**
  * Class ReportError
@@ -59,7 +60,7 @@ class ReportError extends Generic
         $report .= "input:\n" . json_encode($this->args['input']) . "<br><br>\n\n";
         $report .= "user:\n" . json_encode($this->args['user']) . "<br><br>\n\n";
 
-        mail('vladimir.g.osipov@gmail.com', 'Hollo API error', $report);
+        SmtpSvc::mailGun('vladimir.g.osipov@gmail.com', 'Hollo API error', $report);
 
         return true;
     }
