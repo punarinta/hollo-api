@@ -32,27 +32,35 @@ class Notify
      * Send data to Firebase server
      *
      * @param $data
+     * @param bool $withBg
      * @return bool
      */
-    public static function firebase($data)
+    public static function firebase($data, $withBg = true)
     {
-        $data['notification']['sound'] = 'default';
-        $data['notification']['click_action'] = 'FCM_PLUGIN_ACTIVITY';
-
-        if (isset ($data['notification']['body']))
+        if ($withBg)
         {
-            $messageBody = trim($data['notification']['body']);
+            $data['notification']['sound'] = 'default';
+            $data['notification']['click_action'] = 'FCM_PLUGIN_ACTIVITY';
 
-            // make message notifiable
-            // TODO: allow other types in advance
-            if (mb_strpos($messageBody, '{"widget":') !== false)
+            if (isset ($data['notification']['body']))
             {
-                $messageBody = 'Tap to see calendar';
+                $messageBody = trim($data['notification']['body']);
+
+                // make message notifiable
+                // TODO: allow other types in advance
+                if (mb_strpos($messageBody, '{"widget":') !== false)
+                {
+                    $messageBody = 'Tap to see calendar';
+                }
+
+                $messageBody = str_replace('[sys:fwd]', ' Forwarded message', $messageBody);
+
+                $data['notification']['body'] = $messageBody;
             }
-
-            $messageBody = str_replace('[sys:fwd]', ' Forwarded message', $messageBody);
-
-            $data['notification']['body'] = $messageBody;
+        }
+        else
+        {
+            unset ($data['notification']);
         }
 
         $ch = curl_init('https://fcm.googleapis.com/fcm/send');
