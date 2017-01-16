@@ -44,6 +44,7 @@ class Auth extends Generic
                 'name'      => @\Auth::user()->name,
                 'ava'       => @$_SESSION['-AUTH']['avatar'],
                 'settings'  => \Auth::user()->settings,
+                'notes'     => \Auth::user()->notes ?? [],
                 'created'   => \Auth::user()->created ?? 0,
                 'roles'     => \Auth::user()->roles,
             ) : null,
