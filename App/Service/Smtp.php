@@ -193,35 +193,9 @@ class Smtp
 
             // collect user IDs for IM notification
             $userIds[] = $user->_id;
-
-            Notify::firebase(array
-            (
-                'to'           => '/topics/user-' . $userRow->id,
-                'collapse_key' => 'new_message',
-                'priority'     => 'high',
-
-                'notification' => array
-                (
-                    'title' => $subject,
-                    'body'  => $body,
-                    'icon'  => 'fcm_push_icon'
-                ),
-
-                'data' => array
-                (
-                    'cmd'    => 'chat:update',
-                    'authId' => $userRow->id,
-                    'chatId' => $chat->_id,
-                ),
-            ));
         }
 
-        Notify::im(
-        [
-            'cmd'       => 'chat:update',
-            'userIds'   => $userIds,
-            'chatId'    => $chat->_id,
-        ]);
+        Notify::auto($userIds, ['cmd' => 'chat:update', 'chatId' => $chat->_id], ['title' => $subject, 'body' => $body]);
 
         if ($transport != 2)
         {
