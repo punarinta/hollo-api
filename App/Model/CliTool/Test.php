@@ -40,30 +40,11 @@ class Test
         return '';
     }
 
-    public function firebase()
+    public function notify()
     {
         $id = UserSvc::findOne(['email' => 'vladimir.g.osipov@gmail.com'])->_id;
 
-        $payload = array
-        (
-            'to'           => '/topics/user-' . $id,
-            'priority'     => 'high',
-
-            'notification' => array
-            (
-                'title' => 'You have new message',          // Any value
-                'body'  => 'Testing 🎂',                    // Any value
-                'icon'  => 'fcm_push_icon'                  // White icon Android resource
-            ),
-
-            'data' => array
-            (
-                'authId' => $id,
-                'cmd'    => 'sys:ping',
-            ),
-        );
-
-        $res = NotifySvc::firebase($payload);
+        $res = NotifySvc::auto([$id], ['cmd' => 'sys:ping'], ['title' => 'You have new message', 'body' => 'Testing 🎂']);
 
         print_r($res);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\Notify;
 use MongoDB\BSON\ObjectID;
 use \App\Service\Chat as ChatSvc;
 
@@ -52,6 +53,7 @@ class Track extends Generic
 
         if ($found)
         {*/
+            $notifyThese = [];
             $chatUsers = $chat->users ?? [];
             foreach ($chatUsers as $k => $user)
             {
@@ -61,7 +63,14 @@ class Track extends Generic
                     ChatSvc::update($chat, ['users' => $chatUsers]);
                     break;
                 }
+                else
+                {
+                    // inform user that the interlocutor has read the chat
+                    $notifyThese[] = $user->id;
+                }
             }
+
+            Notify::auto($notifyThese, ['cmd' => 'chat:update', 'chatId' => $chatId]);
     //    }
 
         // flush with a 1x1 transparent GIF

@@ -9,6 +9,55 @@ class Notify
     public static $client = null;
 
     /**
+     * @param $userIds
+     * @param $data
+     * @param null $push
+     * @return array
+     */
+    public static function auto($userIds, $data, $push = null)
+    {
+        $uid = uniqid('', true);
+        $returns = ['firebase' => []];
+
+        $imData =
+        [
+            'userIds'   => $userIds,
+            'uid'       => $uid,
+        ];
+
+        $imData = array_merge($imData, $data);
+        $returns['im'] = Notify::im($imData);
+
+        foreach ($userIds as $userId)
+        {
+            $firebaseData =
+            [
+                'authId' => $userId,
+                'uid'    => $uid,
+            ];
+
+            $firebaseData = array_merge($firebaseData, $data);
+
+            $firebasePayload =
+            [
+                'to'            => '/topics/user-' . $userId,
+                'collapse_key'  => 'new_message',   // TODO: elaborate on this
+                'priority'      => 'high',
+                'data'          => $firebaseData,
+            ];
+
+            if ($push)
+            {
+                $firebasePayload['notification'] = array_merge(['icon'  => 'fcm_push_icon'], $push);
+            }
+
+            $returns['firebase'][] = Notify::firebase($firebasePayload, (bool) $push);
+        }
+
+        return $returns;
+    }
+
+    /**
      * Send data to WebSocket server
      *
      * @param $data

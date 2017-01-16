@@ -125,9 +125,8 @@ class Message
 
                 $count += 1 * !empty (self::processMessageSync($user, $emailData,
                 [
-                    'fetchAll'      => true,
-                    'noMarks'       => true,
-                    'useFirebase'   => false,           // don't spam during a mass sync
+                    'fetchAll'  => true,
+                    'usePush'   => false,           // don't spam during a mass sync
                 ]));
             }
             catch (\Exception $e)
@@ -238,9 +237,7 @@ class Message
         $maxTimeBack = isset ($options['maxTimeBack']) ? $options['maxTimeBack'] : \Sys::cfg('sys.sync_period');
         $keepOld = isset ($options['keepOld']) ? $options['keepOld'] : false;
         $notify = isset ($options['notify']) ? $options['notify'] : true;
-        $noMarks = isset ($options['noMarks']) ? $options['noMarks'] : false;   // set 'true' not to mark unread chats
-        $useFirebase = isset ($options['useFirebase']) ? $options['useFirebase'] : true;
-        $useSocket = isset ($options['useSocket']) ? $options['useSocket'] : true;
+        $usePush = isset ($options['usePush']) ? $options['usePush'] : true;
 
         // assure the message is not spammy shit
         if (isset ($messageData['folders'])) foreach ($messageData['folders'] as $folder)
@@ -496,47 +493,16 @@ class Message
         // run chat update
         Chat::update($chat, ['messages' => $chat->messages, 'lastTs' => $chat->lastTs, 'users' => $chat->users]);
 
+        // notify everyone except sender
+        $notifyThese = [];
+        foreach ($chat->users as $user) if ($user->id != $senderId)
+        {
+            $notifyThese[] = $user->id;
+        }
+
         if (!$temporaryMessageExisted && $notify)
         {
-            $uid = uniqid('', true);
-
-            if ($useFirebase)
-            {
-                // safe to use Firebase
-                Notify::firebase(array
-                (
-                    'to'           => '/topics/user-' . $user->_id,
-                    'collapse_key' => 'new_message',
-                    'priority'     => 'high',
-
-                    'notification' => array
-                    (
-                        'title' => $subject,
-                        'body'  => $body,
-                        'icon'  => 'fcm_push_icon'
-                    ),
-
-                    'data' => array
-                    (
-                        'cmd'    => 'chat:update',
-                        'authId' => $user->_id,
-                        'chatId' => $chat->_id,
-                        'uid'    => $uid,
-                    ),
-                ));
-            }
-
-            if ($useSocket)
-            {
-                Notify::im(
-                [
-                    'cmd'       => 'chat:update',
-                    'userIds'   => [$user->_id],
-                    'chatId'    => $chat->_id,
-                    'silent'    => $noMarks,
-                    'uid'       => $uid,
-                ]);
-            }
+            Notify::auto($notifyThese, ['cmd' => 'chat:update', 'chatId' => $chat->_id], $usePush ? ['title' => $subject, 'body' => $body] : null);
         }
 
         return (object) $messageStructure;
