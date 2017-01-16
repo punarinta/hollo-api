@@ -24,9 +24,8 @@ class Settings extends Generic
        
         return array
         (
-            'firstName' => $settings->firstName,
-            'lastName'  => $settings->lastName,
             'signature' => $settings->signature,
+            'notes'     => \Auth::user()->notes,
             'flags'     => $settings->flags,
         );
     }
@@ -34,9 +33,8 @@ class Settings extends Generic
     /**
      * Update your profile info
      *
-     * @doc-var     (string) firstName      - First name.
-     * @doc-var     (string) lastName       - Last name.
      * @doc-var     (string) signature      - Signature.
+     * @doc-var     (array) notes           - Personal notes.
      * @doc-var     (object) flag           - Set an arbitrary flag.
      * @doc-var     (string) flag.name      - Flag name.
      * @doc-var     (bool) flag.value       - Flag status.
@@ -48,8 +46,6 @@ class Settings extends Generic
         $user = \Auth::user();
         $settings = $user->settings;
 
-        if (\Input::data('firstName') !== null) $settings->firstName = \Input::data('firstName');
-        if (\Input::data('lastName') !== null) $settings->lastName = \Input::data('lastName');
         if (\Input::data('signature') !== null) $settings->signature = \Input::data('signature');
 
         if ($flag = \Input::data('flag'))
@@ -58,7 +54,14 @@ class Settings extends Generic
         }
 
         // save settings back
-        UserSvc::update($user, ['settings' => $settings]);
+        $config = ['settings' => $settings];
+
+        if (($user->notes = \Input::data('notes')) !== null)
+        {
+            $config['notes'] = $user->notes;
+        }
+
+        UserSvc::update($user, $config);
         AuthSvc::sync();
 
         return $settings;
@@ -66,8 +69,10 @@ class Settings extends Generic
 
     static public function testNotification()
     {
-        $mode = \Input::data('mode') ?: 'firebase';
-
-        ResqueSvc::addJob('TestNotifications', ['user_id' => \Auth::user()->_id, 'mode' => $mode ]);
+        ResqueSvc::addJob('TestNotifications',
+        [
+            'user_id'   => \Auth::user()->_id,
+            'mode'      => \Input::data('mode') ?: 'firebase'
+        ]);
     }
 }
