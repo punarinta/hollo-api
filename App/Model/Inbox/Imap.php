@@ -59,30 +59,7 @@ class Imap extends Generic implements InboxInterface
             UserSvc::update($user, ['settings.hash' => null]);
 
             // ask to relogin
-            NotifySvc::firebase(array
-            (
-                'to'           => '/topics/user-' . $user->_id,
-                'priority'     => 'high',
-
-                'notification' => array
-                (
-                    'title' => 'Did you change password?',
-                    'body'  => 'We apologize, but please login once again.',
-                    'icon'  => 'fcm_push_icon'
-                ),
-
-                'data' => array
-                (
-                    'cmd'       => 'auth:logout',
-                    'authId'    => $user->_id,
-                ),
-            ));
-
-            NotifySvc::im(
-            [
-                'cmd'       => 'auth:logout',
-                'userIds'   => [$user->_id],
-            ]);
+            NotifySvc::auto([$user->_id], ['cmd' => 'auth:logout'], ['title' => 'Did you change password?', 'body' => 'We apologize, but please login once again.']);
         }
     }
 
