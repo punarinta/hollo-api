@@ -70,11 +70,11 @@ class Gmail extends Generic implements InboxInterface
         $latestExtId = null;
 
         // find all chats where this user's messages are present
-        foreach (ChatSvc::findAll(['messages.refId' => $this->user->_id]) as $chat)
+        foreach (ChatSvc::findAll(['messages.refId' => @$this->user->_id]) as $chat)
         {
             foreach ($chat->messages ?? [] as $message)
             {
-                if ($message->ts > $latestTs)
+                if ($message->ts > $latestTs && $message->extId)
                 {
                     $latestTs = $message->ts;
                     $latestExtId = $message->extId;
