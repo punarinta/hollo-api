@@ -72,7 +72,7 @@ class Gmail extends Generic implements InboxInterface
         // find all chats where this user's messages are present
         foreach (ChatSvc::findAll(['messages.refId' => $this->user->_id]) as $chat)
         {
-            foreach ($chat->messages as $message)
+            foreach ($chat->messages ?? [] as $message)
             {
                 if ($message->ts > $latestTs)
                 {
