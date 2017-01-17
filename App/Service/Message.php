@@ -677,7 +677,14 @@ class Message
         // remove zero-width space
         $content = str_replace("\xE2\x80\x8B", '', $content);
 
-        return mb_ereg_replace('^[[:space:]]*([\s\S]*?)[[:space:]]*$', '\1', $content);
+        $content = mb_ereg_replace('^[[:space:]]*([\s\S]*?)[[:space:]]*$', '\1', $content);
+
+        // stylistic cleaning
+        // try to remove signature
+        $content = preg_replace('/\s((best|kind) regards,).*/si', '', $content);
+        $content = preg_replace('/(?!.*[\r\n]--).*/s', '', $content);
+
+        return $content;
     }
 
     /**
