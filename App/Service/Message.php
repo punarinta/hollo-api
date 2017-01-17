@@ -682,7 +682,10 @@ class Message
         // stylistic cleaning
         // try to remove signature
         $content = preg_replace('/\s((best|kind) regards,).*/si', '', $content);
-        $content = preg_replace('/(?!.*[\r\n]--).*/s', '', $content);
+        if (strpos($content, "\n--\n") !== false)
+        {
+            $content = preg_replace('/(?!.*[\r\n]--).*/s', '', $content);
+        }
 
         return $content;
     }
@@ -712,6 +715,13 @@ class Message
         {
             if ($print) print_r($what);
             else echo "$what\n";
+        }
+        else
+        {
+            if (!isset ($GLOBALS['-SYS-LOG'])) $GLOBALS['-SYS-LOG'] = '';
+
+            if ($print) $GLOBALS['-SYS-LOG'] .= json_encode($what) . "\n";
+            else $GLOBALS['-SYS-LOG'] .= "$what\n";
         }
     }
 }
