@@ -456,7 +456,7 @@ class Message
             // OK, the chat is muted
             // allow fetching, but keep 1 message in the chat only => clear the whole chat before sync
             $chat->messages = [];
-            $notify = false;
+            $usePush = false;
         }
         else if (!$keepOld)
         {
