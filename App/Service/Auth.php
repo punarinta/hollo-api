@@ -4,6 +4,7 @@ namespace App\Service;
 
 use \App\Service\User as UserSvc;
 use \App\Service\MailService as MailServiceSvc;
+use MongoDB\BSON\ObjectID;
 
 class Auth
 {
@@ -18,7 +19,7 @@ class Auth
         if (!isset ($_SESSION['-AUTH']['user'])) return false;
         if (!$userId = $_SESSION['-AUTH']['user']->_id) return false;
 
-        if (!$user = UserSvc::findOne(['_id' => $userId]))
+        if (!$user = UserSvc::findOne(['_id' => new ObjectID($userId)]))
         {
             return false;
         }

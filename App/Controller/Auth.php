@@ -21,6 +21,18 @@ class Auth extends Generic
     }
 
     /**
+     * Resyncs your User object from DB
+     *
+     * @return array
+     */
+    static function sync()
+    {
+        AuthSvc::sync();
+
+        return self::status();
+    }
+
+    /**
      * Returns current status
      *
      * @return array
