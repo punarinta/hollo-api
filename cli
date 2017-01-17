@@ -133,5 +133,28 @@ if ($argc < 2)
     return;
 }
 
-$tool = new \App\Model\CliTool(require_once 'App/config.php');
-echo $tool->dispatch($argv) . "\n";
+try
+{
+    $tool = new \App\Model\CliTool(require_once 'App/config.php');
+    echo $tool->dispatch($argv) . "\n";
+}
+catch (\Exception $e)
+{
+    $isError   = true;
+    $errMsg    = $e->getMessage();
+    $errorCode = $e->getCode() ?: 500;
+
+    http_response_code($errorCode);
+
+    if ($errorCode == 500 && \Sys::cfg('release') != false)
+    {
+        // report to Santa about someone's bad behaviour
+        \App\Service\Resque::addJob('ReportError',
+         [
+             'stack'     => $e->getTrace(),
+             'msg'       => $errMsg,
+             'server'    => $_SERVER,
+             'input'     => @$argv,
+         ]);
+    }
+}
