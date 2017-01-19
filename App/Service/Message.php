@@ -249,10 +249,10 @@ class Message
                 self::say("Notice: message has illegal label '$folder'");
                 return false;
             }
-            if (strpos($folder, 'sent') !== false)
+        /*    if (strpos($folder, 'sent') !== false)
             {
                 $notify = false;
-            }
+            }*/
         }
 
         // first and foremost find associated chat
