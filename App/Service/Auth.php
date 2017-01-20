@@ -121,10 +121,10 @@ class Auth
         else
         {
             // user exists and it's real, not good
-            if (isset ($user->roles))
+        /*    if (isset ($user->roles))
             {
                 throw new \Exception('User already exists');
-            }
+            }*/
             $user->created = $created;
             $user->roles = \Auth::USER;
             $user->settings = $settings;
