@@ -171,7 +171,7 @@ class Message
             self::say($data, 1);
         }
 
-        $message = self::processMessageSync($user, $data, $options);
+        $message = self::processMessageSync($user, $data, $options, $imap);
 
         return $message;
     }
@@ -222,10 +222,11 @@ class Message
      * @param $user                 -- recipient user
      * @param $messageData
      * @param array $options
+     * @param object $imapObject
      * @return bool | object
      * @throws \Exception
      */
-    protected static function processMessageSync($user, $messageData, $options = [])
+    protected static function processMessageSync($user, $messageData, $options = [], $imapObject = null)
     {
         $temporaryMessageExisted = false;
 
