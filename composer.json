@@ -20,7 +20,6 @@
         "tpyo/amazon-s3-php-class": "0.5.*",
         "chrisboulton/php-resque": "dev-master",
         "google/apiclient": "1.1.*",
-        "facebook/php-sdk-v4" : "~5.0",
         "phpmailer/phpmailer": "~5.2",
         "league/oauth2-google": "~1.0",
         "punarinta/email-auth": "dev-master"
