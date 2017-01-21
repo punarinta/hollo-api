@@ -2,26 +2,69 @@
 
 namespace App\Service;
 
-//  S3 class upgraded with https://github.com/tpyo/amazon-s3-php-class/issues/96
-
 include_once 'vendor/tpyo/amazon-s3-php-class/S3.php';
 
 class File
 {
-    public static function createThumbnail($source_image_path, $thumbnail_image_path)
+    /**
+     * Creates an attachment preview and uploads it to Amazon S3
+     *
+     * @param object $imapObject
+     * @param $messageData
+     * @param $chatId
+     * @param $messageId
+     * @param int $fileId
+     */
+    public static function createAttachmentPreview($imapObject, $messageData, $chatId, $messageId, $fileId = 0)
     {
-        list ($source_image_width, $source_image_height, $source_image_type) = getimagesize($source_image_path);
+        // https://s3.eu-central-1.amazonaws.com/cached-t/$chatId/$messageId/$fileId
+
+        $tempDumpPath = tempnam('data/temp', 'DUMP-');
+        $tempThumbPath = tempnam('data/temp', 'THUMB-');
+
+        try
+        {
+            // get file data
+            $binaryData = $imapObject->getFileData($messageData, $fileId);
+
+            // dump it
+            file_put_contents($tempDumpPath, $binaryData);
+
+            File::createThumbnail($tempDumpPath, $tempThumbPath);
+            File::toAmazon($tempThumbPath, "$chatId/$messageId/$fileId");
+        }
+        catch (\Exception $e)
+        {
+            // do nothing
+        }
+        finally
+        {
+            unlink($tempDumpPath);
+            unlink($tempThumbPath);
+        }
+    }
+
+    /**
+     * Generates a thumbnail for an image (PNG, GIF, JPEG)
+     *
+     * @param $sourcePath
+     * @param $thumbnailPath
+     * @return bool
+     */
+    public static function createThumbnail($sourcePath, $thumbnailPath)
+    {
+        list ($source_image_width, $source_image_height, $source_image_type) = getimagesize($sourcePath);
 
         switch ($source_image_type)
         {
             case IMAGETYPE_GIF:
-                $source_gd_image = imagecreatefromgif($source_image_path);
+                $source_gd_image = imagecreatefromgif($sourcePath);
                 break;
             case IMAGETYPE_JPEG:
-                $source_gd_image = imagecreatefromjpeg($source_image_path);
+                $source_gd_image = imagecreatefromjpeg($sourcePath);
                 break;
             case IMAGETYPE_PNG:
-                $source_gd_image = imagecreatefrompng($source_image_path);
+                $source_gd_image = imagecreatefrompng($sourcePath);
                 break;
             default:
                 return false;
@@ -29,15 +72,25 @@ class File
 
         $thumbnail_gd_image = imagecreatetruecolor(128, 128);
         imagecopyresampled($thumbnail_gd_image, $source_gd_image, 0, 0, 0, 0, 128, 128, $source_image_width, $source_image_height);
-        imagejpeg($thumbnail_gd_image, $thumbnail_image_path, 93);
+        imagejpeg($thumbnail_gd_image, $thumbnailPath, 93);
         imagedestroy($source_gd_image);
         imagedestroy($thumbnail_gd_image);
 
         return true;
     }
 
+    /**
+     * Uploads a file to Amazon S3
+     *
+     * @param $localPath
+     * @param $remotePath
+     */
     public static function toAmazon($localPath, $remotePath)
     {
+        //  IMPORTANT: S3 class upgraded with https://github.com/tpyo/amazon-s3-php-class/issues/96
+
+        // https://s3.eu-central-1.amazonaws.com/cached-t/$remotePath
+
         $cfg = \Sys::cfg('amazon');
 
         $s3 = new \S3($cfg['api_key'], $cfg['secret'], false, 's3.eu-central-1.amazonaws.com');

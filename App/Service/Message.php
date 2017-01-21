@@ -506,6 +506,18 @@ class Message
             Notify::auto($notifyThese, ['cmd' => 'chat:update', 'chatId' => $chat->_id], $usePush ? ['title' => $subject, 'body' => $body] : null);
         }
 
+        // generate previews
+        $fileCount = 0;
+        if (isset ($messageData['files'])) foreach ($messageData['files'] as $file)
+        {
+            if (in_array($file['type'], ['image/png', 'image/gif', 'image/jpeg'/*, 'application/pdf'*/]))
+            {
+                File::createAttachmentPreview($imapObject, $messageData, $chat->_id, $messageStructure['id'], $fileCount);
+            }
+
+            ++$fileCount;
+        }
+
         return (object) $messageStructure;
     }
 
