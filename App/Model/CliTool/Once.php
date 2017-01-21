@@ -86,8 +86,13 @@ class Once
         $GLOBALS['-DB-L']->executeBulkWrite('hollo.user', $bulk);
     }
 
+    /**
+     * @return string
+     */
     public function createThumbnails()
     {
+        $count = 0;
+
         $processMimes =
         [
             'image/png',
@@ -98,6 +103,8 @@ class Once
 
         foreach (ChatSvc::findAll() as $chat)
         {
+            echo "Chat {$chat->_id}...\n";
+
             foreach ($chat->messages ?? [] as $message)
             {
                 if (!@$message->extId) continue;
@@ -111,6 +118,7 @@ class Once
                 {
                     if (in_array($file['type'], $processMimes))
                     {
+                        ++$count;
                         FileSvc::createAttachmentPreview($imapObject, $messageData, $chat->_id, $message->id, $fileCount);
                     }
 
@@ -118,5 +126,7 @@ class Once
                 }
             }
         }
+
+        return "Total files created: $count\n";
     }
 }
