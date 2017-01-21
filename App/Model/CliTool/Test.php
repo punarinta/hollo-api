@@ -60,7 +60,7 @@ class Test
     {
         $tempFileName = tempnam('data/temp', 'THUMB-');
         File::createThumbnail($filePath, $tempFileName);
-        File::toAmazon($tempFileName, '123456789012345678901234@1');
+        File::toAmazon($tempFileName, '123456789012345678901234-1');
         unlink($tempFileName);
     }
 }
