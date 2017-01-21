@@ -2,6 +2,9 @@
 
 namespace App\Model\CliTool;
 
+use App\Model\Inbox\Inbox;
+use App\Service\Chat as ChatSvc;
+use App\Service\File as FileSvc;
 use MongoDB\Driver\BulkWrite;
 
 /**
@@ -81,5 +84,39 @@ class Once
         }
 
         $GLOBALS['-DB-L']->executeBulkWrite('hollo.user', $bulk);
+    }
+
+    public function createThumbnails()
+    {
+        $processMimes =
+        [
+            'image/png',
+            'image/gif',
+            'image/jpeg',
+        //    'application/pdf',
+        ];
+
+        foreach (ChatSvc::findAll() as $chat)
+        {
+            foreach ($chat->messages ?? [] as $message)
+            {
+                if (!@$message->extId) continue;
+                if (!@$message->files) continue;
+
+                $imapObject = Inbox::init($message->refId);
+                $messageData = $imapObject->getMessage($message->extId);
+
+                $fileCount = 0;
+                foreach ($message->files as $file)
+                {
+                    if (in_array($file['type'], $processMimes))
+                    {
+                        FileSvc::createAttachmentPreview($imapObject, $messageData, $chat->_id, $message->id, $fileCount);
+                    }
+
+                    ++$fileCount;
+                }
+            }
+        }
     }
 }
