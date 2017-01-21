@@ -71,6 +71,11 @@ class File
         }
 
         $thumbnail_gd_image = imagecreatetruecolor(128, 128);
+
+        // fill the background with white
+        $whiteBackground = imagecolorallocate($thumbnail_gd_image, 255, 255, 255);
+        imagefill($thumbnail_gd_image, 0, 0, $whiteBackground);
+
         imagecopyresampled($thumbnail_gd_image, $source_gd_image, 0, 0, 0, 0, 128, 128, $source_image_width, $source_image_height);
         imagejpeg($thumbnail_gd_image, $thumbnailPath, 93);
         imagedestroy($source_gd_image);
