@@ -114,9 +114,9 @@ class Once
                 $messageData = $imapObject->getMessage($message->extId);
 
                 $fileCount = 0;
-                foreach ($message->files as $file)
+                foreach ($message->files ?? [] as $file)
                 {
-                    if (in_array($file['type'], $processMimes))
+                    if (in_array($file->type, $processMimes))
                     {
                         ++$count;
                         FileSvc::createAttachmentPreview($imapObject, $messageData, $chat->_id, $message->id, $fileCount);
