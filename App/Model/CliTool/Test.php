@@ -4,6 +4,7 @@ namespace App\Model\CliTool;
 
 use App\Model\Inbox\Imap;
 use \App\Service\Chat as ChatSvc;
+use App\Service\File;
 use \App\Service\User as UserSvc;
 use \App\Service\Notify as NotifySvc;
 
@@ -53,5 +54,13 @@ class Test
     {
         $users = ChatSvc::findByEmails(['felix.r.lange@gmail.com', 'fredrik.engblom@gmail.com']);
         print_r($users);
+    }
+
+    public function s3Thumb($filePath)
+    {
+        $tempFileName = tempnam('data/temp', 'THUMB-');
+        File::createThumbnail($filePath, $tempFileName);
+        File::toAmazon($tempFileName, '123456789012345678901234@1');
+        unlink($tempFileName);
     }
 }

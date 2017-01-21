@@ -36,6 +36,12 @@ return array
         'domain'  => 'hollo.email',
         'api_key' => '',
     ),
+    'amazon' => array
+    (
+        'api_key'   => '',
+        'secret'    => '',
+        'bucket'    => 'cached-t',
+    ),
     'resque' => array
     (
         'queue'  => 'hollo',
