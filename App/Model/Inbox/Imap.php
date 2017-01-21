@@ -159,7 +159,15 @@ class Imap extends Generic implements InboxInterface
      */
     public function getFileData($messageId, $fileId)
     {
-        $data = $this->getMessage($messageId);
+        // support feeding message data as a first argument
+        if (is_array($messageId))
+        {
+            $data = $messageId;
+        }
+        else
+        {
+            $data = $this->getMessage($messageId);
+        }
 
         return @$data['files'][$fileId]['content'];
     }
