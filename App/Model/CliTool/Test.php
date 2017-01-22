@@ -14,19 +14,6 @@ use \App\Service\Notify as NotifySvc;
  */
 class Test
 {
-    public function reClean()
-    {
-        $count = 0;
-
-        // TODO: refactor based on chats
-      /*  foreach (\Sys::svc('Message')->findAll() as $message)
-        {
-            $count += 1 * \Sys::svc('Message')->reClean($message);
-        }*/
-
-        return "$count messages affected\n\n";
-    }
-
     public function inbox($userId = 2)
     {
         $imap = new Imap($userId); // 11298 - attachment, 11216 - polish symbols
@@ -56,11 +43,26 @@ class Test
         print_r($users);
     }
 
-    public function s3Thumb($filePath)
+    public function imagick($filePath)
     {
-        $tempFileName = tempnam('data/temp', 'THUMB-');
-        File::createThumbnail($filePath, $tempFileName);
-        File::toAmazon($tempFileName, '123456789012345678901234-1');
-        unlink($tempFileName);
+        try
+        {
+            $tempFileName = tempnam('data/temp', 'THUMB-');
+
+            $im = new \imagick($filePath . '[0]');
+            $im->setImageBackgroundColor('#fff');
+            $im->setImageFormat('jpeg');
+            $im->setImageCompressionQuality(90);
+            $im->trimImage(0);
+            $im->scaleImage(128, 128);
+            file_put_contents($tempFileName, $im);
+            rename($tempFileName, $tempFileName . '.jpg');
+        }
+        catch (\Exception $e)
+        {
+            return "Error: {$e->getMessage()}\n\n";
+        }
+
+        return "Done!\n\n";
     }
 }
