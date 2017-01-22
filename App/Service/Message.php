@@ -245,7 +245,7 @@ class Message
         {
             $folder = strtolower($folder);
 
-            if (in_array($folder, ['draft', 'chat', 'trash']))
+            if (in_array($folder, ['draft', 'chat', 'trash', 'spam']))
             {
                 self::say("Notice: message has illegal label '$folder'");
                 return false;
