@@ -250,10 +250,6 @@ class Message
                 self::say("Notice: message has illegal label '$folder'");
                 return false;
             }
-        /*    if (strpos($folder, 'sent') !== false)
-            {
-                $notify = false;
-            }*/
         }
 
         // first and foremost find associated chat
@@ -503,6 +499,11 @@ class Message
 
         if (!$temporaryMessageExisted && $notify)
         {
+            if (!empty ($files))
+            {
+                if (strlen($body)) $body .= "\n";
+                $body .= '📄 × ' . count($files);
+            }
             Notify::auto($notifyThese, ['cmd' => 'chat:update', 'chatId' => $chat->_id], $usePush ? ['title' => $subject, 'body' => $body] : null);
         }
 
@@ -510,10 +511,7 @@ class Message
         $fileCount = 0;
         if (isset ($messageData['files'])) foreach ($messageData['files'] as $file)
         {
-            if (in_array($file['type'], ['image/png', 'image/gif', 'image/jpeg'/*, 'application/pdf'*/]))
-            {
-                File::createAttachmentPreview($imapObject, $messageData, $chat->_id, $messageStructure['id'], $fileCount);
-            }
+            File::createAttachmentPreview($imapObject, $messageData, $chat->_id, $messageStructure['id'], $fileCount, $file['type']);
 
             ++$fileCount;
         }

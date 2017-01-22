@@ -43,20 +43,23 @@ class Test
         print_r($users);
     }
 
+    public function thumb($filePath)
+    {
+        $tempFileName = tempnam('data/temp', 'THUMB-');
+        File::createGdThumbnail($filePath, $tempFileName);
+        rename($tempFileName, $tempFileName . '.jpg');
+    }
+
     public function imagick($filePath)
     {
         try
         {
             $tempFileName = tempnam('data/temp', 'THUMB-');
-
             $im = new \imagick($filePath . '[0]');
-            $im->setImageBackgroundColor('#fff');
-            $im->setImageFormat('jpeg');
-            $im->setImageCompressionQuality(90);
+            $im->setImageFormat('png');
             $im->trimImage(0);
-            $im->scaleImage(128, 128);
             file_put_contents($tempFileName, $im);
-            rename($tempFileName, $tempFileName . '.jpg');
+            rename($tempFileName, $tempFileName . '.png');
         }
         catch (\Exception $e)
         {

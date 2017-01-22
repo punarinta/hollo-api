@@ -14,10 +14,32 @@ class File
      * @param $chatId
      * @param $messageId
      * @param int $fileId
+     * @param string $mime
+     * @return bool
+     * @throws \Exception
      */
-    public static function createAttachmentPreview($imapObject, $messageData, $chatId, $messageId, $fileId = 0)
+    public static function createAttachmentPreview($imapObject, $messageData, $chatId, $messageId, $fileId = 0, $mime = '')
     {
         // https://s3.eu-central-1.amazonaws.com/cached-t/$chatId/$messageId/$fileId
+
+        $types =
+        [
+            // allowed types
+            'image/png'         => 'png',
+            'image/gif'         => 'gif',
+            'image/jpg'         => 'jpg',
+            'image/jpeg'        => 'jpg',
+            'application/pdf'   => 'pdf',
+            'image/svg+xml'     => 'svg',
+            'text/html'         => 'html',
+            'image/tiff'        => 'tiff',
+            'image/bmp'         => 'bmp',
+        ];
+
+        if (!isset ($types[$mime]))
+        {
+            return false;
+        }
 
         $tempDumpPath = tempnam('data/temp', 'DUMP-');
         $tempThumbPath = tempnam('data/temp', 'THUMB-');
@@ -28,20 +50,37 @@ class File
             $binaryData = $imapObject->getFileData($messageData, $fileId);
 
             // dump it
-            file_put_contents($tempDumpPath, $binaryData);
+            file_put_contents($tempDumpPath . '.' . $types[$mime], $binaryData);
 
-            File::createThumbnail($tempDumpPath, $tempThumbPath);
+            if (!in_array($mime, ['image/png', 'image/gif', 'image/jpeg']))
+            {
+                $tempFileName = tempnam('data/temp', 'TEMP-');
+                $im = new \imagick($tempDumpPath . '.' . $types[$mime] . '[0]');
+                $im->setImageFormat('png');
+                $im->trimImage(0);
+                file_put_contents($tempFileName, $im);
+                File::createGdThumbnail($tempFileName, $tempThumbPath);
+                unlink($tempFileName);
+            }
+            else
+            {
+                File::createGdThumbnail($tempDumpPath . '.' . $types[$mime], $tempThumbPath);
+            }
+
             File::toAmazon($tempThumbPath, "$chatId/$messageId/$fileId");
         }
         catch (\Exception $e)
         {
-            // do nothing
+            throw new \Exception('Thumbnail creation error: ' . $e->getMessage());
         }
         finally
         {
             unlink($tempDumpPath);
+            unlink($tempDumpPath . '.' . $types[$mime]);
             unlink($tempThumbPath);
         }
+
+        return true;
     }
 
     /**
@@ -51,7 +90,7 @@ class File
      * @param $thumbnailPath
      * @return bool
      */
-    public static function createThumbnail($sourcePath, $thumbnailPath)
+    public static function createGdThumbnail($sourcePath, $thumbnailPath)
     {
         list ($widthSrc, $heightSrc, $source_image_type) = getimagesize($sourcePath);
 

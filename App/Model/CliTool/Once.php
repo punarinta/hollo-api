@@ -93,14 +93,6 @@ class Once
     {
         $count = 0;
 
-        $processMimes =
-        [
-            'image/png',
-            'image/gif',
-            'image/jpeg',
-        //    'application/pdf',
-        ];
-
         foreach (ChatSvc::findAll() as $chat)
         {
             echo "Chat {$chat->_id}...\n";
@@ -116,10 +108,9 @@ class Once
                 $fileCount = 0;
                 foreach ($message->files ?? [] as $file)
                 {
-                    if (in_array($file->type, $processMimes))
+                    if (FileSvc::createAttachmentPreview($imapObject, $messageData, $chat->_id, $message->id, $fileCount, $file->type))
                     {
                         ++$count;
-                        FileSvc::createAttachmentPreview($imapObject, $messageData, $chat->_id, $message->id, $fileCount);
                     }
 
                     ++$fileCount;
