@@ -511,7 +511,14 @@ class Message
         $fileCount = 0;
         if (isset ($messageData['files'])) foreach ($messageData['files'] as $file)
         {
-            File::createAttachmentPreview($imapObject, $messageData, $chat->_id, $messageStructure['id'], $fileCount, $file['type']);
+            try
+            {
+                File::createAttachmentPreview($imapObject, $messageData, $chat->_id, $messageStructure['id'], $fileCount, $file['type']);
+            }
+            catch (\Exception $e)
+            {
+                // TODO: send log to email
+            }
 
             ++$fileCount;
         }
