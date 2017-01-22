@@ -53,33 +53,50 @@ class File
      */
     public static function createThumbnail($sourcePath, $thumbnailPath)
     {
-        list ($source_image_width, $source_image_height, $source_image_type) = getimagesize($sourcePath);
+        list ($widthSrc, $heightSrc, $source_image_type) = getimagesize($sourcePath);
 
         switch ($source_image_type)
         {
             case IMAGETYPE_GIF:
-                $source_gd_image = imagecreatefromgif($sourcePath);
+                $imSrc = imagecreatefromgif($sourcePath);
                 break;
+
             case IMAGETYPE_JPEG:
-                $source_gd_image = imagecreatefromjpeg($sourcePath);
+                $imSrc = imagecreatefromjpeg($sourcePath);
                 break;
+
             case IMAGETYPE_PNG:
-                $source_gd_image = imagecreatefrompng($sourcePath);
+                $imSrc = imagecreatefrompng($sourcePath);
                 break;
+
             default:
                 return false;
         }
 
-        $thumbnail_gd_image = imagecreatetruecolor(128, 128);
+        $srcX = 0;
+        $srcY = 0;
+
+        if ($widthSrc > $heightSrc)
+        {
+            $srcX = ($widthSrc - $heightSrc) / 2;
+            $srcY = 0;
+        }
+        if ($widthSrc < $heightSrc)
+        {
+            $srcX = 0;
+            $srcY = ($heightSrc - $widthSrc) / 2;
+        }
+
+        $imThumb = imagecreatetruecolor(128, 128);
 
         // fill the background with white
-        $whiteBackground = imagecolorallocate($thumbnail_gd_image, 255, 255, 255);
-        imagefill($thumbnail_gd_image, 0, 0, $whiteBackground);
+        $white = imagecolorallocate($imThumb, 255, 255, 255);
+        imagefill($imThumb, 0, 0, $white);
 
-        imagecopyresampled($thumbnail_gd_image, $source_gd_image, 0, 0, 0, 0, 128, 128, $source_image_width, $source_image_height);
-        imagejpeg($thumbnail_gd_image, $thumbnailPath, 93);
-        imagedestroy($source_gd_image);
-        imagedestroy($thumbnail_gd_image);
+        imagecopyresampled($imThumb, $imSrc, 0, 0, $srcX, $srcY, 128, 128, $widthSrc - 2 * $srcX, $heightSrc - 2 * $srcY);
+        imagejpeg($imThumb, $thumbnailPath, 93);
+        imagedestroy($imSrc);
+        imagedestroy($imThumb);
 
         return true;
     }
