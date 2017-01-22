@@ -108,9 +108,16 @@ class Once
                 $fileCount = 0;
                 foreach ($message->files ?? [] as $file)
                 {
-                    if (FileSvc::createAttachmentPreview($imapObject, $messageData, $chat->_id, $message->id, $fileCount, $file->type))
+                    try
                     {
-                        ++$count;
+                        if (FileSvc::createAttachmentPreview($imapObject, $messageData, $chat->_id, $message->id, $fileCount, $file->type))
+                        {
+                            ++$count;
+                        }
+                    }
+                    catch (\Exception $e)
+                    {
+                        // just go on
                     }
 
                     ++$fileCount;
