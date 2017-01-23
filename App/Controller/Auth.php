@@ -35,6 +35,8 @@ class Auth extends Generic
     /**
      * Returns current status
      *
+     * @doc-var    (bool) sync       - Sync User object.
+     *
      * @return array
      */
     static function status()
@@ -45,6 +47,11 @@ class Auth extends Generic
             {
                 AuthSvc::logout();
             }
+        }
+
+        if (\Input::get('sync'))
+        {
+            AuthSvc::sync();
         }
 
         return array
