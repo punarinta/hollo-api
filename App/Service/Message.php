@@ -502,7 +502,7 @@ class Message
             if (!empty ($files))
             {
                 if (strlen($body)) $body .= "\n";
-                $body .= '📄 × ' . count($files);
+                $body .= '📎 × ' . count($files);
             }
             Notify::auto($notifyThese, ['cmd' => 'chat:update', 'chatId' => $chat->_id], $usePush ? ['title' => $subject, 'body' => $body] : null);
         }
