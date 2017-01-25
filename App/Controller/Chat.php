@@ -98,10 +98,44 @@ class Chat extends Generic
 
         $chat = ChatSvc::init($emails);
 
+        // this may be a chat with users that are not yet synced up to client,
+        // we need to get them first
+
+        $userIds = [];
+
+        foreach ($chat->users as $userItem)
+        {
+            if ($userItem->id != \Auth::user()->_id && !isset ($userIds[$userItem->id]))
+            {
+                $userIds[$userItem->id] = new ObjectID($userItem->id);
+            }
+        }
+
+        foreach ($chat->messages ?? [] as $k2 => $message)
+        {
+            unset ($chat->messages[$k2]->refId);
+            unset ($chat->messages[$k2]->extId);
+        }
+
+        $users = UserSvc::findAll
+        (
+            ['_id' => ['$in' => array_values($userIds)]],
+            ['projection' => ['_id' => 1, 'name' => 1, 'email' => 1]]
+        );
+
+        // it was just use, wasn't it
+        $chat->lastTs = time();
+        ChatSvc::update($chat);
+
+        // cleanup
         $chat->id = $chat->_id;
         unset ($chat->_id);
 
-        return $chat;
+        return array
+        (
+            'chat'  => $chat,
+            'users' => $users,
+        );
     }
 
     /**
