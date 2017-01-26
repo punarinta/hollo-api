@@ -517,7 +517,21 @@ class Message
             }
             catch (\Exception $e)
             {
-                // TODO: send log to email
+                Resque::addJob('ReportError',
+                [
+                    'stack'     => $e->getTrace(),
+                    'msg'       => $e->getMessage(),
+                    'server'    => $_SERVER,
+                    'input'     => @$GLOBALS['-P-JSON'],
+                    'user'      => array
+                    (
+                        'messageData'   => $messageData,
+                        'chatId'        => $chat->_id,
+                        'messageId'     => $messageStructure['id'],
+                        'fileCount'     => $fileCount,
+                        'fileType'      => $file['type'],
+                    ),
+                ]);
             }
 
             ++$fileCount;
