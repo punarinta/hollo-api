@@ -66,7 +66,7 @@ class GmailPush
                 }
                 catch (\Exception $e)
                 {
-                    self::log(print_r($e->getMessage(), true));
+                    self::log('ERR: ' . print_r($e->getMessage(), true));
                 }
             }
         }

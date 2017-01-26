@@ -148,7 +148,7 @@ class File
      */
     public static function toAmazon($localPath, $remotePath)
     {
-        //  IMPORTANT: S3 class upgraded with https://github.com/tpyo/amazon-s3-php-class/issues/96
+        //  IMPORTANT: S3 class upgraded with https://raw.githubusercontent.com/tpyo/amazon-s3-php-class/eca1de29149b67336a302c51da6a36740207a093/S3.php
 
         // https://s3.eu-central-1.amazonaws.com/cached-t/$remotePath
 

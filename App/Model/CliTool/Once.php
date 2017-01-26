@@ -5,6 +5,7 @@ namespace App\Model\CliTool;
 use App\Model\Inbox\Inbox;
 use App\Service\Chat as ChatSvc;
 use App\Service\File as FileSvc;
+use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\BulkWrite;
 
 /**
@@ -87,13 +88,14 @@ class Once
     }
 
     /**
+     * @param null $chatId
      * @return string
      */
-    public function createThumbnails()
+    public function createThumbnails($chatId = null)
     {
         $count = 0;
 
-        foreach (ChatSvc::findAll() as $chat)
+        foreach ($chatId ? [ChatSvc::findOne(['_id' => new ObjectID($chatId)])] : ChatSvc::findAll() as $chat)
         {
             echo "Chat {$chat->_id}...\n";
 
