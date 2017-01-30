@@ -46,25 +46,32 @@ class Message extends Generic
 
         $tryHtml = \Input::data('tryHtml');
 
-        foreach ($chat->messages ?? [] as $message)
+        try
         {
-            if ($message->id == $id && @$message->extId)
+            foreach ($chat->messages ?? [] as $message)
             {
-                if (!$data = MessageSvc::getDataByRefIdAndExtId($message->refId, $message->extId))
+                if ($message->id == $id && @$message->extId)
                 {
-                    return false;
-                }
-
-                if ($tryHtml) foreach ($data['body'] as $body)
-                {
-                    if ($body['type'] == 'text/html')
+                    if (!$data = MessageSvc::getDataByRefIdAndExtId($message->refId, $message->extId))
                     {
-                        return $body;
+                        return false;
                     }
-                }
 
-                return $data['body'][\Input::data('bodyId') ?? 0];
+                    if ($tryHtml) foreach ($data['body'] as $body)
+                    {
+                        if ($body['type'] == 'text/html')
+                        {
+                            return $body;
+                        }
+                    }
+
+                    return $data['body'][\Input::data('bodyId') ?? 0];
+                }
             }
+        }
+        catch (\Exception $e)
+        {
+            // do nothing, return false anyway
         }
 
         return false;
