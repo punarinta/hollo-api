@@ -20,6 +20,11 @@ class File
      */
     public static function createAttachmentPreview($imapObject, $messageData, $chatId, $messageId, $fileId = 0, $mime = '')
     {
+        if (!$imapObject)
+        {
+            return false;
+        }
+
         // https://s3.eu-central-1.amazonaws.com/cached-t/$chatId/$messageId/$fileId
 
         $types =
